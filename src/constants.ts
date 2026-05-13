@@ -5,3 +5,8 @@ export enum Lane {
     Front,
     Back,
 }
+
+export enum Direction {
+    Left,
+    Right
+}

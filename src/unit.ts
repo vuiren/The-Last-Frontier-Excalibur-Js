@@ -3,7 +3,9 @@ import { Resources } from "./resources";
 import { Bullet } from "./bullet";
 import { spawnUnitMoveMarker } from "./spawnFunctions";
 import { HealthBar } from "./healthBar";
-import { Lane } from "./constants";
+import { BackGroundYLevel, Direction, FrontGroundYLevel, Lane } from "./constants";
+import { Group } from "./group";
+import { UnitMoveMarker } from "./unitMoveMarker";
 
 export class Unit extends Actor {
     isEnemy = false;
@@ -19,6 +21,10 @@ export class Unit extends Actor {
     lane: Lane;
     isAttacking: boolean;
     attackTarget: Unit | null = null;
+    groupRef: Group | null = null;
+    moveMarker: UnitMoveMarker | null = null;
+    isMoving: boolean = false;
+    lookDirection: Direction = Direction.Right
     private onClick: (unit: Unit) => void;
     private onRightClick: (unit: Unit) => void;
     private sprite!: Sprite;
@@ -54,7 +60,7 @@ export class Unit extends Actor {
         });
 
         if (!this.isEnemy)
-            spawnUnitMoveMarker(engine.currentScene, this, this.pos)
+            this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.pos)
     }
 
     select() {
@@ -62,21 +68,56 @@ export class Unit extends Actor {
         this.sprite.tint = Color.Red;
     }
 
+    getYLevel() {
+        return this.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel
+    }
+
     deselect() {
         this.isSelected = false;
         this.sprite.tint = Color.White;
     }
 
-    moveTo(destination: Vector) {
-        this.destination = destination;
+    moveTo(destination: Vector, fromMoveMarker: boolean) {
+        if (this.moveMarker && !fromMoveMarker) {
+            this.moveMarker.pos = destination
+        } else {
+            this.destination = destination;
+        }
     }
 
-    changeLane(newLane: Lane) {
-        this.lane = newLane
+    joinGroup(group: Group) {
+        this.groupRef = group
+        if (this.id !== group.leader.id)
+            this.hideMoveMarker()
+    }
+
+    leaveGroup(group: Group) {
+        this.groupRef = null;
+        this.showMoveMarker()
+    }
+
+    changeLane() {
+        this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
+        this.pos = vec(this.pos.x, this.getYLevel())
+    }
+
+    hideMoveMarker() {
+        if (this.moveMarker) {
+            this.moveMarker.sprite.scale = vec(0.01, 0.01)
+            this.moveMarker.pointer.useGraphicsBounds = false;
+        }
+    }
+
+    showMoveMarker() {
+        if (this.moveMarker) {
+            this.moveMarker.sprite.scale = vec(0.6, 0.6)
+            this.moveMarker.pointer.useGraphicsBounds = true;
+        }
     }
 
     override onPreUpdate(_engine: Engine, elapsedMs: number): void {
         this.movement();
+        this.sprite.flipHorizontal = this.lookDirection === Direction.Left
         this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 28);
 
         if (this.nearby.length > 0) {
@@ -103,13 +144,16 @@ export class Unit extends Actor {
         if (distance < 5) {
             this.pos = this.destination;
             this.vel = Vector.Zero;
+            this.isMoving = false
             return;
         }
+        this.isMoving = true;
         this.vel = this.destination.sub(this.pos).normalize().scale(this.speed);
+        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left
     }
 
     takeDamage(damage: number) {
-        console.log("Took damage")
+        console.log(this.id + " Took damage")
         this.health -= damage;
         this.healthBar.setHealth(this.health)
         if (this.health <= 0) {
@@ -123,7 +167,7 @@ export class Unit extends Actor {
             return this.isEnemy
                 ? a.pos.distance(this.pos) < this.detectionRange && !a.isEnemy
                 : a.pos.distance(this.pos) < this.detectionRange && a.isEnemy
-            }
+        }
         )
     }
 

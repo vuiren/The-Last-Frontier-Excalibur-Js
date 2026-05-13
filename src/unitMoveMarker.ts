@@ -1,4 +1,4 @@
-import { Actor, Engine, Sprite, Vector, PointerEvent, vec } from "excalibur";
+import { Actor, Engine, Sprite, Vector, PointerEvent, vec, PointerButton } from "excalibur";
 import { Unit } from "./unit";
 import { Resources } from "./resources";
 import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
@@ -6,7 +6,7 @@ import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
 export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = []
     assignedUnit: Unit
-    private sprite!: Sprite;
+    sprite!: Sprite;
     private isDragging: boolean = false;
     private dragOffset: Vector = Vector.Zero;
 
@@ -23,7 +23,7 @@ export class UnitMoveMarker extends Actor {
             this.pos = this.assignedUnit.pos
         })
 
-        this.assignedUnit.on("died", e =>{
+        this.assignedUnit.on("died", e => {
             this.kill()
         })
     }
@@ -34,8 +34,6 @@ export class UnitMoveMarker extends Actor {
         this.sprite = Resources.Sword.toSprite();
         this.graphics.use(this.sprite);
 
-        this.pointer.useGraphicsBounds = true;
-
         this.on('pointerenter', (evt: PointerEvent) => {
             evt.cancel();
 
@@ -44,14 +42,19 @@ export class UnitMoveMarker extends Actor {
 
         this.on('pointerleave', (evt: PointerEvent) => {
             evt.cancel();
-
-            this.assignedUnit.deselect()
+            console.log("Left")
+            if (!this.isDragging)
+                this.assignedUnit.deselect()
         })
 
         this.on('pointerdown', (evt: PointerEvent) => {
+            if (evt.button === PointerButton.Right) {
+                return
+            }
             evt.cancel();
 
             this.isDragging = true;
+            this.assignedUnit.select()
             // Store offset so the marker doesn't snap its center to the cursor
             this.dragOffset = this.pos.sub(evt.worldPos);
         });
@@ -77,6 +80,6 @@ export class UnitMoveMarker extends Actor {
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
         if (this.isDragging) return
-        this.assignedUnit.moveTo(vec(this.pos.x, this.getYLevel()))
+        this.assignedUnit.moveTo(vec(this.pos.x, this.getYLevel()), true)
     }
 }

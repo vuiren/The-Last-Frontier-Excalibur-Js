@@ -8,12 +8,22 @@ export class GroupsManager {
         this.removeFromAnyGroup(leader);
         const group = new Group(leader);
         this.groups.push(group);
+        leader.joinGroup(group)
+        leader.on("died", (x => {
+            this.removeFromAnyGroup(leader)
+        }))
         return group;
     }
 
     addToGroup(unit: Unit, group: Group): void {
         this.removeFromAnyGroup(unit);
         group.add(unit);
+        unit.joinGroup(group)
+        group.forceSpread = true
+
+        unit.on("died", (x => {
+            this.removeFromAnyGroup(unit)
+        }))
     }
 
     removeFromAnyGroup(unit: Unit): void {
@@ -21,9 +31,13 @@ export class GroupsManager {
         if (!group) return;
 
         group.remove(unit);
+        unit.leaveGroup(group)
+        unit.off("died")
 
         // Clean up dissolved groups (leader left with no followers)
         if (group.isEmpty) {
+            group.leader.leaveGroup(group)
+            group.leader.off("died")
             this.groups = this.groups.filter(g => g !== group);
         }
     }

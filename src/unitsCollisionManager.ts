@@ -2,7 +2,7 @@ import { Unit } from "./unit";
 
 export class UnitsCollisionManager {
     allUnits: Unit[] = [];
-    groupCreationThreshold = 5;
+    groupCreationThreshold = 20;
 
     // Pre-allocated to worst case: n*(n-1)/2 pairs * 2
     collidingPairs: Unit[];
@@ -36,7 +36,8 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        const units = this.allUnits;
+        const units = this.allUnits.filter(x => !x.isMoving && (x.groupRef === null || x.groupRef.leader.id === x.id));
+
         const len = units.length;
 
         for (let i = 0; i < len - 1; i++) {

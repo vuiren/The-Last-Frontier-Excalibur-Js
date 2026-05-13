@@ -1,13 +1,15 @@
 import { Vector, vec } from "excalibur";
 import { Unit } from "./unit";
+import { Direction } from "./constants";
 
-const FORMATION_OFFSETS: Vector[] = [
-    vec(45, 60), vec(-80, 60), vec(0, 60), vec(0, -60),
+const FORMATION_OFFSETS: number[] = [
+    35, 70, 105
 ];
 
 export class Group {
     leader: Unit;
     followers: Unit[] = [];
+    forceSpread: true | null = null
 
     constructor(leader: Unit) {
         this.leader = leader;
@@ -40,11 +42,15 @@ export class Group {
     // Called each frame — sets follower destinations relative to the leader
     update(): void {
         this.followers.forEach((follower, i) => {
-            const offset = FORMATION_OFFSETS[i] ?? vec((i + 1) * 60, 60);
-            const target = this.leader.pos.add(offset)
+            let offset = FORMATION_OFFSETS[i] ?? vec((i + 1) * 60, 60);
+            offset *= this.leader.lookDirection === Direction.Right ? -1 : 1
+            const target = this.leader.pos.add(vec(offset, 0))
             const distance = follower.pos.distance(this.leader.pos)
-            if (distance > 80)
-                follower.destination = target;
+            if (distance > 80 || this.forceSpread)
+                follower.moveTo(target, false)
         });
+
+        if (this.forceSpread !== null)
+            this.forceSpread = null
     }
 }
