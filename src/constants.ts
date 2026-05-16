@@ -10,3 +10,8 @@ export enum Direction {
     Left,
     Right
 }
+
+export enum Faction{
+    Player,
+    Enemy
+}

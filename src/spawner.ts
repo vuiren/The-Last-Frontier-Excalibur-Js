@@ -1,15 +1,16 @@
 import { Actor, Engine, Vector } from "excalibur";
 import { Resources } from "./resources";
 import { Unit } from "./unit";
-import { spawnEnemy } from "./spawnFunctions";
+import { UnitsManager } from "./unitsManager";
+import { Lane } from "./constants";
 
 export class Spawner extends Actor {
     spawnDelay = 5000;
     remainingSpawnDelay = 0;
     allUnits: Unit[] = []
-    private onUnitClick: (unit: Unit) => void;
+    unitsManager: UnitsManager;
 
-    constructor(startPosition: Vector, allUnits: Unit[], onUnitClick: (unit: Unit) => void) {
+    constructor(startPosition: Vector, allUnits: Unit[], unitsManager: UnitsManager) {
         super({
             name: 'Spawner',
             pos: startPosition,
@@ -18,7 +19,7 @@ export class Spawner extends Actor {
         });
 
         this.allUnits = allUnits;
-        this.onUnitClick = onUnitClick
+        this.unitsManager = unitsManager;
     }
 
     override onInitialize() {
@@ -29,7 +30,7 @@ export class Spawner extends Actor {
         this.remainingSpawnDelay -= elapsedMs;
         if (this.remainingSpawnDelay <= 0) {
             this.remainingSpawnDelay = this.spawnDelay;
-            spawnEnemy(engine.currentScene, this.allUnits, this.pos, this.onUnitClick)
+            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos, Lane.Front)
         }
     }
 

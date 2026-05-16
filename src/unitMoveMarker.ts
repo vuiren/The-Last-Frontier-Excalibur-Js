@@ -2,10 +2,11 @@ import { Actor, Engine, Sprite, Vector, PointerEvent, vec, PointerButton } from 
 import { Unit } from "./unit";
 import { Resources } from "./resources";
 import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
+import { PlayerUnit } from "./playerUnit";
 
 export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = []
-    assignedUnit: Unit
+    assignedUnit: PlayerUnit
     sprite!: Sprite;
     private isDragging: boolean = false;
     private dragOffset: Vector = Vector.Zero;
@@ -14,12 +15,11 @@ export class UnitMoveMarker extends Actor {
         return this.assignedUnit.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel
     }
 
-    constructor(startPosition: Vector, assignedUnit: Unit) {
+    constructor(startPosition: Vector, assignedUnit: PlayerUnit) {
         super({ name: 'Unit', pos: startPosition, width: 100, height: 100 });
         this.assignedUnit = assignedUnit
 
         this.assignedUnit.on("beganAttacking", e => {
-            console.log("Unit is attacking!")
             this.pos = this.assignedUnit.pos
         })
 
@@ -42,7 +42,7 @@ export class UnitMoveMarker extends Actor {
 
         this.on('pointerleave', (evt: PointerEvent) => {
             evt.cancel();
-            console.log("Left")
+            
             if (!this.isDragging)
                 this.assignedUnit.deselect()
         })

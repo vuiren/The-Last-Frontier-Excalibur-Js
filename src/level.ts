@@ -3,8 +3,9 @@ import { Unit } from "./unit";
 import { Spawner } from "./spawner";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
-import { FrontGroundYLevel, Lane } from "./constants";
+import { Faction, FrontGroundYLevel, Lane } from "./constants";
 import { UnitsManager } from "./unitsManager";
+import { PlayerUnit } from "./playerUnit";
 
 export class MyLevel extends Scene {
     allUnits: Unit[] = [];
@@ -16,9 +17,9 @@ export class MyLevel extends Scene {
     playerGroup: Group | null = null;
 
     override onInitialize(engine: Engine): void {
-        this.unitsManager.spawnUnit(this, vec(200, FrontGroundYLevel), this.unitSelection, this.unitRightClick, false)
-        this.unitsManager.spawnUnit(this, vec(300, FrontGroundYLevel), this.unitSelection, this.unitRightClick, false)
-        this.unitsManager.spawnUnit(this, vec(600, FrontGroundYLevel), () => { }, () => { }, true)
+        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), Lane.Front)
 
         engine.input.pointers.primary.on('down', e => this.onMouseDown(e))
     }
@@ -54,7 +55,7 @@ export class MyLevel extends Scene {
 
     onMouseDown(e: PointerEvent) {
         if (e.button === PointerButton.Right) {
-            const selected = this.allUnits.filter(x => !x.isEnemy && x.isSelected)
+            const selected = this.allUnits.filter(x => x.faction === Faction.Player && x instanceof PlayerUnit && x.isSelected)
             selected.forEach(x => {
                 x.changeLane()
             })
@@ -62,6 +63,7 @@ export class MyLevel extends Scene {
     }
 
     unitSelection(unit: Unit) {
+        if(!(unit instanceof PlayerUnit)) return
         unit.isSelected = !unit.isSelected;
         if (unit.isSelected) {
             unit.select();
