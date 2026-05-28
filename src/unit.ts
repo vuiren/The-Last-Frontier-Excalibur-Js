@@ -1,37 +1,37 @@
 import { Actor, Vector, Sprite, vec, Engine, Debug, Color } from "excalibur";
 import { Bullet } from "./bullet";
-import { Lane, Faction, FrontGroundYLevel, BackGroundYLevel, Direction } from "./constants";
+import { Lane, FrontGroundYLevel, BackGroundYLevel, Direction, AttackType } from "./constants";
 import { Group } from "./group";
 import { HealthBar } from "./healthBar";
 import { Resources } from "./resources";
+import { UnitConfig } from "./unitConfigs";
+
+export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
 
 export class Unit extends Actor {
-    destination: Vector;
-    speed = 250;
-    detectionRange = 250;
-    shootCoolDown = 500;
-    remainingShootCoolDown = 0;
-    nearby: Actor[] = [];
     allUnits: Unit[];
-    health = 25;
+    health: number;
     lane: Lane;
-    isAttacking: boolean = false;
-    attackTarget: Unit | null = null;
     groupRef: Group | null = null;
-    isMoving: boolean = false;
     lookDirection: Direction = Direction.Right;
-    faction: Faction = Faction.Player;
+    config: UnitConfig;
+    orderedDestination: Vector;
+    attackCooldown: number = 0;
+    isDead: boolean = false;
+    activity: UnitActivity = "idle";
+    previousActivity: UnitActivity = "idle";
+
     protected sprite!: Sprite;
     private healthBar: HealthBar;
 
-    constructor(startPosition: Vector, allUnits: Unit[], faction: Faction, startLane = Lane.Front, health: number) {
+    constructor(startPosition: Vector, config: UnitConfig, allUnits: Unit[], startLane = Lane.Front) {
         super({ name: 'Unit', pos: startPosition, width: 100, height: 100 });
+        this.config = config;
         this.allUnits = allUnits;
-        this.destination = startPosition;
+        this.orderedDestination = startPosition;
         this.lane = startLane;
-        this.health = health;
-        this.faction = faction;
-        this.healthBar = new HealthBar(vec(0, 0), 50, 6, health);
+        this.health = config.health;
+        this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
     }
 
     override onInitialize(engine: Engine): void {
@@ -40,83 +40,133 @@ export class Unit extends Actor {
         engine.currentScene.add(this.healthBar);
     }
 
-    getYLevel() {
+    override onPreUpdate(_engine: Engine, elapsedMs: number): void {
+        if (this.isDead) return;
+
+        this.attackCooldown -= elapsedMs;
+        this.previousActivity = this.activity;
+        this.updateBehavior(elapsedMs);
+
+        this.sprite.flipHorizontal = this.lookDirection === Direction.Left;
+        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 28);
+    }
+
+    /**
+     * Override in subclasses to define unit-specific AI or player logic.
+     * Default behavior: move toward orderedDestination.
+     */
+    protected updateBehavior(_elapsedMs: number): void {
+
+    }
+
+    protected selectActivity(): UnitActivity {
+        return "idle";
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Movement helpers                                                    //
+    // ------------------------------------------------------------------ //
+
+    moveTo(destination: Vector): void {
+        if (this.isDead) return;
+        this.orderedDestination = destination;
+    }
+
+    protected moveTowardDestination(): void {
+        const dist = this.pos.distance(this.orderedDestination);
+        if (dist < 5) {
+            this.vel = Vector.Zero;
+            return;
+        }
+        this.vel = this.orderedDestination.sub(this.pos).normalize().scale(this.config.speed);
+        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
+    }
+
+    protected moveTowardEnemy(enemy: Unit): void {
+        const toEnemy = enemy.pos.sub(this.pos);
+        const range = this.config.attackRange ?? this.config.detectionRange;
+
+        // Stop just inside attack range to avoid jitter at the edge.
+        const stopAt = toEnemy.magnitude - range * 0.85;
+        if (stopAt <= 0) {
+            this.vel = Vector.Zero;
+            return;
+        }
+
+        this.vel = toEnemy.normalize().scale(this.config.speed);
+        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Combat helpers                                                      //
+    // ------------------------------------------------------------------ //
+
+    protected findClosestEnemy(): Unit | null {
+        let closest: Unit | null = null;
+        let closestDist = this.config.detectionRange;
+
+        for (const other of this.allUnits) {
+            if (!this.isHostile(other) || other.isDead) continue;
+            const d = other.pos.distance(this.pos);
+            if (d < closestDist) { closestDist = d; closest = other; }
+        }
+        return closest;
+    }
+
+    protected isInAttackRange(target: Unit): boolean {
+        const range = this.config.attackRange ?? this.config.detectionRange;
+        return target.pos.distance(this.pos) < range;
+    }
+
+    performAttack(target: Unit): void {
+        if (this.config.attackType === AttackType.Melee) {
+            target.takeDamage(this.config.attackDamage, this.lookDirection);
+        } else {
+            const dir = target.pos.sub(this.pos).normalize();
+            this.scene?.add(new Bullet(this.pos, dir, false, this.allUnits, this.config.faction, this.config.attackDamage));
+        }
+    }
+
+    takeDamage(damage: number, hitDirection: Direction): void {
+        if (this.isDead) return;
+        this.health -= damage;
+        this.healthBar.setHealth(this.health);
+        if (this.health <= 0) {
+            this.isDead = true;
+            this.healthBar.kill();
+            this.kill();
+        }
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Misc                                                                //
+    // ------------------------------------------------------------------ //
+
+    isHostile(other: Unit): boolean {
+        return other.config.faction !== this.config.faction;
+    }
+
+    getYLevel(): number {
         return this.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel;
     }
 
-    changeLane() {
+    changeLane(): void {
         this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
         this.pos = vec(this.pos.x, this.getYLevel());
     }
 
-    override onPreUpdate(_engine: Engine, elapsedMs: number): void {
-        this.movement();
-        this.sprite.flipHorizontal = this.lookDirection === Direction.Left;
-        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 28);
+    joinGroup(group: Group): void { this.groupRef = group; }
+    leaveGroup(): void { this.groupRef = null; }
 
-        if (this.nearby.length > 0) {
-            if (!this.isAttacking) this.emit("beganAttacking", this);
-            this.isAttacking = true;
-        } else {
-            this.isAttacking = false;
-        }
-
-        this.remainingShootCoolDown -= elapsedMs;
-        if (this.nearby.length > 0 && this.remainingShootCoolDown < 0) {
-            const first = this.nearby[0];
-            const shootDirection = first.pos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos, shootDirection, false, this.allUnits));
-            this.remainingShootCoolDown = this.shootCoolDown;
-        }
-    }
-
-    private movement(): void {
-        const distance = this.pos.distance(this.destination);
-        if (distance < 5) {
-            this.pos = this.destination;
-            this.vel = Vector.Zero;
-            this.isMoving = false;
-            return;
-        }
-        this.isMoving = true;
-        this.vel = this.destination.sub(this.pos).normalize().scale(this.speed);
-        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
-    }
-
-    takeDamage(damage: number, hitDirection: Vector) {
-        this.health -= damage;
-        this.healthBar.setHealth(this.health);
-        if (this.health <= 0) {
-            this.kill();
-            this.healthBar.kill();
-        }
-    }
-
-    lookForNearbyEnemies() {
-        this.nearby = this.allUnits.filter(a =>
-            a.pos.distance(this.pos) < this.detectionRange && this.isHostile(a)
-        );
-    }
-
-    isHostile(otherUnit: Unit) {
-        return otherUnit.faction !== this.faction;
-    }
-
-    override onPostKill() {
+    override onPostKill(): void {
         this.emit('died', this);
     }
 
     override onPostUpdate(_engine: Engine, _elapsedMs: number): void {
-        this.lookForNearbyEnemies();
+        const range = this.config.attackRange ?? this.config.detectionRange;
+        Debug.drawCircle(this.pos, this.config.detectionRange, { color: Color.Transparent, strokeColor: Color.Green, width: 1 });
+        Debug.drawCircle(this.pos, range, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
 
-        Debug.drawCircle(this.pos, this.detectionRange, {
-            color: Color.Transparent,
-            strokeColor: Color.Green,
-            width: 1
-        });
-
-        for (const unit of this.nearby) {
-            Debug.drawLine(this.pos, unit.pos, { color: Color.Green });
-        }
+        Debug.drawText(this.activity, this.pos.add(vec(0, -50)));
     }
 }

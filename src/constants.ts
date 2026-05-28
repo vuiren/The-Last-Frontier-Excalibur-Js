@@ -15,3 +15,8 @@ export enum Faction{
     Player,
     Enemy
 }
+
+export enum AttackType {
+    Melee,
+    Ranged
+}

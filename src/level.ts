@@ -17,9 +17,9 @@ export class MyLevel extends Scene {
     playerGroup: Group | null = null;
 
     override onInitialize(engine: Engine): void {
-        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
 
         engine.input.pointers.primary.on('down', e => this.onMouseDown(e))
     }
@@ -55,7 +55,7 @@ export class MyLevel extends Scene {
 
     onMouseDown(e: PointerEvent) {
         if (e.button === PointerButton.Right) {
-            const selected = this.allUnits.filter(x => x.faction === Faction.Player && x instanceof PlayerUnit && x.isSelected)
+            const selected = this.allUnits.filter(x => x.config.faction === Faction.Player && x instanceof PlayerUnit && x.isSelected)
             selected.forEach(x => {
                 x.changeLane()
             })

@@ -8,7 +8,8 @@ export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = []
     assignedUnit: PlayerUnit
     sprite!: Sprite;
-    private isDragging: boolean = false;
+    isDragging: boolean = false;
+    isHidden: boolean = false;
     private dragOffset: Vector = Vector.Zero;
 
     getYLevel() {
@@ -35,19 +36,23 @@ export class UnitMoveMarker extends Actor {
         this.graphics.use(this.sprite);
 
         this.on('pointerenter', (evt: PointerEvent) => {
+            if (this.isHidden) return;
             evt.cancel();
 
             this.assignedUnit.select()
         })
 
         this.on('pointerleave', (evt: PointerEvent) => {
+            if (this.isHidden) return;
             evt.cancel();
-            
+
             if (!this.isDragging)
                 this.assignedUnit.deselect()
         })
 
         this.on('pointerdown', (evt: PointerEvent) => {
+            if (this.isHidden) return;
+
             if (evt.button === PointerButton.Right) {
                 return
             }
@@ -70,16 +75,13 @@ export class UnitMoveMarker extends Actor {
         })
 
         this.on('pointerup', (evt: PointerEvent) => {
+            if (this.isHidden) return;
             evt.cancel();
 
             this.isDragging = false;
             this.pos.y = this.getYLevel()
+            this.assignedUnit.moveTo(vec(this.pos.x, this.getYLevel()))
             this.assignedUnit.deselect()
         });
-    }
-
-    override onPreUpdate(engine: Engine, elapsed: number): void {
-        if (this.isDragging) return
-        this.assignedUnit.moveTo(vec(this.pos.x, this.getYLevel()), true)
     }
 }

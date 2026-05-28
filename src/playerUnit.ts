@@ -1,25 +1,28 @@
 import { Vector, Engine, PointerButton, Color, vec } from "excalibur";
-import { Lane, Faction } from "./constants";
+import { Lane } from "./constants";
 import { Group } from "./group";
 import { spawnUnitMoveMarker } from "./spawnFunctions";
-import { Unit } from "./unit";
+import { Unit, UnitActivity } from "./unit";
 import { UnitMoveMarker } from "./unitMoveMarker";
+import { UnitConfig } from "./unitConfigs";
 
 export class PlayerUnit extends Unit {
     isSelected = false;
-    moveMarker: UnitMoveMarker | null = null;
+    moveMarker!: UnitMoveMarker;
     private onClick: (unit: Unit) => void;
     private onRightClick: (unit: Unit) => void;
+    private hasSightedEnemy = false;
+    private hasActiveOrder = false;
 
     constructor(
         startPosition: Vector,
         allUnits: Unit[],
+        config: UnitConfig,
         onClick: (unit: Unit) => void,
         onRightClick: (unit: Unit) => void,
         startLane = Lane.Front,
-        health = 25
     ) {
-        super(startPosition, allUnits, Faction.Player, startLane, health);
+        super(startPosition, config, allUnits, startLane);
         this.onClick = onClick;
         this.onRightClick = onRightClick;
     }
@@ -35,31 +38,130 @@ export class PlayerUnit extends Unit {
         this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.pos);
     }
 
+    protected override selectActivity(): UnitActivity {
+        const enemy = this.findClosestEnemy();
+        const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
+
+        if (enemy) this.hasSightedEnemy = true;
+
+        // Arriving clears the move order
+        if (!isOutOfDistanceFromDestination) {
+            this.hasActiveOrder = false;
+        }
+
+        switch (this.activity) {
+            case "moving":
+                // Only block attack if player explicitly ordered this move
+                if (!this.hasActiveOrder && enemy && this.isInAttackRange(enemy)) {
+                    return "attacking";
+                }
+                if (isOutOfDistanceFromDestination) return "moving";
+                return "idle";
+
+            case "attacking":
+                if (isOutOfDistanceFromDestination) return "moving";
+                if (enemy && this.isInAttackRange(enemy)) return "attacking";
+                return "idle";
+        }
+
+        // First sighting — stop and engage
+        if (enemy && this.isInAttackRange(enemy)) return "attacking";
+        if (isOutOfDistanceFromDestination) return "moving";
+        return "idle";
+    }
+
+    // Players move on command only — no auto-chasing.
+    protected override updateBehavior(_elapsedMs: number): void {
+        const previousActivity = this.activity;
+        this.activity = this.selectActivity();
+
+        if (this.activity !== previousActivity) {
+            this.onEnterActivity(this.activity, previousActivity);
+        }
+
+        this.onUpdateActivity(this.activity);
+    }
+
+    protected onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
+        switch (activity) {
+            case "attacking":
+                this.orderedDestination = this.pos;
+                if (!this.moveMarker.isDragging) {
+                    this.moveMarker.pos = this.pos;
+                }
+                break;
+        }
+    }
+
+    protected onUpdateActivity(activity: UnitActivity): void {
+        const enemy = this.findClosestEnemy();
+
+        switch (activity) {
+            case "movingAndAttacking":
+                this.moveTowardDestination();
+                this.tryPerformAttack(enemy!);
+                break;
+            case "attacking":
+                this.vel = Vector.Zero;
+                this.tryPerformAttack(enemy!);
+                break;
+            case "moving":
+                this.moveTowardDestination();
+                break;
+            case "idle":
+                this.vel = Vector.Zero;
+                break;
+        }
+    }
+
+    private tryPerformAttack(enemy: Unit): void {
+        if (this.attackCooldown <= 0) {
+            this.performAttack(enemy);
+            this.attackCooldown = this.config.attackCooldown;
+        }
+    }
+
+    override moveTo(destination: Vector): void {
+        super.moveTo(destination);
+
+        // Only block enemy interruption if unit has already seen an enemy before
+        if (this.hasSightedEnemy) {
+            this.hasActiveOrder = true;
+        }
+    }
+
     select() {
         this.isSelected = true;
         this.sprite.tint = Color.Red;
+
+        if (this.groupRef && this.groupRef.leader.id === this.id) {
+            this.groupRef.members.forEach(member => {
+                if (member.id !== this.id && member instanceof PlayerUnit) {
+                    member.select()
+                }
+            })
+        }
     }
 
     deselect() {
         this.isSelected = false;
         this.sprite.tint = Color.White;
-    }
-
-    moveTo(destination: Vector, fromMoveMarker: boolean) {
-        if (this.moveMarker && !fromMoveMarker) {
-            this.moveMarker.pos = destination;
-        } else {
-            this.destination = destination;
+        if (this.groupRef && this.groupRef.leader.id === this.id) {
+            this.groupRef.members.forEach(member => {
+                if (member.id !== this.id && member instanceof PlayerUnit) {
+                    member.deselect()
+                }
+            })
         }
     }
 
-    joinGroup(group: Group) {
-        this.groupRef = group;
+    override joinGroup(group: Group) {
+        super.joinGroup(group);
         if (this.id !== group.leader.id) this.hideMoveMarker();
     }
 
-    leaveGroup() {
-        this.groupRef = null;
+    override leaveGroup() {
+        super.leaveGroup();
         this.showMoveMarker();
     }
 
@@ -67,6 +169,7 @@ export class PlayerUnit extends Unit {
         if (this.moveMarker) {
             this.moveMarker.sprite.scale = vec(0.01, 0.01);
             this.moveMarker.pointer.useGraphicsBounds = false;
+            this.moveMarker.isHidden = true;
         }
     }
 
@@ -74,6 +177,7 @@ export class PlayerUnit extends Unit {
         if (this.moveMarker) {
             this.moveMarker.sprite.scale = vec(0.6, 0.6);
             this.moveMarker.pointer.useGraphicsBounds = true;
+            this.moveMarker.isHidden = false;
         }
     }
 }

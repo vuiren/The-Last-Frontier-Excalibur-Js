@@ -1,9 +1,10 @@
 import { Scene, Vector } from "excalibur";
 import { Unit } from "./unit";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
-import { Lane } from "./constants";
 import { EnemyUnit } from "./enemyUnit";
 import { PlayerUnit } from "./playerUnit";
+import { UnitConfigs, UnitConfigKey } from "./unitConfigs";
+import { Lane } from "./constants";
 
 export class UnitsManager {
     allUnits: Unit[] = [];
@@ -16,24 +17,39 @@ export class UnitsManager {
         this.collisionManager = new UnitsCollisionManager(this.allUnits);
     }
 
-spawnPlayerUnit(scene: Scene, pos: Vector, startLane: Lane, onUnitClick: (unit: Unit) => void, onUnitRightClick: (unit: Unit) => void) {
-    const unit = new PlayerUnit(pos, this.allUnits, onUnitClick, onUnitRightClick, startLane, 50);
-    return this.registerUnit(scene, unit);
-}
+    spawnPlayerUnit(
+        scene: Scene,
+        pos: Vector,
+        configKey: UnitConfigKey,
+        startLane: Lane,
+        onUnitClick: (unit: Unit) => void,
+        onUnitRightClick: (unit: Unit) => void,
+    ) {
+        const config = UnitConfigs[configKey];
+        const unit = new PlayerUnit(pos, this.allUnits, config, onUnitClick, onUnitRightClick, startLane);
+        unit.config.speed = config.speed;
+        unit.config.detectionRange = config.detectionRange;
+        unit.config.attackCooldown = config.attackCooldown;
+        return this.registerUnit(scene, unit);
+    }
 
-spawnEnemyUnit(scene: Scene, pos: Vector, startLane: Lane) {
-    const unit = new EnemyUnit(pos, this.allUnits, startLane, 25);
-    return this.registerUnit(scene, unit);
-}
+    spawnEnemyUnit(scene: Scene, pos: Vector, configKey: UnitConfigKey, startLane: Lane) {
+        const config = UnitConfigs[configKey];
+        const unit = new EnemyUnit(pos, config, this.allUnits, startLane);
+        unit.config.speed = config.speed;
+        unit.config.detectionRange = config.detectionRange;
+        unit.config.attackCooldown = config.attackCooldown;
+        return this.registerUnit(scene, unit);
+    }
 
-private registerUnit(scene: Scene, unit: Unit) {
-    this.allUnits.push(unit);
-    this.collisionManager.collidingUnits.set(unit, []);
-    this.onUnitAdded?.(unit);
-    unit.on('died', (e) => this.removeUnit(e as Unit));
-    scene.add(unit);
-    return unit;
-}
+    private registerUnit(scene: Scene, unit: Unit) {
+        this.allUnits.push(unit);
+        this.collisionManager.collidingUnits.set(unit, []);
+        this.onUnitAdded?.(unit);
+        unit.on('died', (e) => this.removeUnit(e as Unit));
+        scene.add(unit);
+        return unit;
+    }
 
     removeUnit(unit: Unit) {
         const index = this.allUnits.indexOf(unit);

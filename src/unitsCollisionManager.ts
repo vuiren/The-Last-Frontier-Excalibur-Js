@@ -36,7 +36,7 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        const units = this.allUnits.filter(x => !x.isMoving && (x.groupRef === null || x.groupRef.leader.id === x.id));
+        const units = this.allUnits.filter(x => x.activity !== "moving" && (x.groupRef === null || x.groupRef.leader.id === x.id));
 
         const len = units.length;
 

@@ -1,17 +1,19 @@
 import { Actor, Engine, vec, Vector } from "excalibur";
 import { Resources } from "./resources";
 import { Unit } from "./unit";
+import { Direction, Faction } from "./constants";
 
 export class Bullet extends Actor {
     direction: Vector;
+    faction: Faction;
     speed = 300;
     liveTime = 3000;
     allUnits: Unit[] = [];
     hitDistance = 5;
-    damage = 1;
+    damage: number;
     isEnemyBullet: boolean;
 
-    constructor(startPosition: Vector, direction: Vector, isEnemyBullet: boolean, allUnits: Unit[]) {
+    constructor(startPosition: Vector, direction: Vector, isEnemyBullet: boolean, allUnits: Unit[], faction: Faction, damage: number) {
         super({
             name: 'Bullet',
             pos: startPosition,
@@ -22,6 +24,8 @@ export class Bullet extends Actor {
         this.allUnits = allUnits
         this.direction = direction
         this.isEnemyBullet = isEnemyBullet
+        this.faction = faction
+        this.damage = damage
     }
 
     override onInitialize() {
@@ -36,13 +40,11 @@ export class Bullet extends Actor {
         this.liveTime -= elapsedMs;
 
         const hitTarget = this.allUnits.find(x => {
-            return this.isEnemyBullet
-                ? !x.isEnemy && x.globalPos.distance(this.globalPos) <= this.hitDistance
-                : x.isEnemy && x.globalPos.distance(this.globalPos) <= this.hitDistance
+            return x.globalPos.distance(this.globalPos) <= this.hitDistance && x.config.faction !== this.faction
         })
         if (hitTarget !== undefined) {
             console.log("Dealt damage")
-            hitTarget.takeDamage(this.damage)
+            hitTarget.takeDamage(this.damage, this.direction.x > 0 ? Direction.Right : Direction.Left)
             this.kill()
         }
 

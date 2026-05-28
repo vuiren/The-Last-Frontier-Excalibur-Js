@@ -1,36 +1,51 @@
 import { Vector, Engine } from "excalibur";
-import { Faction, Lane } from "./constants";
+import { Direction, Lane } from "./constants";
 import { Unit } from "./unit";
+import { UnitConfig } from "./unitConfigs";
 
 export class EnemyUnit extends Unit {
-    patrolPoints: Vector[] = [];
-    currentPatrolIndex = 0;
-    aggroRange = 400;
-
-    constructor(startPosition: Vector, allUnits: Unit[], lane: Lane, health: number) {
-        // enemies don't need click handlers, so pass no-ops
-        super(startPosition, allUnits, Faction.Enemy, lane, health);
+    constructor(startPosition: Vector, config: UnitConfig, allUnits: Unit[], lane: Lane) {
+        super(startPosition, config, allUnits, lane);
     }
 
-    override onPreUpdate(engine: Engine, elapsedMs: number): void {
-        this.handleAI();
-        super.onPreUpdate(engine, elapsedMs); // still runs movement, shooting, etc.
-    }
+    /**
+     * Enemy AI: attack > chase > move to destination > idle.
+     * Priority is clear from top to bottom — easy to read, easy to debug.
+     */
+    protected override updateBehavior(elapsedMs: number): void {
+        const enemy = this.findClosestEnemy();
 
-    private handleAI(): void {
-        if (this.nearby.length > 0) {
-            // already handled by base class shooting logic
+        if (enemy && this.isInAttackRange(enemy)) {
+            this.vel.setTo(0, 0);
+            this.lookDirection = enemy.pos.x < this.pos.x ? Direction.Left : Direction.Right;
+
+            if (this.attackCooldown <= 0) {
+                this.performAttack(enemy);
+                this.attackCooldown = this.config.attackCooldown;
+            }
             return;
         }
-        this.patrol();
+
+        if (enemy) {
+            this.moveTowardEnemy(enemy);
+            return;
+        }
+
+        this.moveTowardDestination();
     }
 
-    private patrol(): void {
-        if (this.patrolPoints.length === 0) return;
-        const target = this.patrolPoints[this.currentPatrolIndex];
-        if (this.pos.distance(target) < 10) {
-            this.currentPatrolIndex = (this.currentPatrolIndex + 1) % this.patrolPoints.length;
-        }
-        this.moveTo(target, false);
+    override takeDamage(damage: number, hitDirection: Direction): void {
+        super.takeDamage(damage, hitDirection);
+
+        if (this.isDead) return;
+
+        const { hitReactChance } = this.config;
+        if (hitReactChance && Math.random() > hitReactChance) return;
+
+        const knockback = hitDirection === Direction.Right
+            ? this.pos.sub(new Vector(50, 0))
+            : this.pos.add(new Vector(50, 0));
+
+        this.moveTo(knockback);
     }
 }
