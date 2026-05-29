@@ -14,7 +14,7 @@ const game = new Engine({
   },
 });
 
-game.start('start', { // name of the start scene 'start'
+await game.start('start', { // name of the start scene 'start'
   loader, // Optional loader (but needed for loading images/sounds)
   inTransition: new FadeInOut({ // Optional in transition
     duration: 1000,

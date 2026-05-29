@@ -1,5 +1,5 @@
 import { Vector, Engine, PointerButton, Color, vec } from "excalibur";
-import { Lane } from "./constants";
+import { Direction, Lane } from "./constants";
 import { Group } from "./group";
 import { spawnUnitMoveMarker } from "./spawnFunctions";
 import { Unit, UnitActivity } from "./unit";
@@ -13,6 +13,7 @@ export class PlayerUnit extends Unit {
     private onRightClick: (unit: Unit) => void;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
+    private closestEnemy: Unit | null = null;
 
     constructor(
         startPosition: Vector,
@@ -39,10 +40,10 @@ export class PlayerUnit extends Unit {
     }
 
     protected override selectActivity(): UnitActivity {
-        const enemy = this.findClosestEnemy();
+        this.closestEnemy = this.findClosestEnemy();
         const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
 
-        if (enemy) this.hasSightedEnemy = true;
+        if (this.closestEnemy) this.hasSightedEnemy = true;
 
         // Arriving clears the move order
         if (!isOutOfDistanceFromDestination) {
@@ -52,7 +53,7 @@ export class PlayerUnit extends Unit {
         switch (this.activity) {
             case "moving":
                 // Only block attack if player explicitly ordered this move
-                if (!this.hasActiveOrder && enemy && this.isInAttackRange(enemy)) {
+                if (!this.hasActiveOrder && this.closestEnemy && this.isInAttackRange(this.closestEnemy)) {
                     return "attacking";
                 }
                 if (isOutOfDistanceFromDestination) return "moving";
@@ -60,32 +61,21 @@ export class PlayerUnit extends Unit {
 
             case "attacking":
                 if (isOutOfDistanceFromDestination) return "moving";
-                if (enemy && this.isInAttackRange(enemy)) return "attacking";
+                if (this.closestEnemy && this.isInAttackRange(this.closestEnemy)) return "attacking";
                 return "idle";
         }
 
         // First sighting — stop and engage
-        if (enemy && this.isInAttackRange(enemy)) return "attacking";
+        if (this.closestEnemy && this.isInAttackRange(this.closestEnemy)) return "attacking";
         if (isOutOfDistanceFromDestination) return "moving";
         return "idle";
     }
 
-    // Players move on command only — no auto-chasing.
-    protected override updateBehavior(_elapsedMs: number): void {
-        const previousActivity = this.activity;
-        this.activity = this.selectActivity();
-
-        if (this.activity !== previousActivity) {
-            this.onEnterActivity(this.activity, previousActivity);
-        }
-
-        this.onUpdateActivity(this.activity);
-    }
-
-    protected onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
+    protected override onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
         switch (activity) {
             case "attacking":
                 this.orderedDestination = this.pos;
+                this.lookDirection = this.closestEnemy!.pos.x < this.pos.x ? Direction.Left : Direction.Right;
                 if (!this.moveMarker.isDragging) {
                     this.moveMarker.pos = this.pos;
                 }
@@ -93,7 +83,7 @@ export class PlayerUnit extends Unit {
         }
     }
 
-    protected onUpdateActivity(activity: UnitActivity): void {
+    protected override onUpdateActivity(activity: UnitActivity): void {
         const enemy = this.findClosestEnemy();
 
         switch (activity) {
@@ -132,7 +122,7 @@ export class PlayerUnit extends Unit {
 
     select() {
         this.isSelected = true;
-        this.sprite.tint = Color.Red;
+        this.setTint(Color.Red);
 
         if (this.groupRef && this.groupRef.leader.id === this.id) {
             this.groupRef.members.forEach(member => {
@@ -145,7 +135,8 @@ export class PlayerUnit extends Unit {
 
     deselect() {
         this.isSelected = false;
-        this.sprite.tint = Color.White;
+        this.setTint(Color.White);
+
         if (this.groupRef && this.groupRef.leader.id === this.id) {
             this.groupRef.members.forEach(member => {
                 if (member.id !== this.id && member instanceof PlayerUnit) {
@@ -167,7 +158,7 @@ export class PlayerUnit extends Unit {
 
     hideMoveMarker() {
         if (this.moveMarker) {
-            this.moveMarker.sprite.scale = vec(0.01, 0.01);
+            this.moveMarker.scale = vec(0.01, 0.01);
             this.moveMarker.pointer.useGraphicsBounds = false;
             this.moveMarker.isHidden = true;
         }
@@ -175,7 +166,7 @@ export class PlayerUnit extends Unit {
 
     showMoveMarker() {
         if (this.moveMarker) {
-            this.moveMarker.sprite.scale = vec(0.6, 0.6);
+            this.moveMarker.scale = vec(0.6, 0.6);
             this.moveMarker.pointer.useGraphicsBounds = true;
             this.moveMarker.isHidden = false;
         }

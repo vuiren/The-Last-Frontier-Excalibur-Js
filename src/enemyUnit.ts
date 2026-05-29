@@ -1,6 +1,6 @@
 import { Vector, Engine } from "excalibur";
 import { Direction, Lane } from "./constants";
-import { Unit } from "./unit";
+import { Unit, UnitActivity } from "./unit";
 import { UnitConfig } from "./unitConfigs";
 
 export class EnemyUnit extends Unit {
@@ -8,30 +8,47 @@ export class EnemyUnit extends Unit {
         super(startPosition, config, allUnits, lane);
     }
 
-    /**
-     * Enemy AI: attack > chase > move to destination > idle.
-     * Priority is clear from top to bottom — easy to read, easy to debug.
-     */
-    protected override updateBehavior(elapsedMs: number): void {
+    protected override selectActivity(): UnitActivity {
+        const enemy = this.findClosestEnemy();
+        const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
+
+        // Attack takes priority over everything
+        if (enemy && this.isInAttackRange(enemy)) return "attacking";
+
+        // Chase enemy if visible but not yet in range
+        if (enemy) return "moving";
+
+        // Fall back to ordered destination
+        if (isOutOfDistanceFromDestination) return "moving";
+
+        return "idle";
+    }
+
+    protected override onUpdateActivity(activity: UnitActivity): void {
         const enemy = this.findClosestEnemy();
 
-        if (enemy && this.isInAttackRange(enemy)) {
-            this.vel.setTo(0, 0);
-            this.lookDirection = enemy.pos.x < this.pos.x ? Direction.Left : Direction.Right;
-
-            if (this.attackCooldown <= 0) {
-                this.performAttack(enemy);
-                this.attackCooldown = this.config.attackCooldown;
-            }
-            return;
+        switch (activity) {
+            case "attacking":
+                this.vel = Vector.Zero;
+                if (enemy) {
+                    if (this.attackCooldown <= 0) {
+                        this.performAttack(enemy);
+                        this.attackCooldown = this.config.attackCooldown;
+                    }
+                }
+                break;
+            case "moving":
+                // Chase enemy if present, otherwise head to destination
+                if (enemy) {
+                    this.moveTowardEnemy(enemy);
+                } else {
+                    this.moveTowardDestination();
+                }
+                break;
+            case "idle":
+                this.vel = Vector.Zero;
+                break;
         }
-
-        if (enemy) {
-            this.moveTowardEnemy(enemy);
-            return;
-        }
-
-        this.moveTowardDestination();
     }
 
     override takeDamage(damage: number, hitDirection: Direction): void {

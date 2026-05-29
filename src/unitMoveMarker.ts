@@ -1,23 +1,20 @@
-import { Actor, Engine, Sprite, Vector, PointerEvent, vec, PointerButton } from "excalibur";
+import { Actor, Engine, Animation, Vector, PointerEvent, vec, PointerButton, Color } from "excalibur";
 import { Unit } from "./unit";
 import { Resources } from "./resources";
 import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
 import { PlayerUnit } from "./playerUnit";
+import { AnimComponent } from "./animComponent";
 
 export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = []
     assignedUnit: PlayerUnit
-    sprite!: Sprite;
     isDragging: boolean = false;
     isHidden: boolean = false;
     private dragOffset: Vector = Vector.Zero;
-
-    getYLevel() {
-        return this.assignedUnit.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel
-    }
+    private animComponent = new AnimComponent(Resources.FlagMarker);
 
     constructor(startPosition: Vector, assignedUnit: PlayerUnit) {
-        super({ name: 'Unit', pos: startPosition, width: 100, height: 100 });
+        super({ name: 'Unit', pos: startPosition, width: 9, height: 24, z: -1 });
         this.assignedUnit = assignedUnit
 
         this.assignedUnit.on("beganAttacking", e => {
@@ -30,24 +27,26 @@ export class UnitMoveMarker extends Actor {
     }
 
     override onInitialize(engine: Engine): void {
-        this.scale = vec(0.6, 0.6)
-
-        this.sprite = Resources.Sword.toSprite();
-        this.graphics.use(this.sprite);
+        this.scale = vec(4, 4);
+        this.animComponent.play('Idle', this.graphics);
 
         this.on('pointerenter', (evt: PointerEvent) => {
             if (this.isHidden) return;
-            evt.cancel();
 
+            this.pos = vec(this.pos.x, this.getYLevel()).add(vec(0, -10));
+            this.setTint(Color.Red)
             this.assignedUnit.select()
         })
 
         this.on('pointerleave', (evt: PointerEvent) => {
             if (this.isHidden) return;
-            evt.cancel();
 
-            if (!this.isDragging)
+            if (!this.isDragging) {
+                this.pos = vec(this.pos.x, this.getYLevel());
+
                 this.assignedUnit.deselect()
+                this.clearTint()
+            }
         })
 
         this.on('pointerdown', (evt: PointerEvent) => {
@@ -56,7 +55,6 @@ export class UnitMoveMarker extends Actor {
             if (evt.button === PointerButton.Right) {
                 return
             }
-            evt.cancel();
 
             this.isDragging = true;
             this.assignedUnit.select()
@@ -74,14 +72,27 @@ export class UnitMoveMarker extends Actor {
             }
         })
 
-        this.on('pointerup', (evt: PointerEvent) => {
-            if (this.isHidden) return;
-            evt.cancel();
+        engine.input.pointers.primary.on('up', (evt) => {
+            if (!this.isDragging) return;
 
             this.isDragging = false;
-            this.pos.y = this.getYLevel()
-            this.assignedUnit.moveTo(vec(this.pos.x, this.getYLevel()))
-            this.assignedUnit.deselect()
+            const targetPos = vec(this.pos.x, this.getYLevel());
+            this.pos = targetPos;
+            this.assignedUnit.moveTo(targetPos);
+            this.assignedUnit.deselect();
+            this.clearTint();
         });
+    }
+
+    setTint(color: Color): void {
+        this.animComponent.setTint(color);
+    }
+
+    clearTint(): void {
+        this.animComponent.setTint(Color.White);
+    }
+
+    getYLevel() {
+        return this.assignedUnit.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel
     }
 }

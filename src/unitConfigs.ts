@@ -1,4 +1,6 @@
+import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 import { AttackType, Faction } from "./constants";
+import { Resources } from "./resources";
 
 export interface UnitConfig {
     health: number;
@@ -10,6 +12,7 @@ export interface UnitConfig {
     attackType: AttackType;
     attackDamage: number;
     hitReactChance?: number; // 0 to 1, chance to react to being hit by moving towards the hit direction
+    graphicSource: AsepriteResource;
 }
 
 export const UnitConfigs = {
@@ -21,6 +24,7 @@ export const UnitConfigs = {
         attackType: AttackType.Ranged,
         faction: Faction.Player,
         attackDamage: 10,
+        graphicSource: Resources.SoldierUnit,
     },
 
     enemyZombie: {
@@ -33,6 +37,7 @@ export const UnitConfigs = {
         faction: Faction.Enemy,
         hitReactChance: 0.5,
         attackDamage: 5,
+        graphicSource: Resources.SoldierZombie,
     },
 
 } satisfies Record<string, UnitConfig>;

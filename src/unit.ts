@@ -1,10 +1,11 @@
-import { Actor, Vector, Sprite, vec, Engine, Debug, Color } from "excalibur";
+import { Actor, Vector, Animation, vec, Engine, Debug, Color, GraphicsComponent } from "excalibur";
 import { Bullet } from "./bullet";
 import { Lane, FrontGroundYLevel, BackGroundYLevel, Direction, AttackType } from "./constants";
 import { Group } from "./group";
 import { HealthBar } from "./healthBar";
 import { Resources } from "./resources";
 import { UnitConfig } from "./unitConfigs";
+import { AnimComponent } from "./animComponent";
 
 export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
 
@@ -21,23 +22,28 @@ export class Unit extends Actor {
     activity: UnitActivity = "idle";
     previousActivity: UnitActivity = "idle";
 
-    protected sprite!: Sprite;
     private healthBar: HealthBar;
+    private animComponent;
 
     constructor(startPosition: Vector, config: UnitConfig, allUnits: Unit[], startLane = Lane.Front) {
-        super({ name: 'Unit', pos: startPosition, width: 100, height: 100 });
+        super({ name: 'Unit', pos: startPosition, width: 16, height: 16 });
         this.config = config;
         this.allUnits = allUnits;
         this.orderedDestination = startPosition;
         this.lane = startLane;
         this.health = config.health;
         this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
+        this.scale = vec(4, 4);
+        this.animComponent = new AnimComponent(config.graphicSource);
     }
 
     override onInitialize(engine: Engine): void {
-        this.sprite = Resources.Sword.toSprite();
-        this.graphics.use(this.sprite);
         engine.currentScene.add(this.healthBar);
+        this.playAnimation("Idle");
+    }
+
+    protected playAnimation(name: string): void {
+        this.animComponent.play(name, this.graphics);
     }
 
     override onPreUpdate(_engine: Engine, elapsedMs: number): void {
@@ -47,20 +53,46 @@ export class Unit extends Actor {
         this.previousActivity = this.activity;
         this.updateBehavior(elapsedMs);
 
-        this.sprite.flipHorizontal = this.lookDirection === Direction.Left;
+        this.animComponent.flipHorizontal(this.lookDirection === Direction.Left);
         this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 28);
     }
 
-    /**
-     * Override in subclasses to define unit-specific AI or player logic.
-     * Default behavior: move toward orderedDestination.
-     */
     protected updateBehavior(_elapsedMs: number): void {
+        const previousActivity = this.activity;
+        this.activity = this.selectActivity();
 
+        if (this.activity !== previousActivity) {
+            this.onEnterActivity(this.activity, previousActivity);
+            this.playAnimation(this.GetActivityAnimation(this.activity));
+        }
+
+        this.onUpdateActivity(this.activity);
+
+    }
+
+    protected onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
+    }
+
+    protected onUpdateActivity(activity: UnitActivity): void {
     }
 
     protected selectActivity(): UnitActivity {
         return "idle";
+    }
+
+    protected GetActivityAnimation(activity: UnitActivity): string {
+        switch (activity) {
+            case "idle":
+                return "Idle";
+            case "moving":
+                return "Walking";
+            case "attacking":
+                return "Shooting";
+            case "movingAndAttacking":
+                return "RunNShoot";
+        }
+
+        return "Idle";
     }
 
     // ------------------------------------------------------------------ //
@@ -86,7 +118,6 @@ export class Unit extends Actor {
         const toEnemy = enemy.pos.sub(this.pos);
         const range = this.config.attackRange ?? this.config.detectionRange;
 
-        // Stop just inside attack range to avoid jitter at the edge.
         const stopAt = toEnemy.magnitude - range * 0.85;
         if (stopAt <= 0) {
             this.vel = Vector.Zero;
@@ -138,6 +169,14 @@ export class Unit extends Actor {
         }
     }
 
+    setTint(color: Color): void {
+        this.animComponent.setTint(color);
+    }
+
+    clearTint(): void {
+        this.animComponent.clearTint();
+    }
+
     // ------------------------------------------------------------------ //
     //  Misc                                                                //
     // ------------------------------------------------------------------ //
@@ -166,7 +205,6 @@ export class Unit extends Actor {
         const range = this.config.attackRange ?? this.config.detectionRange;
         Debug.drawCircle(this.pos, this.config.detectionRange, { color: Color.Transparent, strokeColor: Color.Green, width: 1 });
         Debug.drawCircle(this.pos, range, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
-
         Debug.drawText(this.activity, this.pos.add(vec(0, -50)));
     }
 }
