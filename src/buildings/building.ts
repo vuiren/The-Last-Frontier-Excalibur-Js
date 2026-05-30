@@ -1,5 +1,5 @@
 import { Actor, ActorArgs, vec } from "excalibur";
-import { Direction, Faction } from "../constants";
+import { Direction, Faction, Lane } from "../constants";
 import { HealthBar } from "../healthBar";
 import { ICombatant } from "../combatant";
 import { Group } from "../group";
@@ -12,13 +12,18 @@ export class Building extends Actor implements ICombatant {
     faction: Faction;
     activity: UnitActivity = "idle";
     groupRef: Group | null = null;
+    lane: Lane;
 
-    constructor(faction: Faction, health: number, config?: ActorArgs) {
+    constructor(faction: Faction, health: number, lane: Lane, config?: ActorArgs) {
         super(config);
 
         this.faction = faction;
         this.health = health;
+        this.lane = lane;
         this.healthBar = new HealthBar(vec(0, 0), 50, 6, 100);
+    }
+    changeLane(): void {
+        throw new Error("Method not implemented.");
     }
 
     takeDamage(damage: number, hitDirection: Direction): void {

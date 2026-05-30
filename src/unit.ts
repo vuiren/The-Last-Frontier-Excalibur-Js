@@ -141,11 +141,16 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         let closest: ICombatant | null = null;
         let closestDist = this.config.detectionRange;
 
-        for (const other of this.allCombatants) {
-            if (!this.isHostile(other) || other.isDead) continue;
-            const d = other.globalPos.distance(this.pos);
-            if (d < closestDist) { closestDist = d; closest = other; }
+        for (const c of this.allCombatants) {
+            if (!this.isHostile(c) || c.isDead || c.lane !== this.lane) continue;
+
+            const d = c.globalPos.distance(this.pos);
+            if (d < closestDist) {
+                closest = c;
+                closestDist = d;
+            }
         }
+
         return closest;
     }
 
