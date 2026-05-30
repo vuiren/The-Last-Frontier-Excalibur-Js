@@ -4,8 +4,10 @@ import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
 import { Faction, FrontGroundYLevel, Lane } from "./constants";
 import { UnitsManager } from "./unitsManager";
-import { PlayerUnit } from "./playerUnit";
 import { ICombatant, IGroupable } from "./combatant";
+import { BuildingsManager } from "./buildingsManager";
+import { PlayerUnit } from "./units/playerUnit";
+import { Bridge } from "./buildings/bridge";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
@@ -13,6 +15,7 @@ export class MyLevel extends Scene {
     allSpawners: Spawner[] = [];
 
     unitsManager: UnitsManager;
+    buildingsManager: BuildingsManager;
     groupsManager: GroupsManager = new GroupsManager();
     selectedUnit: ICombatant | null = null;
     playerGroup: Group | null = null;
@@ -20,14 +23,23 @@ export class MyLevel extends Scene {
     constructor() {
         super();
         this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables);
+        this.buildingsManager = new BuildingsManager(this.allCombatants);
     }
 
     override onInitialize(engine: Engine): void {
 
         this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Front)
+        this.unitsManager.spawnEnemyUnit(this, vec(700, FrontGroundYLevel), "enemyZombie", Lane.Front)
+        this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Back)
+
+        this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Front)
+        this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Back)
+
+        const bridge = new Bridge(vec(300, 420))
+        this.add(bridge);
 
         engine.input.pointers.primary.on('down', e => this.onMouseDown(e))
     }

@@ -6,6 +6,8 @@ export const Resources = {
   SoldierUnit: new AsepriteResource('./units/Soldier.json'),
   SoldierZombie: new AsepriteResource('./units/SoldierZombie.json'),
   FlagMarker: new AsepriteResource('./units/FlagMarker.json'),
+  PlayerBase: new AsepriteResource('./buildings/Casarm 2.json'),
+  Bridge: new AsepriteResource('./buildings/Bridge.json'),
 } as const;
 
 export const loader = new Loader();

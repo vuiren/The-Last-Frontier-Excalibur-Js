@@ -1,9 +1,9 @@
 import { Scene, Vector } from "excalibur";
 import { Spawner } from "./spawner";
-import { Unit } from "./unit";
 import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitsManager } from "./unitsManager";
-import { PlayerUnit } from "./playerUnit";
+import { PlayerUnit } from "./units/playerUnit";
+import { Unit } from "./units/unit";
 
 export function spawnSpawner(scene: Scene, allSpawners: Spawner[], allUnits: Unit[], pos: Vector, unitsManager: UnitsManager) {
     const spawner = new Spawner(pos, allUnits, unitsManager);

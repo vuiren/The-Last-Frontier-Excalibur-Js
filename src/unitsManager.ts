@@ -1,11 +1,11 @@
 import { Scene, Vector } from "excalibur";
-import { Unit } from "./unit";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
-import { EnemyUnit } from "./enemyUnit";
-import { PlayerUnit } from "./playerUnit";
+import { EnemyUnit } from "./units/enemyUnit";
 import { UnitConfigs, UnitConfigKey } from "./unitConfigs";
 import { Lane } from "./constants";
 import { ICombatant, IGroupable } from "./combatant";
+import { PlayerUnit } from "./units/playerUnit";
+import { Unit } from "./units/unit";
 
 export class UnitsManager {
     allCombatants: ICombatant[] = [];

@@ -18,7 +18,7 @@ export interface UnitConfig {
 export const UnitConfigs = {
     playerSoldier: {
         health: 50,
-        speed: 250,
+        speed: 200,
         detectionRange: 250,
         attackCooldown: 500,
         attackType: AttackType.Ranged,

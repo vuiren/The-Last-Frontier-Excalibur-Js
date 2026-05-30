@@ -1,8 +1,8 @@
 import { Actor, Engine, Vector } from "excalibur";
 import { Resources } from "./resources";
-import { Unit } from "./unit";
 import { UnitsManager } from "./unitsManager";
 import { Lane } from "./constants";
+import { Unit } from "./units/unit";
 
 export class Spawner extends Actor {
     spawnDelay = 5000;
@@ -30,7 +30,7 @@ export class Spawner extends Actor {
         this.remainingSpawnDelay -= elapsedMs;
         if (this.remainingSpawnDelay <= 0) {
             this.remainingSpawnDelay = this.spawnDelay;
-            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos, Lane.Front)
+            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos, "enemyZombie", Lane.Front)
         }
     }
 

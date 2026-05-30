@@ -1,9 +1,9 @@
-import { Actor, Engine, Animation, Vector, PointerEvent, vec, PointerButton, Color } from "excalibur";
-import { Unit } from "./unit";
+import { Actor, Engine, Vector, PointerEvent, vec, PointerButton, Color } from "excalibur";
 import { Resources } from "./resources";
 import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
-import { PlayerUnit } from "./playerUnit";
 import { AnimComponent } from "./animComponent";
+import { PlayerUnit } from "./units/playerUnit";
+import { Unit } from "./units/unit";
 
 export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = []
@@ -14,7 +14,7 @@ export class UnitMoveMarker extends Actor {
     private animComponent = new AnimComponent(Resources.FlagMarker);
 
     constructor(startPosition: Vector, assignedUnit: PlayerUnit) {
-        super({ name: 'Unit', pos: startPosition, width: 9, height: 24, z: -1 });
+        super({ name: 'Unit', pos: startPosition, width: 9, height: 24, z: -1, anchor: vec(0.5, 1) });
         this.assignedUnit = assignedUnit
 
         this.assignedUnit.on("beganAttacking", e => {
@@ -24,10 +24,16 @@ export class UnitMoveMarker extends Actor {
         this.assignedUnit.on("died", e => {
             this.kill()
         })
+
+        if (this.assignedUnit.lane === Lane.Back) {
+            this.scale = vec(3, 3);
+        }
+        else {
+            this.scale = vec(5, 5);
+        }
     }
 
     override onInitialize(engine: Engine): void {
-        this.scale = vec(4, 4);
         this.animComponent.play('Idle', this.graphics);
 
         this.on('pointerenter', (evt: PointerEvent) => {

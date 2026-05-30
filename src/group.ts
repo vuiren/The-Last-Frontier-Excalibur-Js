@@ -1,5 +1,5 @@
 import { vec } from "excalibur";
-import { Direction } from "./constants";
+import { HorizontalDirection } from "./constants";
 import { IGroupable } from "./combatant";
 
 const FORMATION_OFFSETS: number[] = [
@@ -43,7 +43,7 @@ export class Group {
     update(): void {
         this.followers.forEach((follower, i) => {
             let offset = FORMATION_OFFSETS[i] ?? vec((i + 1) * 60, 60);
-            offset *= this.leader.lookDirection === Direction.Right ? -1 : 1
+            offset *= this.leader.lookDirection === HorizontalDirection.Right ? -1 : 1
             const target = this.leader.globalPos.add(vec(offset, 0))
             const distance = follower.globalPos.distance(this.leader.globalPos)
             if (distance > 80 || this.forceSpread)

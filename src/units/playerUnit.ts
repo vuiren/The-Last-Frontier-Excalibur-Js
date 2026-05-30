@@ -1,11 +1,12 @@
 import { Vector, Engine, PointerButton, Color, vec } from "excalibur";
-import { Direction, Lane } from "./constants";
-import { Group } from "./group";
-import { spawnUnitMoveMarker } from "./spawnFunctions";
+import { IGroupable, ICombatant } from "../combatant";
+import { HorizontalDirection, Lane } from "../constants";
+import { Group } from "../group";
+import { spawnUnitMoveMarker } from "../spawnFunctions";
+import { UnitConfig } from "../unitConfigs";
+import { UnitMoveMarker } from "../unitMoveMarker";
 import { Unit, UnitActivity } from "./unit";
-import { UnitMoveMarker } from "./unitMoveMarker";
-import { UnitConfig } from "./unitConfigs";
-import { ICombatant, IGroupable } from "./combatant";
+
 
 export class PlayerUnit extends Unit {
     isSelected = false;
@@ -76,7 +77,7 @@ export class PlayerUnit extends Unit {
         switch (activity) {
             case "attacking":
                 this.orderedDestination = this.globalPos;
-                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x ? Direction.Left : Direction.Right;
+                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x ? HorizontalDirection.Left : HorizontalDirection.Right;
                 if (!this.moveMarker.isDragging) {
                     this.moveMarker.pos = this.pos;
                 }

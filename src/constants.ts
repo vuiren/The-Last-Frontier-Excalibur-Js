@@ -1,4 +1,6 @@
-export const FrontGroundYLevel = 400
+import { vec, Vector } from "excalibur";
+
+export const FrontGroundYLevel = 450
 export const BackGroundYLevel = 200
 
 export enum Lane {
@@ -6,7 +8,7 @@ export enum Lane {
     Back,
 }
 
-export enum Direction {
+export enum HorizontalDirection {
     Left,
     Right
 }
@@ -19,4 +21,12 @@ export enum Faction {
 export enum AttackType {
     Melee,
     Ranged
+}
+
+export function GetYLevel(lane: Lane): number {
+    return lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel;
+}
+
+export function GetScaleByLane(lane: Lane): Vector {
+    return lane === Lane.Front ? vec(4, 4) : vec(2, 2);
 }

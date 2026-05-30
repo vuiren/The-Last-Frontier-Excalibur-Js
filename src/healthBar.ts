@@ -50,7 +50,7 @@ export class HealthBar extends ex.Actor {
     const group = new ex.GraphicsGroup({
       useAnchor: false, // required in v0.26+ so bounds don't shift
       members: [
-        { graphic: bg,   offset: ex.vec(0, 0) },
+        { graphic: bg, offset: ex.vec(0, 0) },
         { graphic: fill, offset: ex.vec(0, 0) },
       ],
     });

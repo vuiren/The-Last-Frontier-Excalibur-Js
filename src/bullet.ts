@@ -1,6 +1,6 @@
-import { Actor, Engine, vec, Vector } from "excalibur";
+import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
 import { Resources } from "./resources";
-import { Direction, Faction, Lane } from "./constants";
+import { HorizontalDirection, Faction, Lane } from "./constants";
 import { ICombatant } from "./combatant";
 
 export class Bullet extends Actor {
@@ -18,8 +18,11 @@ export class Bullet extends Actor {
         super({
             name: 'Bullet',
             pos: startPosition,
-            width: 100,
-            height: 100,
+            width: 8,
+            height: 4,
+            color: Color.Yellow,
+            collisionType: CollisionType.Passive,
+            z: 2
         });
 
         this.lane = lane;
@@ -27,11 +30,8 @@ export class Bullet extends Actor {
         this.direction = direction;
         this.faction = faction
         this.damage = damage
-    }
 
-    override onInitialize() {
-        this.graphics.add(Resources.Sword.toSprite());
-        this.scale = vec(0.5, 0.5)
+        this.scale = vec(0.75, 0.75)
     }
 
     override onPreUpdate(engine: Engine, elapsedMs: number): void {
@@ -49,7 +49,7 @@ export class Bullet extends Actor {
 
         if (hitTarget !== undefined) {
             console.log("Dealt damage")
-            hitTarget.takeDamage(this.damage, this.direction.x > 0 ? Direction.Right : Direction.Left)
+            hitTarget.takeDamage(this.damage, this.direction.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left)
             this.kill()
         }
 

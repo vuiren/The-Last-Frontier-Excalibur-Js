@@ -1,11 +1,11 @@
 import { Vector } from "excalibur";
-import { Direction, Lane } from "./constants";
+import { HorizontalDirection, Lane } from "../constants";
 import { Unit, UnitActivity } from "./unit";
-import { UnitConfig } from "./unitConfigs";
-import { ICombatant } from "./combatant";
+import { UnitConfig } from "../unitConfigs";
+import { ICombatant } from "../combatant";
 
 export class EnemyUnit extends Unit {
-    wanderTimer: number = 1000; // Time in ms to spend wandering before picking a new random destination
+    wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination
     currentAggression: number = 0;
     aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
     detectedEnemy: ICombatant | null = null;
@@ -52,6 +52,7 @@ export class EnemyUnit extends Unit {
                 }
                 break;
             case "idle":
+                if(this.groupRef !== null && this.groupRef.leader !== this) return; // Only lead unit should pick random destination while idle
                 if (this.timeInCurrentActivity > this.wanderTimer) {
                     // Pick a new random destination within a certain radius
                     const randomDirection = Math.random() <= 0.5 ? Vector.Left : Vector.Right;
@@ -60,12 +61,19 @@ export class EnemyUnit extends Unit {
                     this.moveTo(newDestination);
                 }
 
+                break;
+        }
+    }
+
+    override onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
+        switch (activity) {
+            case "idle":
                 this.vel = Vector.Zero;
                 break;
         }
     }
 
-    override takeDamage(damage: number, hitDirection: Direction): void {
+    override takeDamage(damage: number, hitDirection: HorizontalDirection): void {
         super.takeDamage(damage, hitDirection);
 
         if (this.isDead) return;
@@ -75,7 +83,7 @@ export class EnemyUnit extends Unit {
         const { hitReactChance } = this.config;
         if (hitReactChance && Math.random() > hitReactChance) return;
 
-        const knockback = hitDirection === Direction.Right
+        const knockback = hitDirection === HorizontalDirection.Right
             ? this.pos.sub(new Vector(50, 0))
             : this.pos.add(new Vector(50, 0));
 
@@ -84,8 +92,8 @@ export class EnemyUnit extends Unit {
 
     increaseAggression(amount: number): void {
         this.currentAggression += amount;
-        if(this.currentAggression > this.aggressionThreshold) {
-          //  this.moveTo()
+        if (this.currentAggression > this.aggressionThreshold) {
+            //  this.moveTo()
         }
     }
 }

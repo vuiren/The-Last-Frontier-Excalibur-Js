@@ -1,4 +1,5 @@
 import { IGroupable } from "./combatant";
+import { Faction } from "./constants";
 
 export class UnitsCollisionManager {
     allGroupables: IGroupable[] = [];
@@ -26,16 +27,39 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        const units = this.allGroupables.filter(x => x.activity !== "moving" && (x.groupRef === null || x.groupRef.leader.id === x.id));
+        const units = this.allGroupables.filter(x => x.groupRef === null || x.groupRef.leader.id === x.id);
 
         const len = units.length;
 
         for (let i = 0; i < len - 1; i++) {
             for (let j = i + 1; j < len; j++) {
-                if (units[i].globalPos.distance(units[j].globalPos) <= this.groupCreationThreshold) {
-                    this.collidingPairs.push(units[i], units[j]);
-                    this.collidingUnits.get(units[i])!.push(units[j]);
+                const unitA = units[i];
+                const unitB = units[j];
+
+                if (unitA.lane !== unitB.lane) continue;
+
+                if(unitA.groupRef !== null && unitB.groupRef !== null) {
+                    console.log("Group leaders are colliding")
                 }
+
+                if (unitA.faction === Faction.Player && unitB.faction === Faction.Player) {
+                    if (unitA.activity === "moving" || unitB.activity === "moving") continue;
+
+                    if (unitA.globalPos.distance(unitB.globalPos) <= this.groupCreationThreshold) {
+                        this.collidingPairs.push(unitA, unitB);
+                        this.collidingUnits.get(unitA)!.push(unitB);
+                    }
+                }
+
+                if (unitA.faction === Faction.Enemy && unitB.faction === Faction.Enemy) {
+
+                    if (unitA.globalPos.distance(unitB.globalPos) <= this.groupCreationThreshold) {
+                        console.log("Enemies are colliding")
+                        this.collidingPairs.push(unitA, unitB);
+                        this.collidingUnits.get(unitA)!.push(unitB);
+                    }
+                }
+
             }
         }
     }

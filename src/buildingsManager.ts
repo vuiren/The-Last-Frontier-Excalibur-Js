@@ -1,7 +1,7 @@
 import { Scene, Vector } from "excalibur";
 import { ICombatant } from "./combatant";
-import { Building } from "./buildings/building";
-import { Faction } from "./constants";
+import { Faction, Lane } from "./constants";
+import { PlayerBase } from "./buildings/playerBase";
 
 export class BuildingsManager {
     allBuildings: ICombatant[] = [];
@@ -9,13 +9,17 @@ export class BuildingsManager {
     onBuildingAdded?: (building: ICombatant) => void;
     onBuildingRemoved?: (building: ICombatant) => void;
 
-    spawnBuilding(scene: Scene, faction: Faction, pos: Vector): Building {
-        const building = new Building(faction, 25, {pos: pos, width: 50, height: 50});
-        this.allBuildings.push(building);
-        building.on('died', () => this.removeBuilding(building));
-        this.onBuildingAdded?.(building);
-        scene.add(building);
-        return building;
+    constructor(allBuildings: ICombatant[]) {
+        this.allBuildings = allBuildings;
+    }
+
+    spawnPlayerBase(scene: Scene, pos: Vector, faction: Faction, lane: Lane): PlayerBase {
+        const playerBase = new PlayerBase(pos, faction, 100, lane);
+        this.allBuildings.push(playerBase);
+        playerBase.on('died', () => this.removeBuilding(playerBase));
+        this.onBuildingAdded?.(playerBase);
+        scene.add(playerBase);
+        return playerBase;
     }
 
     removeBuilding(building: ICombatant) {

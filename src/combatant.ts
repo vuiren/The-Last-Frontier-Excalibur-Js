@@ -1,7 +1,7 @@
 import { Vector } from "excalibur";
-import { Direction, Faction, Lane } from "./constants";
+import { HorizontalDirection, Faction, Lane } from "./constants";
 import { Group } from "./group";
-import { UnitActivity } from "./unit";
+import { UnitActivity } from "./units/unit";
 
 export interface ICombatant {
     health: number;
@@ -9,14 +9,14 @@ export interface ICombatant {
     faction: Faction;
     globalPos: Vector;
     lane: Lane;
-    takeDamage(damage: number, hitDirection: Direction): void;
+    takeDamage(damage: number, hitDirection: HorizontalDirection): void;
     changeLane(): void;
 }
 
 export interface IGroupable extends ICombatant {
     id: number;
     activity: UnitActivity;
-    lookDirection: Direction;
+    lookDirection: HorizontalDirection;
     groupRef: Group | null;
     moveTo(destination: Vector): void;
     joinGroup(group: Group): void;

@@ -1,4 +1,4 @@
-import { Unit } from "./unit";
+import { Unit } from "./units/unit";
 import { UnitsManager } from "./unitsManager";
 
 export class EnemiesManager{

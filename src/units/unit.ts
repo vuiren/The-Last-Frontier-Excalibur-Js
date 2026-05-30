@@ -1,11 +1,11 @@
 import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
-import { Bullet } from "./bullet";
-import { Lane, FrontGroundYLevel, BackGroundYLevel, Direction, AttackType, Faction } from "./constants";
-import { Group } from "./group";
-import { HealthBar } from "./healthBar";
-import { UnitConfig } from "./unitConfigs";
-import { AnimComponent } from "./animComponent";
-import { ICombatant, IGroupable } from "./combatant";
+import { AnimComponent } from "../animComponent";
+import { Bullet } from "../bullet";
+import { ICombatant, IGroupable } from "../combatant";
+import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane } from "../constants";
+import { Group } from "../group";
+import { HealthBar } from "../healthBar";
+import { UnitConfig } from "../unitConfigs";
 
 export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
 
@@ -14,7 +14,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     health: number;
     lane: Lane;
     groupRef: Group | null = null;
-    lookDirection: Direction = Direction.Right;
+    lookDirection: HorizontalDirection = HorizontalDirection.Right;
     config: UnitConfig;
     orderedDestination: Vector;
     attackCooldown: number = 0;
@@ -28,7 +28,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     private animComponent;
 
     constructor(startPosition: Vector, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
-        super({ name: 'Unit', pos: startPosition, width: 16, height: 16 });
+        startPosition = vec(startPosition.x, GetYLevel(startLane));
+        super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1) });
         this.config = config;
         this.allCombatants = allCombatants;
         this.orderedDestination = startPosition;
@@ -36,8 +37,9 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.health = config.health;
         this.faction = config.faction;
         this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
-        this.scale = vec(4, 4);
+        this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
+        this.healthBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
     }
 
     override onInitialize(engine: Engine): void {
@@ -56,8 +58,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.previousActivity = this.activity;
         this.updateBehavior(elapsedMs);
 
-        this.animComponent.flipHorizontal(this.lookDirection === Direction.Left);
-        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 40);
+        this.animComponent.flipHorizontal(this.lookDirection === HorizontalDirection.Left);
+        this.healthBar.pos = vec(this.pos.x - 25, this.lane === Lane.Front ? this.pos.y - 80 : this.pos.y - 50);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -115,8 +117,9 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             this.vel = Vector.Zero;
             return;
         }
-        this.vel = this.orderedDestination.sub(this.pos).normalize().scale(this.config.speed);
-        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
+        const laneCoef = this.lane === Lane.Front ? 1 : 0.75;
+        this.vel = this.orderedDestination.sub(this.pos).normalize().scale(this.config.speed * laneCoef);
+        this.lookDirection = this.vel.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left;
     }
 
     protected moveTowardEnemy(enemy: ICombatant): void {
@@ -129,8 +132,9 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             return;
         }
 
-        this.vel = toEnemy.normalize().scale(this.config.speed);
-        this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
+        const laneCoef = this.lane === Lane.Front ? 1 : 0.75;
+        this.vel = toEnemy.normalize().scale(this.config.speed * laneCoef);
+        this.lookDirection = this.vel.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left;
     }
 
     // ------------------------------------------------------------------ //
@@ -164,11 +168,11 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
             const dir = target.globalPos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos, dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
+            this.scene?.add(new Bullet(this.pos.add(vec(10, -40)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
         }
     }
 
-    takeDamage(damage: number, hitDirection: Direction): void {
+    takeDamage(damage: number, hitDirection: HorizontalDirection): void {
         if (this.isDead) return;
         this.health -= damage;
         this.healthBar.setHealth(this.health);
@@ -195,13 +199,10 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         return other.faction !== this.faction;
     }
 
-    getYLevel(): number {
-        return this.lane === Lane.Front ? FrontGroundYLevel : BackGroundYLevel;
-    }
 
     changeLane(): void {
         this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
-        this.pos = vec(this.pos.x, this.getYLevel());
+        this.pos = vec(this.pos.x, GetYLevel(this.lane));
     }
 
     joinGroup(group: Group): void { this.groupRef = group; }
