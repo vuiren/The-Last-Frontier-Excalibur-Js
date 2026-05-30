@@ -1,23 +1,29 @@
-import { Vector, Engine } from "excalibur";
+import { Vector } from "excalibur";
 import { Direction, Lane } from "./constants";
 import { Unit, UnitActivity } from "./unit";
 import { UnitConfig } from "./unitConfigs";
+import { ICombatant } from "./combatant";
 
 export class EnemyUnit extends Unit {
-    constructor(startPosition: Vector, config: UnitConfig, allUnits: Unit[], lane: Lane) {
+    wanderTimer: number = 1000; // Time in ms to spend wandering before picking a new random destination
+    currentAggression: number = 0;
+    aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
+    detectedEnemy: ICombatant | null = null;
+
+    constructor(startPosition: Vector, config: UnitConfig, allUnits: ICombatant[], lane: Lane) {
         super(startPosition, config, allUnits, lane);
     }
 
     protected override selectActivity(): UnitActivity {
-        const enemy = this.findClosestEnemy();
-        const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
+        this.detectedEnemy = this.findClosestEnemy();
 
         // Attack takes priority over everything
-        if (enemy && this.isInAttackRange(enemy)) return "attacking";
+        if (this.detectedEnemy && this.isInAttackRange(this.detectedEnemy)) return "attacking";
 
         // Chase enemy if visible but not yet in range
-        if (enemy) return "moving";
+        if (this.detectedEnemy) return "chasing";
 
+        const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
         // Fall back to ordered destination
         if (isOutOfDistanceFromDestination) return "moving";
 
@@ -25,7 +31,7 @@ export class EnemyUnit extends Unit {
     }
 
     protected override onUpdateActivity(activity: UnitActivity): void {
-        const enemy = this.findClosestEnemy();
+        const enemy = this.detectedEnemy;
 
         switch (activity) {
             case "attacking":
@@ -38,14 +44,22 @@ export class EnemyUnit extends Unit {
                 }
                 break;
             case "moving":
-                // Chase enemy if present, otherwise head to destination
+                this.moveTowardDestination();
+                break;
+            case "chasing":
                 if (enemy) {
                     this.moveTowardEnemy(enemy);
-                } else {
-                    this.moveTowardDestination();
                 }
                 break;
             case "idle":
+                if (this.timeInCurrentActivity > this.wanderTimer) {
+                    // Pick a new random destination within a certain radius
+                    const randomDirection = Math.random() <= 0.5 ? Vector.Left : Vector.Right;
+                    const randomDistance = 50 + Math.random() * 50;
+                    const newDestination = this.pos.add(randomDirection.scale(randomDistance));
+                    this.moveTo(newDestination);
+                }
+
                 this.vel = Vector.Zero;
                 break;
         }
@@ -56,6 +70,8 @@ export class EnemyUnit extends Unit {
 
         if (this.isDead) return;
 
+        this.increaseAggression(damage);
+
         const { hitReactChance } = this.config;
         if (hitReactChance && Math.random() > hitReactChance) return;
 
@@ -64,5 +80,12 @@ export class EnemyUnit extends Unit {
             : this.pos.add(new Vector(50, 0));
 
         this.moveTo(knockback);
+    }
+
+    increaseAggression(amount: number): void {
+        this.currentAggression += amount;
+        if(this.currentAggression > this.aggressionThreshold) {
+          //  this.moveTo()
+        }
     }
 }

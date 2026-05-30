@@ -1,21 +1,21 @@
-import { Vector, vec } from "excalibur";
-import { Unit } from "./unit";
+import { vec } from "excalibur";
 import { Direction } from "./constants";
+import { IGroupable } from "./combatant";
 
 const FORMATION_OFFSETS: number[] = [
     35, 70, 105
 ];
 
 export class Group {
-    leader: Unit;
-    followers: Unit[] = [];
+    leader: IGroupable;
+    followers: IGroupable[] = [];
     forceSpread: true | null = null
 
-    constructor(leader: Unit) {
+    constructor(leader: IGroupable) {
         this.leader = leader;
     }
 
-    get members(): Unit[] {
+    get members(): IGroupable[] {
         return [this.leader, ...this.followers];
     }
 
@@ -23,12 +23,12 @@ export class Group {
         return this.followers.length === 0;
     }
 
-    add(unit: Unit): void {
+    add(unit: IGroupable): void {
         if (unit === this.leader || this.followers.includes(unit)) return;
         this.followers.push(unit);
     }
 
-    remove(unit: Unit): void {
+    remove(unit: IGroupable): void {
         if (unit === this.leader) {
             // Promote first follower, or group naturally dissolves
             const next = this.followers.shift();
@@ -44,10 +44,10 @@ export class Group {
         this.followers.forEach((follower, i) => {
             let offset = FORMATION_OFFSETS[i] ?? vec((i + 1) * 60, 60);
             offset *= this.leader.lookDirection === Direction.Right ? -1 : 1
-            const target = this.leader.pos.add(vec(offset, 0))
-            const distance = follower.pos.distance(this.leader.pos)
+            const target = this.leader.globalPos.add(vec(offset, 0))
+            const distance = follower.globalPos.distance(this.leader.globalPos)
             if (distance > 80 || this.forceSpread)
-                follower.moveTo(target, false)
+                follower.moveTo(target)
         });
 
         if (this.forceSpread !== null)

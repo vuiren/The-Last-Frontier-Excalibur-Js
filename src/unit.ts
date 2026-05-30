@@ -1,16 +1,16 @@
-import { Actor, Vector, Animation, vec, Engine, Debug, Color, GraphicsComponent } from "excalibur";
+import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
 import { Bullet } from "./bullet";
-import { Lane, FrontGroundYLevel, BackGroundYLevel, Direction, AttackType } from "./constants";
+import { Lane, FrontGroundYLevel, BackGroundYLevel, Direction, AttackType, Faction } from "./constants";
 import { Group } from "./group";
 import { HealthBar } from "./healthBar";
-import { Resources } from "./resources";
 import { UnitConfig } from "./unitConfigs";
 import { AnimComponent } from "./animComponent";
+import { ICombatant, IGroupable } from "./combatant";
 
 export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
 
-export class Unit extends Actor {
-    allUnits: Unit[];
+export class Unit extends Actor implements ICombatant, IGroupable {
+    allCombatants: ICombatant[] = [];
     health: number;
     lane: Lane;
     groupRef: Group | null = null;
@@ -21,17 +21,20 @@ export class Unit extends Actor {
     isDead: boolean = false;
     activity: UnitActivity = "idle";
     previousActivity: UnitActivity = "idle";
+    timeInCurrentActivity: number = 0;
+    faction: Faction;
 
     private healthBar: HealthBar;
     private animComponent;
 
-    constructor(startPosition: Vector, config: UnitConfig, allUnits: Unit[], startLane = Lane.Front) {
+    constructor(startPosition: Vector, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
         super({ name: 'Unit', pos: startPosition, width: 16, height: 16 });
         this.config = config;
-        this.allUnits = allUnits;
+        this.allCombatants = allCombatants;
         this.orderedDestination = startPosition;
         this.lane = startLane;
         this.health = config.health;
+        this.faction = config.faction;
         this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
         this.scale = vec(4, 4);
         this.animComponent = new AnimComponent(config.graphicSource);
@@ -54,7 +57,7 @@ export class Unit extends Actor {
         this.updateBehavior(elapsedMs);
 
         this.animComponent.flipHorizontal(this.lookDirection === Direction.Left);
-        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 28);
+        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y - 40);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -64,8 +67,10 @@ export class Unit extends Actor {
         if (this.activity !== previousActivity) {
             this.onEnterActivity(this.activity, previousActivity);
             this.playAnimation(this.GetActivityAnimation(this.activity));
+            this.timeInCurrentActivity = 0;
         }
 
+        this.timeInCurrentActivity += _elapsedMs;
         this.onUpdateActivity(this.activity);
 
     }
@@ -114,8 +119,8 @@ export class Unit extends Actor {
         this.lookDirection = this.vel.x > 0 ? Direction.Right : Direction.Left;
     }
 
-    protected moveTowardEnemy(enemy: Unit): void {
-        const toEnemy = enemy.pos.sub(this.pos);
+    protected moveTowardEnemy(enemy: ICombatant): void {
+        const toEnemy = enemy.globalPos.sub(this.pos);
         const range = this.config.attackRange ?? this.config.detectionRange;
 
         const stopAt = toEnemy.magnitude - range * 0.85;
@@ -132,29 +137,29 @@ export class Unit extends Actor {
     //  Combat helpers                                                      //
     // ------------------------------------------------------------------ //
 
-    protected findClosestEnemy(): Unit | null {
-        let closest: Unit | null = null;
+    protected findClosestEnemy(): ICombatant | null {
+        let closest: ICombatant | null = null;
         let closestDist = this.config.detectionRange;
 
-        for (const other of this.allUnits) {
+        for (const other of this.allCombatants) {
             if (!this.isHostile(other) || other.isDead) continue;
-            const d = other.pos.distance(this.pos);
+            const d = other.globalPos.distance(this.pos);
             if (d < closestDist) { closestDist = d; closest = other; }
         }
         return closest;
     }
 
-    protected isInAttackRange(target: Unit): boolean {
+    protected isInAttackRange(target: ICombatant): boolean {
         const range = this.config.attackRange ?? this.config.detectionRange;
-        return target.pos.distance(this.pos) < range;
+        return target.globalPos.distance(this.pos) < range;
     }
 
-    performAttack(target: Unit): void {
+    performAttack(target: ICombatant): void {
         if (this.config.attackType === AttackType.Melee) {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
-            const dir = target.pos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos, dir, false, this.allUnits, this.config.faction, this.config.attackDamage));
+            const dir = target.globalPos.sub(this.pos).normalize();
+            this.scene?.add(new Bullet(this.pos, dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
         }
     }
 
@@ -181,8 +186,8 @@ export class Unit extends Actor {
     //  Misc                                                                //
     // ------------------------------------------------------------------ //
 
-    isHostile(other: Unit): boolean {
-        return other.config.faction !== this.config.faction;
+    isHostile(other: ICombatant): boolean {
+        return other.faction !== this.faction;
     }
 
     getYLevel(): number {

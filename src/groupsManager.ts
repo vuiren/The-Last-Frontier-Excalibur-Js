@@ -1,10 +1,10 @@
+import { IGroupable } from "./combatant";
 import { Group } from "./group";
-import { Unit } from "./unit";
 
 export class GroupsManager {
     private groups: Group[] = [];
 
-    createGroup(leader: Unit): Group {
+    createGroup(leader: IGroupable): Group {
         this.removeFromAnyGroup(leader);
         const group = new Group(leader);
         this.groups.push(group);
@@ -15,7 +15,7 @@ export class GroupsManager {
         return group;
     }
 
-    addToGroup(unit: Unit, group: Group): void {
+    addToGroup(unit: IGroupable, group: Group): void {
         this.removeFromAnyGroup(unit);
         group.add(unit);
         unit.joinGroup(group)
@@ -26,7 +26,7 @@ export class GroupsManager {
         }))
     }
 
-    removeFromAnyGroup(unit: Unit): void {
+    removeFromAnyGroup(unit: IGroupable): void {
         const group = this.groupOf(unit);
         if (!group) return;
 
@@ -42,7 +42,7 @@ export class GroupsManager {
         }
     }
 
-    groupOf(unit: Unit): Group | undefined {
+    groupOf(unit: IGroupable): Group | undefined {
         return this.groups.find(g => g.members.includes(unit));
     }
 

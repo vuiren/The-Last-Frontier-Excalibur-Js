@@ -1,31 +1,21 @@
-import { Unit } from "./unit";
+import { IGroupable } from "./combatant";
 
 export class UnitsCollisionManager {
-    allUnits: Unit[] = [];
+    allGroupables: IGroupable[] = [];
     groupCreationThreshold = 20;
 
     // Pre-allocated to worst case: n*(n-1)/2 pairs * 2
-    collidingPairs: Unit[];
-    collidingUnits: Map<Unit, Unit[]> = new Map();
+    collidingPairs: IGroupable[];
+    collidingUnits: Map<IGroupable, IGroupable[]> = new Map();
 
-    constructor(allUnits: Unit[]) {
-        this.allUnits = allUnits;
+    constructor(allCombatants: IGroupable[]) {
+        this.allGroupables = allCombatants;
         this.collidingPairs = new Array(200); // way more than enough
         this.collidingPairs.length = 0;
 
-        for (const unit of allUnits) {
+        for (const unit of allCombatants) {
             this.collidingUnits.set(unit, []);
         }
-    }
-
-    addUnit(unit: Unit) {
-        this.allUnits.push(unit);
-        this.collidingUnits.set(unit, []);
-    }
-
-    removeUnit(unit: Unit) {
-        this.allUnits.splice(this.allUnits.indexOf(unit), 1);
-        this.collidingUnits.delete(unit);
     }
 
     checkCollisions() {
@@ -36,13 +26,13 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        const units = this.allUnits.filter(x => x.activity !== "moving" && (x.groupRef === null || x.groupRef.leader.id === x.id));
+        const units = this.allGroupables.filter(x => x.activity !== "moving" && (x.groupRef === null || x.groupRef.leader.id === x.id));
 
         const len = units.length;
 
         for (let i = 0; i < len - 1; i++) {
             for (let j = i + 1; j < len; j++) {
-                if (units[i].pos.distance(units[j].pos) <= this.groupCreationThreshold) {
+                if (units[i].globalPos.distance(units[j].globalPos) <= this.groupCreationThreshold) {
                     this.collidingPairs.push(units[i], units[j]);
                     this.collidingUnits.get(units[i])!.push(units[j]);
                 }

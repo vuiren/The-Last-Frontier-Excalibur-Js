@@ -5,25 +5,26 @@ import { spawnUnitMoveMarker } from "./spawnFunctions";
 import { Unit, UnitActivity } from "./unit";
 import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitConfig } from "./unitConfigs";
+import { ICombatant, IGroupable } from "./combatant";
 
 export class PlayerUnit extends Unit {
     isSelected = false;
     moveMarker!: UnitMoveMarker;
-    private onClick: (unit: Unit) => void;
-    private onRightClick: (unit: Unit) => void;
+    private onClick: (unit: IGroupable) => void;
+    private onRightClick: (unit: IGroupable) => void;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
-    private closestEnemy: Unit | null = null;
+    private closestEnemy: ICombatant | null = null;
 
     constructor(
         startPosition: Vector,
-        allUnits: Unit[],
+        allCombatants: ICombatant[],
         config: UnitConfig,
-        onClick: (unit: Unit) => void,
-        onRightClick: (unit: Unit) => void,
+        onClick: (unit: IGroupable) => void,
+        onRightClick: (unit: IGroupable) => void,
         startLane = Lane.Front,
     ) {
-        super(startPosition, config, allUnits, startLane);
+        super(startPosition, config, allCombatants, startLane);
         this.onClick = onClick;
         this.onRightClick = onRightClick;
     }
@@ -36,12 +37,12 @@ export class PlayerUnit extends Unit {
             if (evt.button === PointerButton.Left) this.onClick(this);
             else if (evt.button === PointerButton.Right) this.onRightClick(this);
         });
-        this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.pos);
+        this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.globalPos);
     }
 
     protected override selectActivity(): UnitActivity {
         this.closestEnemy = this.findClosestEnemy();
-        const isOutOfDistanceFromDestination = this.pos.distance(this.orderedDestination) > 5;
+        const isOutOfDistanceFromDestination = this.globalPos.distance(this.orderedDestination) > 5;
 
         if (this.closestEnemy) this.hasSightedEnemy = true;
 
@@ -74,8 +75,8 @@ export class PlayerUnit extends Unit {
     protected override onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
         switch (activity) {
             case "attacking":
-                this.orderedDestination = this.pos;
-                this.lookDirection = this.closestEnemy!.pos.x < this.pos.x ? Direction.Left : Direction.Right;
+                this.orderedDestination = this.globalPos;
+                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x ? Direction.Left : Direction.Right;
                 if (!this.moveMarker.isDragging) {
                     this.moveMarker.pos = this.pos;
                 }
@@ -104,7 +105,7 @@ export class PlayerUnit extends Unit {
         }
     }
 
-    private tryPerformAttack(enemy: Unit): void {
+    private tryPerformAttack(enemy: ICombatant): void {
         if (this.attackCooldown <= 0) {
             this.performAttack(enemy);
             this.attackCooldown = this.config.attackCooldown;

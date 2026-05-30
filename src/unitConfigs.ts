@@ -29,7 +29,7 @@ export const UnitConfigs = {
 
     enemyZombie: {
         health: 250,
-        speed: 200,
+        speed: 100,
         attackRange: 50,
         detectionRange: 200,
         attackCooldown: 700,
