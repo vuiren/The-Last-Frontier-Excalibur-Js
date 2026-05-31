@@ -2,7 +2,7 @@ import { IGroupable } from "./combatant";
 import { Group } from "./group";
 
 export class GroupsManager {
-    private groups: Group[] = [];
+    groups: Group[] = [];
 
     createGroup(leader: IGroupable): Group {
         this.removeFromAnyGroup(leader);

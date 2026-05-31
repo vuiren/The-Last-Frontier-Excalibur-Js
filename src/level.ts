@@ -8,6 +8,7 @@ import { ICombatant, IGroupable } from "./combatant";
 import { BuildingsManager } from "./buildingsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { Bridge } from "./buildings/bridge";
+import { drawDottedLine } from "./drawDottedLine";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
@@ -19,6 +20,9 @@ export class MyLevel extends Scene {
     groupsManager: GroupsManager = new GroupsManager();
     selectedUnit: ICombatant | null = null;
     playerGroup: Group | null = null;
+    private dashOffset = 0;
+    private dashLen = 6;
+    private gapLen = 4;
 
     constructor() {
         super();
@@ -29,6 +33,8 @@ export class MyLevel extends Scene {
     override onInitialize(engine: Engine): void {
 
         this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(250, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(150, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Front)
@@ -71,6 +77,21 @@ export class MyLevel extends Scene {
         });
 
         this.groupsManager.update()
+    }
+
+    onPostUpdate(engine: ex.Engine, delta: number) {
+        this.dashOffset = (this.dashOffset + delta * 0.04) % (this.dashLen + this.gapLen);
+    }
+
+    onPreDraw(ctx: ex.ExcaliburGraphicsContext) {
+        for (const group of this.groupsManager.groups) {
+            for (let i = 0; i < group.members.length - 1; i++) {
+                const fromScreen = this.engine.worldToScreenCoordinates(group.members[i].globalPos);
+                const toScreen = this.engine.worldToScreenCoordinates(group.members[i + 1].globalPos);
+
+                drawDottedLine(ctx, this.dashOffset, fromScreen, toScreen, undefined, this.dashLen, this.gapLen);
+            }
+        }
     }
 
     onMouseDown(e: PointerEvent) {
