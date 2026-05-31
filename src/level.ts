@@ -26,7 +26,7 @@ export class MyLevel extends Scene {
 
     constructor() {
         super();
-        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables);
+        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
         this.buildingsManager = new BuildingsManager(this.allCombatants);
     }
 
@@ -35,13 +35,17 @@ export class MyLevel extends Scene {
         this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnPlayerUnit(this, vec(250, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnPlayerUnit(this, vec(150, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
+        this.unitsManager.spawnPlayerUnit(this, vec(100, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
         this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back, this.unitSelection, this.unitRightClick)
+
         this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(700, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Back)
 
         this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Front)
+        this.buildingsManager.spawnBarricade(this, vec(200, FrontGroundYLevel), Faction.Player, Lane.Front)
+
         this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Back)
 
         const bridge = new Bridge(vec(300, 420))
@@ -52,31 +56,32 @@ export class MyLevel extends Scene {
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
         const collisionsManager = this.unitsManager.collisionManager;
-        collisionsManager.checkCollisions()
+        collisionsManager.checkCollisions();
         const processedUnits: Set<ICombatant> = new Set();
+
         collisionsManager.collidingUnits.forEach((collidingWith, unit) => {
-            if (collidingWith.length == 0) return
+            if (collidingWith.length === 0) return;
             if (processedUnits.has(unit)) return;
 
-            let group: Group | undefined = undefined
-            if (unit.groupRef !== null) {
-                group = unit.groupRef
-            } else {
-                group = this.groupsManager.createGroup(unit)
-            }
-            collidingWith.forEach(x => {
-                if (x.groupRef !== null) return;
-                processedUnits.add(x)
-                if (group !== undefined) {
-                    this.groupsManager.addToGroup(x, group)
-                    console.log(x + " added to group " + group)
+            collidingWith.forEach(other => {
+                // Both are group leaders — merge
+                if (unit.groupRef !== null && other.groupRef !== null) {
+                    collisionsManager.mergeGroups(unit.groupRef, other.groupRef, this.groupsManager);
+                    return;
                 }
-            })
-            console.log(`${unit.id} colliding with ${collidingWith.map(u => u.id).join(', ')}`);
 
+                if (processedUnits.has(other)) return;
+                processedUnits.add(other);
+
+                const group = unit.groupRef ?? this.groupsManager.createGroup(unit);
+                this.groupsManager.addToGroup(other, group);
+                console.log(`${other.id} added to group ${group}`);
+            });
+
+            console.log(`${unit.id} colliding with ${collidingWith.map(u => u.id).join(', ')}`);
         });
 
-        this.groupsManager.update()
+        this.groupsManager.update();
     }
 
     onPostUpdate(engine: ex.Engine, delta: number) {
@@ -114,9 +119,6 @@ export class MyLevel extends Scene {
     }
 
     unitRightClick(unit: ICombatant) {
-        if (unit.lane === Lane.Front)
-            unit.changeLane()
-        else
-            unit.changeLane()
+        unit.changeLane()
     }
 }

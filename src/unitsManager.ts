@@ -6,6 +6,7 @@ import { Lane } from "./constants";
 import { ICombatant, IGroupable } from "./combatant";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
+import { GroupsManager } from "./groupsManager";
 
 export class UnitsManager {
     allCombatants: ICombatant[] = [];
@@ -15,10 +16,10 @@ export class UnitsManager {
     onUnitAdded?: (unit: IGroupable) => void;
     onUnitRemoved?: (unit: IGroupable) => void;
 
-    constructor(allCombatants: ICombatant[], allGroupables: IGroupable[]) {
+    constructor(allCombatants: ICombatant[], allGroupables: IGroupable[], groupsManager: GroupsManager) {
         this.allCombatants = allCombatants;
         this.allGroupables = allGroupables;
-        this.collisionManager = new UnitsCollisionManager(this.allGroupables);
+        this.collisionManager = new UnitsCollisionManager(this.allGroupables, groupsManager);
     }
 
     spawnPlayerUnit(

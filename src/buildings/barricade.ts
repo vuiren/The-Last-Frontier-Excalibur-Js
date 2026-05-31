@@ -1,12 +1,12 @@
 import { vec, Vector } from "excalibur";
 import { Faction, Lane, GetYLevel, GetScaleByLane } from "../constants";
-import { Resources } from "../resources";
 import { Building } from "./building";
+import { Resources } from "../resources";
 
-export class PlayerBase extends Building {
+export class Barricade extends Building {
     constructor(startPosition: Vector, faction: Faction, health: number, lane: Lane) {
         startPosition = vec(startPosition.x, GetYLevel(lane));
-        super({ name: 'PlayerBase', pos: startPosition, width: 48, height: 32, z: -2, anchor: vec(0.5, 1) }, Resources.PlayerBase, faction, health, lane);
+        super({ name: 'Barricade', pos: startPosition, width: 16, height: 16, z: 1, anchor: vec(0.5, 1) }, Resources.Barricade, faction, health, lane);
         this.scale = GetScaleByLane(lane);
     }
 }

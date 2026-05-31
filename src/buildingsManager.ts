@@ -2,6 +2,7 @@ import { Scene, Vector } from "excalibur";
 import { ICombatant } from "./combatant";
 import { Faction, Lane } from "./constants";
 import { PlayerBase } from "./buildings/playerBase";
+import { Barricade } from "./buildings/barricade";
 
 export class BuildingsManager {
     allBuildings: ICombatant[] = [];
@@ -20,6 +21,15 @@ export class BuildingsManager {
         this.onBuildingAdded?.(playerBase);
         scene.add(playerBase);
         return playerBase;
+    }
+
+    spawnBarricade(scene: Scene, pos: Vector, faction: Faction, lane: Lane): Barricade {
+        const barricade = new Barricade(pos, faction, 100, lane);
+        this.allBuildings.push(barricade);
+        barricade.on('died', () => this.removeBuilding(barricade));
+        this.onBuildingAdded?.(barricade);
+        scene.add(barricade);
+        return barricade;
     }
 
     removeBuilding(building: ICombatant) {

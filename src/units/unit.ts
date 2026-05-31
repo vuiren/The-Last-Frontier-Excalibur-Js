@@ -9,6 +9,13 @@ import { UnitConfig } from "../unitConfigs";
 
 export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
 
+const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
+    idle: "Idle",
+    moving: "Walking",
+    attacking: "Shooting",
+    movingAndAttacking: "RunNShoot",
+};
+
 export class Unit extends Actor implements ICombatant, IGroupable {
     allCombatants: ICombatant[] = [];
     health: number;
@@ -36,11 +43,33 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.lane = startLane;
         this.health = config.health;
         this.faction = config.faction;
-        this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
         this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
-        this.healthBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
+
+        const isFront = startLane === Lane.Front;
+        this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
+        this.healthBar.scale = isFront ? vec(1, 1) : vec(0.75, 0.75);
     }
+
+    // ------------------------------------------------------------------ //
+    //  Getters                                                             //
+    // ------------------------------------------------------------------ //
+
+    protected get effectiveAttackRange(): number {
+        return this.config.attackRange ?? this.config.detectionRange;
+    }
+
+    private get laneSpeedCoef(): number {
+        return this.lane === Lane.Front ? 1 : 0.6;
+    }
+
+    private get healthBarYOffset(): number {
+        return this.lane === Lane.Front ? -80 : -50;
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Lifecycle                                                           //
+    // ------------------------------------------------------------------ //
 
     override onInitialize(engine: Engine): void {
         engine.currentScene.add(this.healthBar);
@@ -59,7 +88,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.updateBehavior(elapsedMs);
 
         this.animComponent.flipHorizontal(this.lookDirection === HorizontalDirection.Left);
-        this.healthBar.pos = vec(this.pos.x - 25, this.lane === Lane.Front ? this.pos.y - 80 : this.pos.y - 50);
+        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y + this.healthBarYOffset);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -74,32 +103,14 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
         this.timeInCurrentActivity += _elapsedMs;
         this.onUpdateActivity(this.activity);
-
     }
 
-    protected onEnterActivity(activity: UnitActivity, _from: UnitActivity): void {
-    }
-
-    protected onUpdateActivity(activity: UnitActivity): void {
-    }
-
-    protected selectActivity(): UnitActivity {
-        return "idle";
-    }
+    protected onEnterActivity(_activity: UnitActivity, _from: UnitActivity): void {}
+    protected onUpdateActivity(_activity: UnitActivity): void {}
+    protected selectActivity(): UnitActivity { return "idle"; }
 
     protected GetActivityAnimation(activity: UnitActivity): string {
-        switch (activity) {
-            case "idle":
-                return "Idle";
-            case "moving":
-                return "Walking";
-            case "attacking":
-                return "Shooting";
-            case "movingAndAttacking":
-                return "RunNShoot";
-        }
-
-        return "Idle";
+        return ACTIVITY_ANIMATION[activity] ?? "Idle";
     }
 
     // ------------------------------------------------------------------ //
@@ -117,23 +128,21 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             this.vel = Vector.Zero;
             return;
         }
-        const laneCoef = this.lane === Lane.Front ? 1 : 0.75;
-        this.vel = this.orderedDestination.sub(this.pos).normalize().scale(this.config.speed * laneCoef);
-        this.lookDirection = this.vel.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left;
+        this.setVelocityToward(this.orderedDestination.sub(this.pos));
     }
 
     protected moveTowardEnemy(enemy: ICombatant): void {
         const toEnemy = enemy.globalPos.sub(this.pos);
-        const range = this.config.attackRange ?? this.config.detectionRange;
-
-        const stopAt = toEnemy.magnitude - range * 0.85;
+        const stopAt = toEnemy.magnitude - this.effectiveAttackRange * 0.85;
         if (stopAt <= 0) {
             this.vel = Vector.Zero;
             return;
         }
+        this.setVelocityToward(toEnemy);
+    }
 
-        const laneCoef = this.lane === Lane.Front ? 1 : 0.75;
-        this.vel = toEnemy.normalize().scale(this.config.speed * laneCoef);
+    private setVelocityToward(direction: Vector): void {
+        this.vel = direction.normalize().scale(this.config.speed * this.laneSpeedCoef);
         this.lookDirection = this.vel.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left;
     }
 
@@ -159,8 +168,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     protected isInAttackRange(target: ICombatant): boolean {
-        const range = this.config.attackRange ?? this.config.detectionRange;
-        return target.globalPos.distance(this.pos) < range;
+        return target.globalPos.distance(this.pos) < this.effectiveAttackRange;
     }
 
     performAttack(target: ICombatant): void {
@@ -183,13 +191,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         }
     }
 
-    setTint(color: Color): void {
-        this.animComponent.setTint(color);
-    }
-
-    clearTint(): void {
-        this.animComponent.clearTint();
-    }
+    setTint(color: Color): void { this.animComponent.setTint(color); }
+    clearTint(): void { this.animComponent.clearTint(); }
 
     // ------------------------------------------------------------------ //
     //  Misc                                                                //
@@ -198,7 +201,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     isHostile(other: ICombatant): boolean {
         return other.faction !== this.faction;
     }
-
 
     changeLane(): void {
         this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
@@ -213,9 +215,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     override onPostUpdate(_engine: Engine, _elapsedMs: number): void {
-        const range = this.config.attackRange ?? this.config.detectionRange;
         Debug.drawCircle(this.pos, this.config.detectionRange, { color: Color.Transparent, strokeColor: Color.Green, width: 1 });
-        Debug.drawCircle(this.pos, range, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
+        Debug.drawCircle(this.pos, this.effectiveAttackRange, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
         Debug.drawText(this.activity, this.pos.add(vec(0, -50)));
     }
 }

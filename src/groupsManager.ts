@@ -18,8 +18,8 @@ export class GroupsManager {
     addToGroup(unit: IGroupable, group: Group): void {
         this.removeFromAnyGroup(unit);
         group.add(unit);
-        unit.joinGroup(group)
-        group.forceSpread = true
+        unit.joinGroup(group);
+        group.spreadNow(); // Force followers to spread immediately when a new member joins (prevents awkward stacking)
 
         unit.on("died", (x => {
             this.removeFromAnyGroup(unit)

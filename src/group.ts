@@ -2,14 +2,17 @@ import { vec } from "excalibur";
 import { HorizontalDirection } from "./constants";
 import { IGroupable } from "./combatant";
 
-const FORMATION_OFFSETS: number[] = [
-    35, 70, 105
-];
+const BASE_FORMATION_SPACING = 35;
+const FORMATION_SPREAD_THRESHOLD = 30; // Distance at which followers will start trying to catch up to the leader (prevents jitter when units are close but not perfectly aligned)  
+
+function getFormationOffset(index: number): number {
+    return BASE_FORMATION_SPACING * (index + 1);
+}
 
 export class Group {
     leader: IGroupable;
     followers: IGroupable[] = [];
-    forceSpread: true | null = null
+    private pendingSpread = false;
 
     constructor(leader: IGroupable) {
         this.leader = leader;
@@ -23,6 +26,10 @@ export class Group {
         return this.followers.length === 0;
     }
 
+    spreadNow(): void {
+        this.pendingSpread = true;
+    }
+
     add(unit: IGroupable): void {
         if (unit === this.leader || this.followers.includes(unit)) return;
         this.followers.push(unit);
@@ -30,7 +37,6 @@ export class Group {
 
     remove(unit: IGroupable): void {
         if (unit === this.leader) {
-            // Promote first follower, or group naturally dissolves
             const next = this.followers.shift();
             if (next) this.leader = next;
         } else {
@@ -41,16 +47,18 @@ export class Group {
 
     // Called each frame — sets follower destinations relative to the leader
     update(): void {
-        this.followers.forEach((follower, i) => {
-            let offset = FORMATION_OFFSETS[i] ?? vec((i + 1) * 60, 60);
-            offset *= this.leader.lookDirection === HorizontalDirection.Right ? -1 : 1
-            const target = this.leader.globalPos.add(vec(offset, 0))
-            const distance = follower.globalPos.distance(this.leader.globalPos)
-            if (distance > 80 || this.forceSpread)
-                follower.moveTo(target)
-        });
+        const facingSign = this.leader.lookDirection === HorizontalDirection.Right ? -1 : 1;
 
-        if (this.forceSpread !== null)
-            this.forceSpread = null
+        for (const [i, follower] of this.followers.entries()) {
+            const offsetX = getFormationOffset(i) * facingSign;
+            const target = this.leader.globalPos.add(vec(offsetX, 0));
+            const distance = follower.globalPos.distance(this.leader.globalPos);
+
+            if (distance > FORMATION_SPREAD_THRESHOLD || this.pendingSpread) {
+                follower.moveTo(target);
+            }
+        }
+
+        this.pendingSpread = false;
     }
 }

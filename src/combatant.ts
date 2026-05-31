@@ -18,6 +18,7 @@ export interface IGroupable extends ICombatant {
     activity: UnitActivity;
     lookDirection: HorizontalDirection;
     groupRef: Group | null;
+    orderedDestination: Vector;
     moveTo(destination: Vector): void;
     joinGroup(group: Group): void;
     leaveGroup(group?: Group): void;

@@ -8,6 +8,7 @@ export const Resources = {
   FlagMarker: new AsepriteResource('./units/FlagMarker.json'),
   PlayerBase: new AsepriteResource('./buildings/Casarm 2.json'),
   Bridge: new AsepriteResource('./buildings/Bridge.json'),
+  Barricade: new AsepriteResource('./buildings/NewBarricade.json'),
 } as const;
 
 export const loader = new Loader();

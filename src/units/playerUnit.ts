@@ -160,7 +160,7 @@ export class PlayerUnit extends Unit {
 
     hideMoveMarker() {
         if (this.moveMarker) {
-            this.moveMarker.scale = vec(0.01, 0.01);
+            this.moveMarker.graphics.isVisible = false;
             this.moveMarker.pointer.useGraphicsBounds = false;
             this.moveMarker.isHidden = true;
         }
@@ -168,7 +168,7 @@ export class PlayerUnit extends Unit {
 
     showMoveMarker() {
         if (this.moveMarker) {
-            this.moveMarker.scale = vec(0.6, 0.6);
+            this.moveMarker.graphics.isVisible = true;
             this.moveMarker.pointer.useGraphicsBounds = true;
             this.moveMarker.isHidden = false;
         }
