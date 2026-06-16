@@ -30,7 +30,6 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        // Only ungrouped units or group leaders are eligible (to allow group merging)
         const units = this.allGroupables.filter(
             x => x.groupRef === null || x.groupRef.leader.id === x.id
         );
@@ -48,17 +47,10 @@ export class UnitsCollisionManager {
                 const dist = unitA.globalPos.distance(unitB.globalPos);
                 if (dist > this.groupCreationThreshold) continue;
 
-                // Don't form groups while a player-faction unit is still moving
                 const eitherMoving = unitA.activity === "moving" || unitB.activity === "moving";
                 if (unitA.faction === Faction.Player && eitherMoving) continue;
 
-                // Both are group leaders — merge groups
-                if (unitA.groupRef !== null && unitB.groupRef !== null) {
-                    this.mergeGroups(unitA.groupRef, unitB.groupRef, this.groupsManager);
-                    continue;
-                }
-
-                // Register the collision on both sides
+                // Register all eligible pairs — callers decide what to do with them
                 this.collidingPairs.push(unitA, unitB);
                 this.collidingUnits.get(unitA)!.push(unitB);
                 this.collidingUnits.get(unitB)!.push(unitA);

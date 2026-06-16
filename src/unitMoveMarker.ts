@@ -109,20 +109,6 @@ export class UnitMoveMarker extends Actor {
         this.clearTint();
     }
 
-    private onPointerEnter(): void {
-        if (this.isHidden) return;
-
-        this.select();
-        this.assignedUnit.select();
-    }
-
-    private onPointerLeave(): void {
-        if (this.isHidden || this.isDragging) return;
-
-        this.deselect();
-        this.assignedUnit.deselect();
-    }
-
     private onPointerDown(evt: PointerEvent): void {
         if (this.isHidden || evt.button === PointerButton.Right) return;
 
@@ -151,7 +137,7 @@ export class UnitMoveMarker extends Actor {
         }
     }
 
-    private onPointerUp(_evt: unknown): void {
+    private onPointerUp(): void {
         if (!this.isDragging) return;
 
         this.isDragging = false;

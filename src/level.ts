@@ -1,4 +1,4 @@
-import { Engine, Scene, vec, PointerEvent, PointerButton } from "excalibur";
+import { Engine, Scene, vec } from "excalibur";
 import { Spawner } from "./spawner";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
@@ -53,41 +53,39 @@ export class MyLevel extends Scene {
         const bridge = new Bridge(vec(300, 420))
         this.add(bridge);
 
-        const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allCombatants, Lane.Front);
-        const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allCombatants, Lane.Back);
+        const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allGroupables, Lane.Front);
+        const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allGroupables, Lane.Back);
         this.add(changeLaneButtonFront);
         this.add(changeLaneButtonBack);
 
         const barricadeScraps = new BarricadeScraps(vec(-100, FrontGroundYLevel), this.allGroupables, this.buildingsManager, Lane.Front);
         this.add(barricadeScraps);
-
-        engine.input.pointers.primary.on('down', e => this.onMouseDown(e))
     }
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
         const collisionsManager = this.unitsManager.collisionManager;
         collisionsManager.checkCollisions();
-        const processedUnits: Set<ICombatant> = new Set();
+
+        const processedUnits = new Set<ICombatant>();
 
         collisionsManager.collidingUnits.forEach((collidingWith, unit) => {
-            if (collidingWith.length === 0) return;
-            if (processedUnits.has(unit)) return;
+            if (collidingWith.length === 0 || processedUnits.has(unit)) return;
 
             collidingWith.forEach(other => {
-                // Both are group leaders — merge
+                if (processedUnits.has(other)) return;
+
                 if (unit.groupRef !== null && other.groupRef !== null) {
                     collisionsManager.mergeGroups(unit.groupRef, other.groupRef, this.groupsManager);
-                    return;
+                } else {
+                    const group = unit.groupRef ?? this.groupsManager.createGroup(unit);
+                    this.groupsManager.addToGroup(other, group);
+                    console.log(`${other.id} added to group ${group}`);
                 }
 
-                if (processedUnits.has(other)) return;
                 processedUnits.add(other);
-
-                const group = unit.groupRef ?? this.groupsManager.createGroup(unit);
-                this.groupsManager.addToGroup(other, group);
-                console.log(`${other.id} added to group ${group}`);
             });
 
+            processedUnits.add(unit);
             console.log(`${unit.id} colliding with ${collidingWith.map(u => u.id).join(', ')}`);
         });
 
@@ -109,15 +107,6 @@ export class MyLevel extends Scene {
         }
     }
 
-    onMouseDown(e: PointerEvent) {
-        if (e.button === PointerButton.Right) {
-            const selected = this.allCombatants.filter(x => x.faction === Faction.Player && x instanceof PlayerUnit && x.isSelected)
-            selected.forEach(x => {
-                x.changeLane()
-            })
-        }
-    }
-
     unitSelection(unit: ICombatant) {
         if (!(unit instanceof PlayerUnit)) return
         unit.isSelected = !unit.isSelected;
@@ -129,6 +118,5 @@ export class MyLevel extends Scene {
     }
 
     unitRightClick(unit: ICombatant) {
-        unit.changeLane()
     }
 }
