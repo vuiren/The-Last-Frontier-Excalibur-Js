@@ -2,18 +2,19 @@ import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Bullet } from "../bullet";
 import { ICombatant, IGroupable } from "../combatant";
-import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane } from "../constants";
+import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane, GetHealthBarScaleByLane } from "../constants";
 import { Group } from "../group";
-import { HealthBar } from "../healthBar";
+import { ProgressBar } from "../progressBar";
 import { UnitConfig } from "../unitConfigs";
 
-export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking";
+export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
 
 const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     idle: "Idle",
     moving: "Walking",
     attacking: "Shooting",
     movingAndAttacking: "RunNShoot",
+    crossingBridge: "Walking",
 };
 
 export class Unit extends Actor implements ICombatant, IGroupable {
@@ -30,9 +31,10 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     previousActivity: UnitActivity = "idle";
     timeInCurrentActivity: number = 0;
     faction: Faction;
+    attackPriority: number = 0;
 
-    private healthBar: HealthBar;
-    private animComponent;
+    private healthBar: ProgressBar;
+    private animComponent: AnimComponent;
 
     constructor(startPosition: Vector, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
         startPosition = vec(startPosition.x, GetYLevel(startLane));
@@ -46,9 +48,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
 
-        const isFront = startLane === Lane.Front;
-        this.healthBar = new HealthBar(vec(0, 0), 50, 6, config.health);
-        this.healthBar.scale = isFront ? vec(1, 1) : vec(0.75, 0.75);
+        this.healthBar = new ProgressBar(vec(0, 0), 20, 6, config.health);
+        this.healthBar.scale = GetHealthBarScaleByLane(startLane);
     }
 
     // ------------------------------------------------------------------ //
@@ -83,12 +84,14 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     override onPreUpdate(_engine: Engine, elapsedMs: number): void {
         if (this.isDead) return;
 
+        this.scaleElementsByLane();
+
         this.attackCooldown -= elapsedMs;
         this.previousActivity = this.activity;
         this.updateBehavior(elapsedMs);
 
         this.animComponent.flipHorizontal(this.lookDirection === HorizontalDirection.Left);
-        this.healthBar.pos = vec(this.pos.x - 25, this.pos.y + this.healthBarYOffset);
+        this.healthBar.pos = vec(this.pos.x - 15, this.pos.y + this.healthBarYOffset);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -105,12 +108,29 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.onUpdateActivity(this.activity);
     }
 
-    protected onEnterActivity(_activity: UnitActivity, _from: UnitActivity): void {}
-    protected onUpdateActivity(_activity: UnitActivity): void {}
+    protected onEnterActivity(_activity: UnitActivity, _from: UnitActivity): void { }
+    protected onUpdateActivity(_activity: UnitActivity): void { }
     protected selectActivity(): UnitActivity { return "idle"; }
 
     protected GetActivityAnimation(activity: UnitActivity): string {
         return ACTIVITY_ANIMATION[activity] ?? "Idle";
+    }
+
+    protected scaleElementsByLane(): void {
+        const backY = GetYLevel(Lane.Back);
+        const frontY = GetYLevel(Lane.Front);
+        const currentY = this.pos.y;
+
+        let percent = 1;
+        if (this.lane === Lane.Back) {
+            percent = currentY / backY;
+            this.scale = GetScaleByLane(Lane.Back).scale(percent);
+            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Back).scale(percent);
+        } else {
+            percent = currentY / frontY;
+            this.scale = GetScaleByLane(Lane.Front).scale(percent);
+            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Front).scale(percent);
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -150,21 +170,38 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     //  Combat helpers                                                      //
     // ------------------------------------------------------------------ //
 
-    protected findClosestEnemy(): ICombatant | null {
-        let closest: ICombatant | null = null;
-        let closestDist = this.config.detectionRange;
+    protected findBestEnemy(): ICombatant | null {
+        let best: ICombatant | null = null;
+        let bestScore = -Infinity;
 
         for (const c of this.allCombatants) {
             if (!this.isHostile(c) || c.isDead || c.lane !== this.lane) continue;
 
             const d = c.globalPos.distance(this.pos);
-            if (d < closestDist) {
-                closest = c;
-                closestDist = d;
+            if (d > this.config.detectionRange) continue;
+
+            const score = this.scoreTarget(c, d);
+            if (score > bestScore) {
+                best = c;
+                bestScore = score;
             }
         }
 
-        return closest;
+        return best;
+    }
+
+    private scoreTarget(c: ICombatant, distance: number): number {
+        // Normalise distance to [0, 1] where 1 = right next to us
+        const proximityScore = 1 - (distance / this.config.detectionRange);
+
+        // attackPriority is already a plain number, use it as-is
+        const priorityScore = c.attackPriority;
+
+        // Tune these weights to taste
+        const PRIORITY_WEIGHT = 1.0;
+        const PROXIMITY_WEIGHT = 2.0;
+
+        return (priorityScore * PRIORITY_WEIGHT) + (proximityScore * PROXIMITY_WEIGHT);
     }
 
     protected isInAttackRange(target: ICombatant): boolean {
@@ -176,19 +213,25 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
             const dir = target.globalPos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos.add(vec(10, -40)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
+            this.scene?.add(new Bullet(this.pos.add(vec(10, this.lane === Lane.Front ? -40 : -20)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
         }
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {
         if (this.isDead) return;
         this.health -= damage;
-        this.healthBar.setHealth(this.health);
+        this.healthBar.setValue(this.health);
         if (this.health <= 0) {
             this.isDead = true;
-            this.healthBar.kill();
-            this.kill();
+            this.cleanUpOnDeath();
+            this.actions.fade(0, 500).callMethod(() => { this.kill(); });
+        } else {
+            this.actions.blink(100, 50, 1);
         }
+    }
+
+    cleanUpOnDeath(): void {
+        this.healthBar.kill()
     }
 
     setTint(color: Color): void { this.animComponent.setTint(color); }
@@ -198,17 +241,25 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     //  Misc                                                                //
     // ------------------------------------------------------------------ //
 
+
     isHostile(other: ICombatant): boolean {
         return other.faction !== this.faction;
     }
 
-    changeLane(): void {
+    changeLane(targetX: number): void {
         this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
-        this.pos = vec(this.pos.x, GetYLevel(this.lane));
+        this.orderedDestination = vec(targetX, GetYLevel(this.lane));
+
+        if (this.groupRef !== null && this.groupRef.leader.id === this.id) {
+            this.groupRef.followers.forEach(follower => follower.changeLane(targetX));
+        }
     }
 
     joinGroup(group: Group): void { this.groupRef = group; }
     leaveGroup(): void { this.groupRef = null; }
+
+    onRoleInGroupChanged(): void {
+    }
 
     override onPostKill(): void {
         this.emit('died', this);

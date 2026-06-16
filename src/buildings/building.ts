@@ -1,6 +1,6 @@
-import { Actor, ActorArgs, Engine, vec } from "excalibur";
+import { Actor, ActorArgs, Color, Engine, vec } from "excalibur";
 import { HorizontalDirection, Faction, Lane, GetScaleByLane } from "../constants";
-import { HealthBar } from "../healthBar";
+import { ProgressBar } from "../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
 import { UnitActivity } from "../units/unit";
@@ -10,11 +10,12 @@ import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 export class Building extends Actor implements ICombatant {
     health: number = 100;
     isDead: boolean = false;
-    private healthBar: HealthBar;
+    private healthBar: ProgressBar;
     faction: Faction;
     activity: UnitActivity = "idle";
     groupRef: Group | null = null;
     lane: Lane;
+    attackPriority: number = 1;
     private animComponent: AnimComponent;
 
 
@@ -23,7 +24,7 @@ export class Building extends Actor implements ICombatant {
         this.faction = faction;
         this.health = health;
         this.lane = lane;
-        this.healthBar = new HealthBar(vec(this.pos.x - 25, lane === Lane.Front ? this.pos.y - 150 : this.pos.y - 80), 50, 6, 100);
+        this.healthBar = new ProgressBar(vec(this.pos.x - 25, lane === Lane.Front ? this.pos.y - 150 : this.pos.y - 80), 50, 6, 100, Color.DarkGray);
         this.animComponent = new AnimComponent(asepriteResouce);
         this.scale = GetScaleByLane(lane);
         this.healthBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
@@ -45,7 +46,7 @@ export class Building extends Actor implements ICombatant {
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {
         if (this.isDead) return;
         this.health -= damage;
-        this.healthBar.setHealth(this.health);
+        this.healthBar.setValue(this.health);
         if (this.health <= 0) {
             this.isDead = true;
             this.healthBar.kill();

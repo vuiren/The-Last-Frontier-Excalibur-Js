@@ -1,5 +1,5 @@
 import { vec } from "excalibur";
-import { HorizontalDirection } from "./constants";
+import { GetYLevel, HorizontalDirection } from "./constants";
 import { IGroupable } from "./combatant";
 
 const BASE_FORMATION_SPACING = 35;
@@ -38,7 +38,12 @@ export class Group {
     remove(unit: IGroupable): void {
         if (unit === this.leader) {
             const next = this.followers.shift();
-            if (next) this.leader = next;
+            if (next) {
+                this.leader = next;            
+                this.leader.moveTo(this.leader.globalPos);
+                this.leader.onRoleInGroupChanged();
+                this.spreadNow();
+            }
         } else {
             const idx = this.followers.indexOf(unit);
             if (idx !== -1) this.followers.splice(idx, 1);
@@ -52,6 +57,7 @@ export class Group {
         for (const [i, follower] of this.followers.entries()) {
             const offsetX = getFormationOffset(i) * facingSign;
             const target = this.leader.globalPos.add(vec(offsetX, 0));
+            target.y = GetYLevel(follower.lane);
             const distance = follower.globalPos.distance(this.leader.globalPos);
 
             if (distance > FORMATION_SPREAD_THRESHOLD || this.pendingSpread) {

@@ -12,10 +12,12 @@ export class EnemyUnit extends Unit {
 
     constructor(startPosition: Vector, config: UnitConfig, allUnits: ICombatant[], lane: Lane) {
         super(startPosition, config, allUnits, lane);
+        console.log(`Spawned enemy at ${startPosition.x}, ${startPosition.y} in lane ${lane}`);
     }
 
     protected override selectActivity(): UnitActivity {
-        this.detectedEnemy = this.findClosestEnemy();
+        if(this.isDead) return "dead";
+        this.detectedEnemy = this.findBestEnemy();
 
         // Attack takes priority over everything
         if (this.detectedEnemy && this.isInAttackRange(this.detectedEnemy)) return "attacking";

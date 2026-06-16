@@ -1,5 +1,4 @@
 import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
-import { Resources } from "./resources";
 import { HorizontalDirection, Faction, Lane } from "./constants";
 import { ICombatant } from "./combatant";
 

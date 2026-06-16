@@ -3,15 +3,14 @@ import { Group } from "./group";
 
 export class GroupsManager {
     groups: Group[] = [];
+    private diedHandlers = new Map<IGroupable, () => void>();
 
     createGroup(leader: IGroupable): Group {
         this.removeFromAnyGroup(leader);
         const group = new Group(leader);
         this.groups.push(group);
-        leader.joinGroup(group)
-        leader.on("died", (x => {
-            this.removeFromAnyGroup(leader)
-        }))
+        leader.joinGroup(group);
+        this.registerDiedHandler(leader);
         return group;
     }
 
@@ -19,11 +18,8 @@ export class GroupsManager {
         this.removeFromAnyGroup(unit);
         group.add(unit);
         unit.joinGroup(group);
-        group.spreadNow(); // Force followers to spread immediately when a new member joins (prevents awkward stacking)
-
-        unit.on("died", (x => {
-            this.removeFromAnyGroup(unit)
-        }))
+        group.spreadNow();
+        this.registerDiedHandler(unit);
     }
 
     removeFromAnyGroup(unit: IGroupable): void {
@@ -31,13 +27,13 @@ export class GroupsManager {
         if (!group) return;
 
         group.remove(unit);
-        unit.leaveGroup(group)
-        unit.off("died")
+        unit.leaveGroup(group);
+        this.unregisterDiedHandler(unit);
 
         // Clean up dissolved groups (leader left with no followers)
         if (group.isEmpty) {
-            group.leader.leaveGroup(group)
-            group.leader.off("died")
+            group.leader.leaveGroup(group);
+            this.unregisterDiedHandler(group.leader);
             this.groups = this.groups.filter(g => g !== group);
         }
     }
@@ -46,10 +42,26 @@ export class GroupsManager {
         return this.groups.find(g => g.members.includes(unit));
     }
 
-    // Call this once per frame from the Scene
     update(): void {
         for (const group of this.groups) {
             group.update();
         }
+    }
+
+    private registerDiedHandler(unit: IGroupable): void {
+        // Guard against double-registration if somehow called twice for the same unit
+        this.unregisterDiedHandler(unit);
+
+        const handler = () => this.removeFromAnyGroup(unit);
+        this.diedHandlers.set(unit, handler);
+        unit.on("died", handler);
+    }
+
+    private unregisterDiedHandler(unit: IGroupable): void {
+        const handler = this.diedHandlers.get(unit);
+        if (!handler) return;
+
+        unit.off("died", handler);
+        this.diedHandlers.delete(unit);
     }
 }

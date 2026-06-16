@@ -3,15 +3,10 @@ import {
     vec, PointerButton, Color
 } from "excalibur";
 import { Resources } from "./resources";
-import { BackGroundYLevel, FrontGroundYLevel, Lane } from "./constants";
+import { BackGroundYLevel, FrontGroundYLevel, GetMoveMarkerScaleByLane, GetScaleByLane, GetYLevel, Lane } from "./constants";
 import { AnimComponent } from "./animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
-
-const SCALE_BY_LANE: Record<Lane, Vector> = {
-    [Lane.Back]: vec(3, 3),
-    [Lane.Front]: vec(5, 5),
-};
 
 const HOVER_LIFT_OFFSET = vec(0, -10);
 
@@ -20,7 +15,7 @@ export class UnitMoveMarker extends Actor {
     assignedUnit: PlayerUnit;
     isDragging = false;
     isHidden = false;
-
+    private isHovered = false;
     private dragOffset = Vector.Zero;
     private animComponent = new AnimComponent(Resources.FlagMarker);
 
@@ -35,7 +30,7 @@ export class UnitMoveMarker extends Actor {
         });
 
         this.assignedUnit = assignedUnit;
-        this.scale = SCALE_BY_LANE[assignedUnit.lane] ?? vec(5, 5);
+        this.scale = GetMoveMarkerScaleByLane(assignedUnit.lane);
 
         assignedUnit.on("beganAttacking", () => {
             this.pos = assignedUnit.pos;
@@ -47,6 +42,22 @@ export class UnitMoveMarker extends Actor {
     override onInitialize(engine: Engine): void {
         this.animComponent.play("Idle", this.graphics);
         this.registerPointerEvents(engine);
+    }
+
+    override onPreUpdate(_engine: Engine, elapsedMs: number): void {
+        const backY = GetYLevel(Lane.Back);
+        const frontY = GetYLevel(Lane.Front);
+        const currentY = this.pos.y;
+        this.scale = GetMoveMarkerScaleByLane(this.assignedUnit.lane);
+
+        let percent = 1;
+        if (this.assignedUnit.lane === Lane.Back) {
+            percent = currentY / backY;
+            this.scale = GetScaleByLane(Lane.Back).scale(percent);
+        } else {
+            percent = currentY / frontY;
+            this.scale = GetScaleByLane(Lane.Front).scale(percent);
+        }
     }
 
     setTint(color: Color): void {
@@ -63,6 +74,10 @@ export class UnitMoveMarker extends Actor {
             : BackGroundYLevel;
     }
 
+    changeLane(targetX: number): void {
+        this.pos = vec(targetX, this.getYLevel());
+    }
+
     // --- Private ---
 
     private get groundPos(): Vector {
@@ -74,28 +89,38 @@ export class UnitMoveMarker extends Actor {
     }
 
     private registerPointerEvents(engine: Engine): void {
-        this.on("pointerenter", this.onPointerEnter.bind(this));
-        this.on("pointerleave", this.onPointerLeave.bind(this));
         this.on("pointerdown", this.onPointerDown.bind(this));
-
         engine.input.pointers.primary.on("move", this.onPointerMove.bind(this));
         engine.input.pointers.primary.on("up", this.onPointerUp.bind(this));
     }
 
-    private onPointerEnter(_evt: PointerEvent): void {
+
+
+    select(): void {
         if (this.isHidden) return;
 
         this.pos = this.groundPos.add(HOVER_LIFT_OFFSET);
         this.setTint(Color.Red);
+    }
+
+    deselect(): void {
+        if (this.isHidden) return;
+        this.snapToGround();
+        this.clearTint();
+    }
+
+    private onPointerEnter(): void {
+        if (this.isHidden) return;
+
+        this.select();
         this.assignedUnit.select();
     }
 
-    private onPointerLeave(_evt: PointerEvent): void {
+    private onPointerLeave(): void {
         if (this.isHidden || this.isDragging) return;
 
-        this.snapToGround();
+        this.deselect();
         this.assignedUnit.deselect();
-        this.clearTint();
     }
 
     private onPointerDown(evt: PointerEvent): void {
@@ -107,11 +132,23 @@ export class UnitMoveMarker extends Actor {
     }
 
     private onPointerMove(evt: { worldPos: Vector }): void {
-        if (!this.isDragging) return;
+        if (this.isDragging) {
+            const yLevel = this.getYLevel();
+            const rawPos = evt.worldPos.add(this.dragOffset);
+            this.pos = vec(rawPos.x, Math.min(rawPos.y, yLevel));
+            return;
+        }
 
-        const yLevel = this.getYLevel();
-        const rawPos = evt.worldPos.add(this.dragOffset);
-        this.pos = vec(rawPos.x, Math.min(rawPos.y, yLevel));
+        const wasHovered = this.isHovered;
+        this.isHovered = this.contains(evt.worldPos.x, evt.worldPos.y);
+
+        if (this.isHovered && !wasHovered) {
+            this.select();
+            this.assignedUnit.select();
+        } else if (!this.isHovered && wasHovered) {
+            this.deselect();
+            this.assignedUnit.deselect();
+        }
     }
 
     private onPointerUp(_evt: unknown): void {

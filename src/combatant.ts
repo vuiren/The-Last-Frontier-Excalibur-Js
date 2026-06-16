@@ -9,8 +9,9 @@ export interface ICombatant {
     faction: Faction;
     globalPos: Vector;
     lane: Lane;
+    attackPriority: number; // Higher value means higher priority as a target
     takeDamage(damage: number, hitDirection: HorizontalDirection): void;
-    changeLane(): void;
+    changeLane(targetX: number): void;
 }
 
 export interface IGroupable extends ICombatant {
@@ -22,6 +23,7 @@ export interface IGroupable extends ICombatant {
     moveTo(destination: Vector): void;
     joinGroup(group: Group): void;
     leaveGroup(group?: Group): void;
+    onRoleInGroupChanged(): void;
     on(event: "died", handler: (x: any) => void): void;
-    off(event: "died"): void;
+    off(event: "died", handler: (x: any) => void): void;
 }

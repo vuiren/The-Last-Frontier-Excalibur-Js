@@ -26,12 +26,14 @@ export class UnitsCollisionManager {
     checkCollisions() {
         this.collidingPairs.length = 0;
 
-        // Reset each array instead of clearing the map
         for (const list of this.collidingUnits.values()) {
             list.length = 0;
         }
 
-        const units = this.allGroupables.filter(x => x.groupRef === null || x.groupRef.leader.id === x.id);
+        // Only ungrouped units or group leaders are eligible (to allow group merging)
+        const units = this.allGroupables.filter(
+            x => x.groupRef === null || x.groupRef.leader.id === x.id
+        );
 
         const len = units.length;
 
@@ -43,22 +45,23 @@ export class UnitsCollisionManager {
                 if (unitA.lane !== unitB.lane) continue;
                 if (unitA.faction !== unitB.faction) continue;
 
-                const withinThreshold = unitA.globalPos.distance(unitB.globalPos) <= this.groupCreationThreshold;
-                if (!withinThreshold) continue;
+                const dist = unitA.globalPos.distance(unitB.globalPos);
+                if (dist > this.groupCreationThreshold) continue;
 
-                // Both units are group leaders — merge their groups
+                // Don't form groups while a player-faction unit is still moving
+                const eitherMoving = unitA.activity === "moving" || unitB.activity === "moving";
+                if (unitA.faction === Faction.Player && eitherMoving) continue;
+
+                // Both are group leaders — merge groups
                 if (unitA.groupRef !== null && unitB.groupRef !== null) {
                     this.mergeGroups(unitA.groupRef, unitB.groupRef, this.groupsManager);
                     continue;
                 }
 
-                // Standard same-faction collision (group formation)
-                if (unitA.faction === Faction.Player) {
-                    if (unitA.activity === "moving" || unitB.activity === "moving") continue;
-                }
-
+                // Register the collision on both sides
                 this.collidingPairs.push(unitA, unitB);
                 this.collidingUnits.get(unitA)!.push(unitB);
+                this.collidingUnits.get(unitB)!.push(unitA);
             }
         }
     }

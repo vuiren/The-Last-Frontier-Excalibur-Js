@@ -31,7 +31,7 @@ export class UnitsManager {
         onUnitRightClick: (unit: IGroupable) => void,
     ) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(pos, this.allCombatants, config, onUnitClick, onUnitRightClick, startLane);
+        const unit = new PlayerUnit(pos, this.allCombatants, config, onUnitClick, onUnitRightClick, this, startLane);
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
         unit.config.attackCooldown = config.attackCooldown;
@@ -42,6 +42,7 @@ export class UnitsManager {
     spawnEnemyUnit(scene: Scene, pos: Vector, configKey: UnitConfigKey, startLane: Lane) {
         const config = UnitConfigs[configKey];
         const unit = new EnemyUnit(pos, config, this.allCombatants, startLane);
+        debugger;
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
         unit.config.attackCooldown = config.attackCooldown;

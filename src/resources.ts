@@ -9,6 +9,10 @@ export const Resources = {
   PlayerBase: new AsepriteResource('./buildings/Casarm 2.json'),
   Bridge: new AsepriteResource('./buildings/Bridge.json'),
   Barricade: new AsepriteResource('./buildings/NewBarricade.json'),
+  DeadSoldier: new AsepriteResource('./units/DeadSoldier.json'),
+
+  UpArrow: new ImageSource('./icons/upArrow.png'),
+  DownArrow: new ImageSource('./icons/downArrow.png'),
 } as const;
 
 export const loader = new Loader();

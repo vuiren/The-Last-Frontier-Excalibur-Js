@@ -4,6 +4,10 @@ import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitsManager } from "./unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
+import { DeadSoldier } from "./deadSoldier";
+import { Lane } from "./constants";
+import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
+import { ICombatant } from "./combatant";
 
 export function spawnSpawner(scene: Scene, allSpawners: Spawner[], allUnits: Unit[], pos: Vector, unitsManager: UnitsManager) {
     const spawner = new Spawner(pos, allUnits, unitsManager);
@@ -25,4 +29,16 @@ export function spawnUnitMoveMarker(scene: Scene, assignedUnit: PlayerUnit, pos:
     scene.add(unitMoveMarker);
 
     return unitMoveMarker;
+}
+
+export function spawnDeadSoldier(scene: Scene, pos: Vector, unitsManager: UnitsManager, lane: Lane) {
+    const deadSoldier = new DeadSoldier(pos, unitsManager, lane);
+    scene.add(deadSoldier);
+
+    return deadSoldier;
+}
+
+export function spawnChangeLaneButton(scene: Scene, pos: Vector, allCombatants: ICombatant[], lane: Lane) {
+    const button = new ChangeLaneButton(pos, allCombatants, lane);
+    scene.add(button);
 }

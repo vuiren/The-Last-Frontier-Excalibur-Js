@@ -2,13 +2,15 @@ import { Engine, Scene, vec, PointerEvent, PointerButton } from "excalibur";
 import { Spawner } from "./spawner";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
-import { Faction, FrontGroundYLevel, Lane } from "./constants";
+import { BackGroundYLevel, Faction, FrontGroundYLevel, Lane } from "./constants";
 import { UnitsManager } from "./unitsManager";
 import { ICombatant, IGroupable } from "./combatant";
 import { BuildingsManager } from "./buildingsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { Bridge } from "./buildings/bridge";
 import { drawDottedLine } from "./drawDottedLine";
+import { BarricadeScraps } from "./buildings/barricadeScraps";
+import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
@@ -50,6 +52,14 @@ export class MyLevel extends Scene {
 
         const bridge = new Bridge(vec(300, 420))
         this.add(bridge);
+
+        const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allCombatants, Lane.Front);
+        const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allCombatants, Lane.Back);
+        this.add(changeLaneButtonFront);
+        this.add(changeLaneButtonBack);
+
+        const barricadeScraps = new BarricadeScraps(vec(-100, FrontGroundYLevel), this.allGroupables, this.buildingsManager, Lane.Front);
+        this.add(barricadeScraps);
 
         engine.input.pointers.primary.on('down', e => this.onMouseDown(e))
     }

@@ -30,3 +30,11 @@ export function GetYLevel(lane: Lane): number {
 export function GetScaleByLane(lane: Lane): Vector {
     return lane === Lane.Front ? vec(4, 4) : vec(2, 2);
 }
+
+export function GetHealthBarScaleByLane(lane: Lane): Vector {
+    return lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
+}
+
+export function GetMoveMarkerScaleByLane(lane: Lane): Vector {
+    return lane === Lane.Front ? vec(5, 5) : vec(3, 3);
+}

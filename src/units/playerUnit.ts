@@ -1,11 +1,12 @@
-import { Vector, Engine, PointerButton, Color, vec } from "excalibur";
+import { Vector, Engine, PointerButton, Color } from "excalibur";
 import { IGroupable, ICombatant } from "../combatant";
-import { HorizontalDirection, Lane } from "../constants";
+import { GetScaleByLane, GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
-import { spawnUnitMoveMarker } from "../spawnFunctions";
+import { spawnDeadSoldier, spawnUnitMoveMarker } from "../spawnFunctions";
 import { UnitConfig } from "../unitConfigs";
 import { UnitMoveMarker } from "../unitMoveMarker";
 import { Unit, UnitActivity } from "./unit";
+import { UnitsManager } from "../unitsManager";
 
 
 export class PlayerUnit extends Unit {
@@ -16,6 +17,7 @@ export class PlayerUnit extends Unit {
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
     private closestEnemy: ICombatant | null = null;
+    private unitsManager: UnitsManager;
 
     constructor(
         startPosition: Vector,
@@ -23,11 +25,13 @@ export class PlayerUnit extends Unit {
         config: UnitConfig,
         onClick: (unit: IGroupable) => void,
         onRightClick: (unit: IGroupable) => void,
+        unitsManager: UnitsManager,
         startLane = Lane.Front,
     ) {
         super(startPosition, config, allCombatants, startLane);
         this.onClick = onClick;
         this.onRightClick = onRightClick;
+        this.unitsManager = unitsManager;
     }
 
     override onInitialize(engine: Engine): void {
@@ -42,7 +46,19 @@ export class PlayerUnit extends Unit {
     }
 
     protected override selectActivity(): UnitActivity {
-        this.closestEnemy = this.findClosestEnemy();
+        if (this.isDead) return "dead";
+
+        const orderedY = GetYLevel(this.lane);
+        const currentY = this.globalPos.y;
+        if(Math.abs(currentY - orderedY) > 5) {
+            return "crossingBridge";
+        }
+
+        if(this.previousActivity === "crossingBridge" && this.groupRef !== null && this.groupRef.leader.id === this.id) {
+            this.groupRef.spreadNow()
+        }
+
+        this.closestEnemy = this.findBestEnemy();
         const isOutOfDistanceFromDestination = this.globalPos.distance(this.orderedDestination) > 5;
 
         if (this.closestEnemy) this.hasSightedEnemy = true;
@@ -86,22 +102,26 @@ export class PlayerUnit extends Unit {
     }
 
     protected override onUpdateActivity(activity: UnitActivity): void {
-        const enemy = this.findClosestEnemy();
 
         switch (activity) {
             case "movingAndAttacking":
                 this.moveTowardDestination();
+                const enemy = this.findBestEnemy();
                 this.tryPerformAttack(enemy!);
                 break;
             case "attacking":
                 this.vel = Vector.Zero;
-                this.tryPerformAttack(enemy!);
+                const enemy2 = this.findBestEnemy();
+                this.tryPerformAttack(enemy2!);
                 break;
             case "moving":
                 this.moveTowardDestination();
                 break;
             case "idle":
                 this.vel = Vector.Zero;
+                break;
+            case "crossingBridge":
+                this.moveTowardDestination();
                 break;
         }
     }
@@ -120,11 +140,12 @@ export class PlayerUnit extends Unit {
         if (this.hasSightedEnemy) {
             this.hasActiveOrder = true;
         }
-    }
+    }   
 
-    select() {
+    select(selectColor = Color.Red) {
         this.isSelected = true;
-        this.setTint(Color.Red);
+        this.setTint(selectColor);
+        this.moveMarker.select();
 
         if (this.groupRef && this.groupRef.leader.id === this.id) {
             this.groupRef.members.forEach(member => {
@@ -138,6 +159,7 @@ export class PlayerUnit extends Unit {
     deselect() {
         this.isSelected = false;
         this.setTint(Color.White);
+        this.moveMarker.deselect();
 
         if (this.groupRef && this.groupRef.leader.id === this.id) {
             this.groupRef.members.forEach(member => {
@@ -156,6 +178,28 @@ export class PlayerUnit extends Unit {
     override leaveGroup() {
         super.leaveGroup();
         this.showMoveMarker();
+    }
+
+    override onRoleInGroupChanged() {
+        if (this.groupRef) {
+            if (this.id === this.groupRef.leader.id) {
+                this.showMoveMarker();
+            } else {
+                this.hideMoveMarker();
+            }
+        }
+    }
+
+    override changeLane(targetX: number): void {
+        super.changeLane(targetX);
+        this.moveMarker.changeLane(targetX);
+    }
+
+    override cleanUpOnDeath() {
+        super.cleanUpOnDeath();
+        this.deselect();
+        this.moveMarker.kill();
+        spawnDeadSoldier(this.scene!, this.pos, this.unitsManager, this.lane);
     }
 
     hideMoveMarker() {
