@@ -235,7 +235,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     setTint(color: Color): void { this.animComponent.setTint(color); }
-    clearTint(): void { this.animComponent.clearTint(); }
 
     // ------------------------------------------------------------------ //
     //  Misc                                                                //

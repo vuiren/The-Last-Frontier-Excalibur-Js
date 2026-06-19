@@ -13,6 +13,9 @@ export const Resources = {
 
   UpArrow: new ImageSource('./icons/upArrow.png'),
   DownArrow: new ImageSource('./icons/downArrow.png'),
+
+  FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
+  InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
 } as const;
 
 export const loader = new Loader();

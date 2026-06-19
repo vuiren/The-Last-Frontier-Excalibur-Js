@@ -1,6 +1,6 @@
-import { Vector, Engine, PointerButton, Color } from "excalibur";
-import { IGroupable, ICombatant } from "../combatant";
-import { GetScaleByLane, GetYLevel, HorizontalDirection, Lane } from "../constants";
+import { Vector, Engine, Color } from "excalibur";
+import { ICombatant } from "../combatant";
+import { GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
 import { spawnDeadSoldier, spawnUnitMoveMarker } from "../spawnFunctions";
 import { UnitConfig } from "../unitConfigs";
@@ -12,8 +12,6 @@ import { UnitsManager } from "../unitsManager";
 export class PlayerUnit extends Unit {
     isSelected = false;
     moveMarker!: UnitMoveMarker;
-    private onClick: (unit: IGroupable) => void;
-    private onRightClick: (unit: IGroupable) => void;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
     private closestEnemy: ICombatant | null = null;
@@ -23,26 +21,21 @@ export class PlayerUnit extends Unit {
         startPosition: Vector,
         allCombatants: ICombatant[],
         config: UnitConfig,
-        onClick: (unit: IGroupable) => void,
-        onRightClick: (unit: IGroupable) => void,
         unitsManager: UnitsManager,
         startLane = Lane.Front,
     ) {
         super(startPosition, config, allCombatants, startLane);
-        this.onClick = onClick;
-        this.onRightClick = onRightClick;
         this.unitsManager = unitsManager;
     }
 
     override onInitialize(engine: Engine): void {
         super.onInitialize(engine);
-        this.pointer.useGraphicsBounds = true;
-        this.on('pointerup', (evt) => {
-            evt.cancel();
-            if (evt.button === PointerButton.Left) this.onClick(this);
-            else if (evt.button === PointerButton.Right) this.onRightClick(this);
-        });
         this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.globalPos);
+
+        // Wire marker drag events — the marker reports back, we decide what it means
+        this.moveMarker.onHoverStart = () => this.select();
+        this.moveMarker.onHoverEnd = () => this.deselect();
+        this.moveMarker.onDragEnd = (destination) => this.moveTo(destination);
     }
 
     protected override selectActivity(): UnitActivity {
@@ -50,12 +43,12 @@ export class PlayerUnit extends Unit {
 
         const orderedY = GetYLevel(this.lane);
         const currentY = this.globalPos.y;
-        if(Math.abs(currentY - orderedY) > 5) {
+        if (Math.abs(currentY - orderedY) > 5) {
             return "crossingBridge";
         }
 
-        if(this.previousActivity === "crossingBridge" && this.groupRef !== null && this.groupRef.leader.id === this.id) {
-            this.groupRef.spreadNow()
+        if (this.previousActivity === "crossingBridge" && this.groupRef !== null && this.groupRef.leader.id === this.id) {
+            this.groupRef.spreadNow();
         }
 
         this.closestEnemy = this.findBestEnemy();
@@ -70,7 +63,6 @@ export class PlayerUnit extends Unit {
 
         switch (this.activity) {
             case "moving":
-                // Only block attack if player explicitly ordered this move
                 if (!this.hasActiveOrder && this.closestEnemy && this.isInAttackRange(this.closestEnemy)) {
                     return "attacking";
                 }
@@ -83,7 +75,6 @@ export class PlayerUnit extends Unit {
                 return "idle";
         }
 
-        // First sighting — stop and engage
         if (this.closestEnemy && this.isInAttackRange(this.closestEnemy)) return "attacking";
         if (isOutOfDistanceFromDestination) return "moving";
         return "idle";
@@ -93,35 +84,32 @@ export class PlayerUnit extends Unit {
         switch (activity) {
             case "attacking":
                 this.orderedDestination = this.globalPos;
-                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x ? HorizontalDirection.Left : HorizontalDirection.Right;
+                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x
+                    ? HorizontalDirection.Left
+                    : HorizontalDirection.Right;
                 if (!this.moveMarker.isDragging) {
-                    this.moveMarker.pos = this.pos;
+                    this.moveMarker.snapToUnit();
                 }
                 break;
         }
     }
 
     protected override onUpdateActivity(activity: UnitActivity): void {
-
         switch (activity) {
             case "movingAndAttacking":
                 this.moveTowardDestination();
-                const enemy = this.findBestEnemy();
-                this.tryPerformAttack(enemy!);
+                this.tryPerformAttack(this.findBestEnemy()!);
                 break;
             case "attacking":
                 this.vel = Vector.Zero;
-                const enemy2 = this.findBestEnemy();
-                this.tryPerformAttack(enemy2!);
+                this.tryPerformAttack(this.findBestEnemy()!);
                 break;
             case "moving":
+            case "crossingBridge":
                 this.moveTowardDestination();
                 break;
             case "idle":
                 this.vel = Vector.Zero;
-                break;
-            case "crossingBridge":
-                this.moveTowardDestination();
                 break;
         }
     }
@@ -135,58 +123,51 @@ export class PlayerUnit extends Unit {
 
     override moveTo(destination: Vector): void {
         super.moveTo(destination);
-
-        // Only block enemy interruption if unit has already seen an enemy before
         if (this.hasSightedEnemy) {
             this.hasActiveOrder = true;
         }
-    }   
+    }
 
-    select(selectColor = Color.Red) {
+    // Selects this unit (and group members if leader). Purely unit-side state + tint.
+    select(selectColor = Color.Red): void {
+        if(this.isSelected) return
+        console.log("Selecting unit: " + this.name)
         this.isSelected = true;
         this.setTint(selectColor);
-        this.moveMarker.select();
-
-        if (this.groupRef && this.groupRef.leader.id === this.id) {
-            this.groupRef.members.forEach(member => {
-                if (member.id !== this.id && member instanceof PlayerUnit) {
-                    member.select()
-                }
-            })
-        }
+        this.propagateToGroupMembers(m => m.select());
     }
 
-    deselect() {
+    deselect(): void {
+        if(!this.isSelected) return
+        console.log("Deselecting unit: " + this.name)
         this.isSelected = false;
         this.setTint(Color.White);
-        this.moveMarker.deselect();
+        this.propagateToGroupMembers(m => m.deselect());
+    }
 
-        if (this.groupRef && this.groupRef.leader.id === this.id) {
-            this.groupRef.members.forEach(member => {
-                if (member.id !== this.id && member instanceof PlayerUnit) {
-                    member.deselect()
-                }
-            })
+    // Propagates an action to all non-leader group members, if this unit is the leader.
+    private propagateToGroupMembers(action: (member: PlayerUnit) => void): void {
+        if (!this.groupRef || this.groupRef.leader.id !== this.id) return;
+        for (const member of this.groupRef.members) {
+            if (member.id !== this.id && member instanceof PlayerUnit) {
+                action(member);
+            }
         }
     }
 
-    override joinGroup(group: Group) {
+    override joinGroup(group: Group): void {
         super.joinGroup(group);
-        if (this.id !== group.leader.id) this.hideMoveMarker();
+        if (this.id !== group.leader.id) this.moveMarker.setVisible(false);
     }
 
-    override leaveGroup() {
+    override leaveGroup(): void {
         super.leaveGroup();
-        this.showMoveMarker();
+        this.moveMarker.setVisible(true);
     }
 
-    override onRoleInGroupChanged() {
+    override onRoleInGroupChanged(): void {
         if (this.groupRef) {
-            if (this.id === this.groupRef.leader.id) {
-                this.showMoveMarker();
-            } else {
-                this.hideMoveMarker();
-            }
+            this.moveMarker.setVisible(this.id === this.groupRef.leader.id);
         }
     }
 
@@ -195,26 +176,10 @@ export class PlayerUnit extends Unit {
         this.moveMarker.changeLane(targetX);
     }
 
-    override cleanUpOnDeath() {
+    override cleanUpOnDeath(): void {
         super.cleanUpOnDeath();
         this.deselect();
         this.moveMarker.kill();
         spawnDeadSoldier(this.scene!, this.pos, this.unitsManager, this.lane);
-    }
-
-    hideMoveMarker() {
-        if (this.moveMarker) {
-            this.moveMarker.graphics.isVisible = false;
-            this.moveMarker.pointer.useGraphicsBounds = false;
-            this.moveMarker.isHidden = true;
-        }
-    }
-
-    showMoveMarker() {
-        if (this.moveMarker) {
-            this.moveMarker.graphics.isVisible = true;
-            this.moveMarker.pointer.useGraphicsBounds = true;
-            this.moveMarker.isHidden = false;
-        }
     }
 }

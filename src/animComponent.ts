@@ -4,6 +4,7 @@ import { Animation, Color, GraphicsComponent } from "excalibur";
 export class AnimComponent {
     private cache = new Map<string, Animation>();
     private current: Animation | null = null;
+    private currentTint: Color = Color.White
 
     constructor(private resource: AsepriteResource) { }
 
@@ -18,15 +19,16 @@ export class AnimComponent {
         const next = this.getAnim(name);
         if (this.current === next) return;
         this.current = next;
+        this.setTint(this.currentTint)
         graphics.use(next);
     }
 
     setTint(color: Color): void {
-        if (this.current) this.current.tint = color;
-    }
-
-    clearTint(): void {
-        if (this.current) this.current.tint = Color.White;
+        if (this.current){
+            this.currentTint = color;
+            console.log("Setting tint to " + color)
+            this.current.tint = color;
+        } 
     }
 
     flipHorizontal(value: boolean): void {

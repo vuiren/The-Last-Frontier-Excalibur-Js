@@ -18,7 +18,6 @@ export class Building extends Actor implements ICombatant {
     attackPriority: number = 1;
     private animComponent: AnimComponent;
 
-
     constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, lane: Lane) {
         super(config);
         this.faction = faction;
@@ -40,7 +39,7 @@ export class Building extends Actor implements ICombatant {
     }
 
     changeLane(): void {
-        
+        console.warn("Buildings cannot change lanes");
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {

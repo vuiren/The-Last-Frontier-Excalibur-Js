@@ -22,5 +22,4 @@ await game.start('start', { // name of the start scene 'start'
     color: Color.ExcaliburBlue
   })
 }).then(() => {
-  // Do something after the game starts
 });

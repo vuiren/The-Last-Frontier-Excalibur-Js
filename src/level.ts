@@ -6,11 +6,11 @@ import { BackGroundYLevel, Faction, FrontGroundYLevel, Lane } from "./constants"
 import { UnitsManager } from "./unitsManager";
 import { ICombatant, IGroupable } from "./combatant";
 import { BuildingsManager } from "./buildingsManager";
-import { PlayerUnit } from "./units/playerUnit";
 import { Bridge } from "./buildings/bridge";
 import { drawDottedLine } from "./drawDottedLine";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
+import { spawnInfectedFarmHouse } from "./spawnFunctions";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
@@ -26,6 +26,9 @@ export class MyLevel extends Scene {
     private dashLen = 6;
     private gapLen = 4;
 
+    private movingCameraRight = false;
+    private movingCameraLeft = false;
+
     constructor() {
         super();
         this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
@@ -34,11 +37,19 @@ export class MyLevel extends Scene {
 
     override onInitialize(engine: Engine): void {
 
-        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(250, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(150, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(100, FrontGroundYLevel), "playerSoldier", Lane.Front, this.unitSelection, this.unitRightClick)
-        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back, this.unitSelection, this.unitRightClick)
+        const btn = document.getElementById('move-camera-right')!;
+        btn.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
+        btn.addEventListener('pointerleave', () => { this.movingCameraRight = false; });
+
+        const btnLeft = document.getElementById('move-camera-left')!;
+        btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
+        btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
+
+        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, vec(250, FrontGroundYLevel), "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, vec(150, FrontGroundYLevel), "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, vec(100, FrontGroundYLevel), "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back)
 
         this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Front)
@@ -47,8 +58,11 @@ export class MyLevel extends Scene {
 
         this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Front)
         this.buildingsManager.spawnBarricade(this, vec(200, FrontGroundYLevel), Faction.Player, Lane.Front)
-
         this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Back)
+
+
+        spawnInfectedFarmHouse(this, vec(650, FrontGroundYLevel), Faction.Enemy, 100, Lane.Front)
+        spawnInfectedFarmHouse(this, vec(650, FrontGroundYLevel), Faction.Enemy, 100, Lane.Back)
 
         const bridge = new Bridge(vec(300, 420))
         this.add(bridge);
@@ -63,6 +77,17 @@ export class MyLevel extends Scene {
     }
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
+
+        if(this.movingCameraRight) {
+            const speed = 0.3;
+            engine.currentScene.camera.pos.x += speed * elapsed;
+        }
+
+        if(this.movingCameraLeft) {
+            const speed = 0.3;
+            engine.currentScene.camera.pos.x -= speed * elapsed;
+        }
+
         const collisionsManager = this.unitsManager.collisionManager;
         collisionsManager.checkCollisions();
 
@@ -105,18 +130,5 @@ export class MyLevel extends Scene {
                 drawDottedLine(ctx, this.dashOffset, fromScreen, toScreen, undefined, this.dashLen, this.gapLen);
             }
         }
-    }
-
-    unitSelection(unit: ICombatant) {
-        if (!(unit instanceof PlayerUnit)) return
-        unit.isSelected = !unit.isSelected;
-        if (unit.isSelected) {
-            unit.select();
-        } else {
-            unit.deselect()
-        }
-    }
-
-    unitRightClick(unit: ICombatant) {
     }
 }

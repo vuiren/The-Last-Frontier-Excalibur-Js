@@ -5,9 +5,10 @@ import { UnitsManager } from "./unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
 import { DeadSoldier } from "./deadSoldier";
-import { Lane } from "./constants";
+import { Faction, Lane } from "./constants";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
-import { ICombatant } from "./combatant";
+import { ICombatant, IGroupable } from "./combatant";
+import { InfectedBuilding } from "./buildings/infectedBuilding";
 
 export function spawnSpawner(scene: Scene, allSpawners: Spawner[], allUnits: Unit[], pos: Vector, unitsManager: UnitsManager) {
     const spawner = new Spawner(pos, allUnits, unitsManager);
@@ -38,7 +39,12 @@ export function spawnDeadSoldier(scene: Scene, pos: Vector, unitsManager: UnitsM
     return deadSoldier;
 }
 
-export function spawnChangeLaneButton(scene: Scene, pos: Vector, allCombatants: ICombatant[], lane: Lane) {
-    const button = new ChangeLaneButton(pos, allCombatants, lane);
+export function spawnChangeLaneButton(scene: Scene, pos: Vector, allGroupables: IGroupable[], lane: Lane) {
+    const button = new ChangeLaneButton(pos, allGroupables, lane);
     scene.add(button);
+}
+
+export function spawnInfectedFarmHouse(scene: Scene, pos: Vector, faction: Faction, health: number, lane: Lane) {
+    const infectedBuilding = new InfectedBuilding(pos, faction, health, lane);
+    scene.add(infectedBuilding);
 }
