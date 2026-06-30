@@ -1,4 +1,4 @@
-import { Vector, Engine, Color } from "excalibur";
+import { Vector, Engine, Color, vec } from "excalibur";
 import { ICombatant } from "../combatant";
 import { GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
@@ -18,13 +18,13 @@ export class PlayerUnit extends Unit {
     private unitsManager: UnitsManager;
 
     constructor(
-        startPosition: Vector,
+        posX: number,
         allCombatants: ICombatant[],
         config: UnitConfig,
         unitsManager: UnitsManager,
         startLane = Lane.Front,
     ) {
-        super(startPosition, config, allCombatants, startLane);
+        super(posX, config, allCombatants, startLane);
         this.unitsManager = unitsManager;
     }
 

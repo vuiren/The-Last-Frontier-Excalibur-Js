@@ -16,6 +16,8 @@ export const Resources = {
 
   FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
+
+  CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
 } as const;
 
 export const loader = new Loader();

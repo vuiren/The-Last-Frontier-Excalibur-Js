@@ -36,8 +36,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     private healthBar: ProgressBar;
     private animComponent: AnimComponent;
 
-    constructor(startPosition: Vector, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
-        startPosition = vec(startPosition.x, GetYLevel(startLane));
+    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
+        const startPosition = vec(startX, GetYLevel(startLane));
         super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1) });
         this.config = config;
         this.allCombatants = allCombatants;

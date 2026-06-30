@@ -38,7 +38,6 @@ export class BarricadeScraps extends Actor {
     }
 
     override onPreUpdate(engine: Engine, delta: number): void {
-        super.onPreUpdate(engine, delta);
         // Check for nearby groupables and apply buffs
         const nearbyGroupables = this.allGroupables.filter(groupable => {
             const distance = this.pos.distance(groupable.globalPos);
@@ -58,8 +57,6 @@ export class BarricadeScraps extends Actor {
             this.buildingsManager.spawnBarricade(engine.currentScene, this.pos, Faction.Player, this.lane);
             this.kill();
             this.progressBar.kill();
-            // Here you can implement the logic to transform the barricade scraps into a full barricade
-            // For example, you could replace this actor with a new Barricade actor and apply buffs to nearby groupables
         }
     }
 }

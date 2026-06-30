@@ -1,5 +1,4 @@
 import { Engine, Scene, vec } from "excalibur";
-import { Spawner } from "./spawner";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
 import { BackGroundYLevel, Faction, FrontGroundYLevel, Lane } from "./constants";
@@ -10,12 +9,11 @@ import { Bridge } from "./buildings/bridge";
 import { drawDottedLine } from "./drawDottedLine";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
-import { spawnInfectedFarmHouse } from "./spawnFunctions";
+import { spawnCaptureZone, spawnInfectedFarmHouse } from "./spawnFunctions";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
     allCombatants: ICombatant[] = [];
-    allSpawners: Spawner[] = [];
 
     unitsManager: UnitsManager;
     buildingsManager: BuildingsManager;
@@ -36,7 +34,6 @@ export class MyLevel extends Scene {
     }
 
     override onInitialize(engine: Engine): void {
-
         const btn = document.getElementById('move-camera-right')!;
         btn.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
         btn.addEventListener('pointerleave', () => { this.movingCameraRight = false; });
@@ -45,24 +42,26 @@ export class MyLevel extends Scene {
         btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
         btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
 
-        this.unitsManager.spawnPlayerUnit(this, vec(200, FrontGroundYLevel), "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, vec(250, FrontGroundYLevel), "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, vec(150, FrontGroundYLevel), "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, vec(100, FrontGroundYLevel), "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, vec(300, FrontGroundYLevel), "playerSoldier", Lane.Back)
+        this.unitsManager.spawnPlayerUnit(this, 200, "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, 250, "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, 150, "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, 100, "playerSoldier", Lane.Front)
+        this.unitsManager.spawnPlayerUnit(this, 300, "playerSoldier", Lane.Back)
 
-        this.unitsManager.spawnEnemyUnit(this, vec(600, FrontGroundYLevel), "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, vec(700, FrontGroundYLevel), "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, vec(650, FrontGroundYLevel), "enemyZombie", Lane.Back)
+        this.unitsManager.spawnEnemyUnit(this, 600, "enemyZombie", Lane.Front)
+        this.unitsManager.spawnEnemyUnit(this, 650, "enemyZombie", Lane.Front)
+        this.unitsManager.spawnEnemyUnit(this, 700, "enemyZombie", Lane.Front)
+        this.unitsManager.spawnEnemyUnit(this, 650, "enemyZombie", Lane.Back)
 
-        this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Front)
-        this.buildingsManager.spawnBarricade(this, vec(200, FrontGroundYLevel), Faction.Player, Lane.Front)
-        this.buildingsManager.spawnPlayerBase(this, vec(100, FrontGroundYLevel), Faction.Player, Lane.Back)
+        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Front)
+        this.buildingsManager.spawnBarricade(this, 200, Faction.Player, Lane.Front)
+        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Back)
 
 
-        spawnInfectedFarmHouse(this, vec(650, FrontGroundYLevel), Faction.Enemy, 100, Lane.Front)
-        spawnInfectedFarmHouse(this, vec(650, FrontGroundYLevel), Faction.Enemy, 100, Lane.Back)
+        spawnInfectedFarmHouse(this, 650, Faction.Enemy, 100, Lane.Front, this.unitsManager, this.allGroupables)
+        spawnInfectedFarmHouse(this, 650, Faction.Enemy, 100, Lane.Back, this.unitsManager, this.allGroupables)
+
+        spawnCaptureZone(this, vec(330, FrontGroundYLevel), this.allGroupables, Lane.Front)
 
         const bridge = new Bridge(vec(300, 420))
         this.add(bridge);
@@ -78,12 +77,12 @@ export class MyLevel extends Scene {
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
 
-        if(this.movingCameraRight) {
+        if (this.movingCameraRight) {
             const speed = 0.3;
             engine.currentScene.camera.pos.x += speed * elapsed;
         }
 
-        if(this.movingCameraLeft) {
+        if (this.movingCameraLeft) {
             const speed = 0.3;
             engine.currentScene.camera.pos.x -= speed * elapsed;
         }

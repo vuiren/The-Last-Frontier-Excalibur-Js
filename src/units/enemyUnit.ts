@@ -10,13 +10,13 @@ export class EnemyUnit extends Unit {
     aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
     detectedEnemy: ICombatant | null = null;
 
-    constructor(startPosition: Vector, config: UnitConfig, allUnits: ICombatant[], lane: Lane) {
-        super(startPosition, config, allUnits, lane);
-        console.log(`Spawned enemy at ${startPosition.x}, ${startPosition.y} in lane ${lane}`);
+    constructor(posX: number, allUnits: ICombatant[], config: UnitConfig, lane: Lane) {
+        super(posX, config, allUnits, lane);
+        console.log(`Spawned enemy at ${this.pos.x}, ${this.pos.y} in lane ${lane}`);
     }
 
     protected override selectActivity(): UnitActivity {
-        if(this.isDead) return "dead";
+        if (this.isDead) return "dead";
         this.detectedEnemy = this.findBestEnemy();
 
         // Attack takes priority over everything
@@ -54,7 +54,7 @@ export class EnemyUnit extends Unit {
                 }
                 break;
             case "idle":
-                if(this.groupRef !== null && this.groupRef.leader !== this) return; // Only lead unit should pick random destination while idle
+                if (this.groupRef !== null && this.groupRef.leader !== this) return; // Only lead unit should pick random destination while idle
                 if (this.timeInCurrentActivity > this.wanderTimer) {
                     // Pick a new random destination within a certain radius
                     const randomDirection = Math.random() <= 0.5 ? Vector.Left : Vector.Right;

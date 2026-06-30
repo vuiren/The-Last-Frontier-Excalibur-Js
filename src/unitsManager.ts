@@ -2,7 +2,7 @@ import { Scene, Vector } from "excalibur";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
 import { EnemyUnit } from "./units/enemyUnit";
 import { UnitConfigs, UnitConfigKey } from "./unitConfigs";
-import { Lane } from "./constants";
+import { FrontGroundYLevel, Lane } from "./constants";
 import { ICombatant, IGroupable } from "./combatant";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
@@ -24,12 +24,12 @@ export class UnitsManager {
 
     spawnPlayerUnit(
         scene: Scene,
-        pos: Vector,
+        posX: number,
         configKey: UnitConfigKey,
         startLane: Lane,
     ) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(pos, this.allCombatants, config, this, startLane);
+        const unit = new PlayerUnit(posX, this.allCombatants, config, this, startLane);
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
         unit.config.attackCooldown = config.attackCooldown;
@@ -37,9 +37,9 @@ export class UnitsManager {
         return this.registerUnit(scene, unit);
     }
 
-    spawnEnemyUnit(scene: Scene, pos: Vector, configKey: UnitConfigKey, startLane: Lane) {
+    spawnEnemyUnit(scene: Scene, posX: number, configKey: UnitConfigKey, startLane: Lane) {
         const config = UnitConfigs[configKey];
-        const unit = new EnemyUnit(pos, config, this.allCombatants, startLane);
+        const unit = new EnemyUnit(posX, this.allCombatants, config, startLane);
 
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;

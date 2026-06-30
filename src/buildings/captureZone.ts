@@ -14,11 +14,13 @@ export class CaptureZone extends Actor {
     private animComponent: AnimComponent;
     private progressBar: ProgressBar;
     private lane: Lane; // Default lane, you can modify this as needed
+    private nearbyPlayerCount: number = 0;
+    private nearbyEnemyCount: number = 0;
 
     constructor(startPosition: Vector, allGroupables: IGroupable[], lane: Lane) {
         super({ name: 'CaptureZone', pos: startPosition, width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
-        this.animComponent = new AnimComponent(Resources.Barricade);
-        this.scale = vec(2, 2);
+        this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
+        this.scale = vec(4, 4);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.allGroupables = allGroupables;
@@ -27,7 +29,7 @@ export class CaptureZone extends Actor {
 
     override onInitialize(engine: Engine): void {
         engine.currentScene.add(this.progressBar);
-        this.playAnimation("Idle");
+        this.playAnimation("NotCaptured");
     }
 
     protected playAnimation(name: string): void {
@@ -36,24 +38,41 @@ export class CaptureZone extends Actor {
 
     override onPreUpdate(engine: Engine, delta: number): void {
         super.onPreUpdate(engine, delta);
-        // Check for nearby groupables and apply buffs
-        const nearbyGroupables = this.allGroupables.filter(groupable => {
+
+        // Reset counts each frame
+        this.nearbyPlayerCount = 0;
+        this.nearbyEnemyCount = 0;
+
+        // Count nearby units by faction using a single pass
+        for (let i = 0; i < this.allGroupables.length; i++) {
+            const groupable = this.allGroupables[i];
             const distance = this.pos.distance(groupable.globalPos);
-            return groupable.activity === "idle" && groupable.faction === Faction.Player && distance < 50; // Adjust the radius as needed
-        });
+            if (distance >= 50) continue;
 
-        nearbyGroupables.forEach(groupable => {
+            if (groupable.faction === Faction.Player && groupable.activity === "idle") {
+                this.nearbyPlayerCount++;
+            } else if (groupable.faction === Faction.Enemy) {
+                this.nearbyEnemyCount++;
+            }
+        }
+
+        if (this.nearbyPlayerCount > this.nearbyEnemyCount) {
             this.captureProgress += this.captureProgressIncreaseRate * delta;
-            console.log(`Applying barricade buff to groupable with ID: ${groupable.id}`);
-        });
+        } else if (this.nearbyEnemyCount > this.nearbyPlayerCount) {
+            this.captureProgress -= this.captureProgressIncreaseRate * delta;
+        }
 
+        this.captureProgress = Math.max(0, Math.min(100, this.captureProgress));
         this.progressBar.setValue(this.captureProgress);
-        this.scale = vec(2 + 2 * (this.captureProgress / 100), 2 + 2 * (this.captureProgress / 100)); // Scale up as it builds
 
         if (this.captureProgress >= 100) {
-            this.captureProgress = 100;
-            this.kill();
+            this.playAnimation("Captured");
             this.progressBar.kill();
+            this.scale = vec(4, 4);
+        } else {
+            this.playAnimation("NotCaptured");
+            const scale = 2 + 2 * (this.captureProgress / 100);
+            this.scale = vec(scale, scale);
         }
     }
 }

@@ -121,8 +121,7 @@ export class UnitMoveMarker extends Actor {
 
     private onPointerMove(evt: { worldPos: Vector }): void {
         if (this.isDragging) {
-            const rawPos = evt.worldPos.add(this.dragOffset);
-            this.pos = vec(rawPos.x, Math.min(rawPos.y, this.groundY));
+            this.pos = evt.worldPos.add(this.dragOffset);
             return;
         }
 
