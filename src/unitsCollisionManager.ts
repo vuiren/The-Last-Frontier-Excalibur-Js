@@ -67,9 +67,5 @@ export class UnitsCollisionManager {
             groupsManager.removeFromAnyGroup(member);
             groupsManager.addToGroup(member, target);
         }
-
-        // source leader also joins the winning group
-        groupsManager.removeFromAnyGroup(source.leader);
-        groupsManager.addToGroup(source.leader, target);
     }
 }

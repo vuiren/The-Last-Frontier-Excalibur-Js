@@ -6,11 +6,13 @@ import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLa
 import { Group } from "../group";
 import { ProgressBar } from "../progressBar";
 import { UnitConfig } from "../unitConfigs";
+import { queryNearby } from "../proximityQuery";
 
-export type UnitActivity = "idle" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
+export type UnitActivity = "idle" | "greeting" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
 
 const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     idle: "Idle",
+    greeting: "Walking",
     moving: "Walking",
     attacking: "Shooting",
     movingAndAttacking: "RunNShoot",
@@ -32,6 +34,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     timeInCurrentActivity: number = 0;
     faction: Faction;
     attackPriority: number = 0;
+    isUnitHovered = false;
 
     private healthBar: ProgressBar;
     private animComponent: AnimComponent;
@@ -75,6 +78,15 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     override onInitialize(engine: Engine): void {
         engine.currentScene.add(this.healthBar);
         this.playAnimation("Idle");
+
+        this.on('pointerenter', () => {
+            this.isUnitHovered = true;
+            this.showFollowerMarkers();
+        });
+        this.on('pointerleave', () => {
+            this.isUnitHovered = false;
+            this.hideFollowerMarkers();
+        });
     }
 
     protected playAnimation(name: string): void {
@@ -174,12 +186,15 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         let best: ICombatant | null = null;
         let bestScore = -Infinity;
 
-        for (const c of this.allCombatants) {
-            if (!this.isHostile(c) || c.isDead || c.lane !== this.lane) continue;
+        const candidates = queryNearby(this.allCombatants, {
+            origin: this.pos,
+            radius: this.config.detectionRange,
+            lane: this.lane,
+            excludeSelf: this,
+        }).filter(c => this.isHostile(c) && !c.isDead);
 
+        for (const c of candidates) {
             const d = c.globalPos.distance(this.pos);
-            if (d > this.config.detectionRange) continue;
-
             const score = this.scoreTarget(c, d);
             if (score > bestScore) {
                 best = c;
@@ -265,6 +280,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     override onPostUpdate(_engine: Engine, _elapsedMs: number): void {
+        if (!import.meta.env.DEV) return; // Skip debug drawing in production
         Debug.drawCircle(this.pos, this.config.detectionRange, { color: Color.Transparent, strokeColor: Color.Green, width: 1 });
         Debug.drawCircle(this.pos, this.effectiveAttackRange, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
         Debug.drawText(this.activity, this.pos.add(vec(0, -50)));

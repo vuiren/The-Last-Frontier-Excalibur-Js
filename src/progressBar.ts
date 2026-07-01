@@ -7,6 +7,10 @@ export class ProgressBar extends Actor {
   private barHeight: number;
   private barColor: Color;
 
+  // Allocated once in onInitialize, mutated in place after that
+  private bg!: Rectangle;
+  private fill!: Rectangle;
+
   constructor(
     pos: Vector,
     barWidth = 50,
@@ -23,47 +27,57 @@ export class ProgressBar extends Actor {
   }
 
   onInitialize(): void {
-    this.redraw();
-  }
-
-  setValue(current: number, max?: number): void {
-    if (max !== undefined) this.maxValue = max;
-    this.currentValue = clamp(current, 0, this.maxValue);
-    this.redraw();
-  }
-
-  setColor(color: Color): void {
-    this.barColor = color;
-    this.redraw();
-  }
-
-  get progress(): number {
-    return this.currentValue / this.maxValue;
-  }
-
-  private redraw(): void {
-    const fillW = this.barWidth * this.progress;
-
-    const bg = new Rectangle({
+    this.bg = new Rectangle({
       width: this.barWidth,
       height: this.barHeight,
       color: Color.fromHex('#333333'),
     });
 
-    const fill = new Rectangle({
-      width: Math.max(fillW, 0.01), // avoids zero-width graphic glitch
+    this.fill = new Rectangle({
+      width: this.barWidth,
       height: this.barHeight,
       color: this.barColor,
     });
 
+    // Set up the graphic group once — we'll mutate fill.width from here on
     this.graphics.use(
       new GraphicsGroup({
         useAnchor: false,
         members: [
-          { graphic: bg, offset: vec(0, 0) },
-          { graphic: fill, offset: vec(0, 0) },
+          { graphic: this.bg, offset: vec(0, 0) },
+          { graphic: this.fill, offset: vec(0, 0) },
         ],
       })
     );
+  }
+
+  show(): void {
+    this.graphics.isVisible = true;
+  }
+
+  hide(): void {
+    this.graphics.isVisible = false;
+  }
+
+  setValue(current: number, max?: number): void {
+    const maxChanged = max !== undefined && max !== this.maxValue;
+    if (max !== undefined) this.maxValue = max;
+
+    const next = clamp(current, 0, this.maxValue);
+    if (next === this.currentValue && !maxChanged) return; // nothing to update
+
+    this.currentValue = next;
+    if (this.fill) {
+      this.fill.width = Math.max(this.barWidth * this.progress, 0.01);
+    }
+  }
+
+  setColor(color: Color): void {
+    this.barColor = color;
+    if (this.fill) this.fill.color = color;
+  }
+
+  get progress(): number {
+    return this.currentValue / this.maxValue;
   }
 }

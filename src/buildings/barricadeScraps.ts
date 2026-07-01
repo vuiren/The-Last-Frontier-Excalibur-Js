@@ -5,6 +5,7 @@ import { IGroupable } from "../combatant";
 import { Faction, Lane } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { BuildingsManager } from "../buildingsManager";
+import { queryNearby } from "../proximityQuery";
 
 export class BarricadeScraps extends Actor {
     allGroupables: IGroupable[] = [];
@@ -39,9 +40,12 @@ export class BarricadeScraps extends Actor {
 
     override onPreUpdate(engine: Engine, delta: number): void {
         // Check for nearby groupables and apply buffs
-        const nearbyGroupables = this.allGroupables.filter(groupable => {
-            const distance = this.pos.distance(groupable.globalPos);
-            return groupable.activity === "idle" && groupable.faction === Faction.Player && distance < 50; // Adjust the radius as needed
+        const nearbyGroupables = queryNearby(this.allGroupables, {
+            origin: this.pos,
+            radius: 50,
+            lane: this.lane,
+            faction: Faction.Player,
+            activity: "idle",   // if you add activity to the filter
         });
 
         nearbyGroupables.forEach(groupable => {

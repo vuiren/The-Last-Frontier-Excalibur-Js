@@ -67,9 +67,10 @@ export class CaptureZone extends Actor {
 
         if (this.captureProgress >= 100) {
             this.playAnimation("Captured");
-            this.progressBar.kill();
+            this.progressBar.hide();
             this.scale = vec(4, 4);
         } else {
+            this.progressBar.show();
             this.playAnimation("NotCaptured");
             const scale = 2 + 2 * (this.captureProgress / 100);
             this.scale = vec(scale, scale);

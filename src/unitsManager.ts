@@ -1,8 +1,8 @@
-import { Scene, Vector } from "excalibur";
+import { Scene } from "excalibur";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
 import { EnemyUnit } from "./units/enemyUnit";
 import { UnitConfigs, UnitConfigKey } from "./unitConfigs";
-import { FrontGroundYLevel, Lane } from "./constants";
+import { Lane } from "./constants";
 import { ICombatant, IGroupable } from "./combatant";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
@@ -12,6 +12,7 @@ export class UnitsManager {
     allCombatants: ICombatant[] = [];
     allGroupables: IGroupable[] = [];
     collisionManager: UnitsCollisionManager;
+    groupsManager: GroupsManager;
 
     onUnitAdded?: (unit: IGroupable) => void;
     onUnitRemoved?: (unit: IGroupable) => void;
@@ -20,6 +21,7 @@ export class UnitsManager {
         this.allCombatants = allCombatants;
         this.allGroupables = allGroupables;
         this.collisionManager = new UnitsCollisionManager(this.allGroupables, groupsManager);
+        this.groupsManager = groupsManager;
     }
 
     spawnPlayerUnit(
