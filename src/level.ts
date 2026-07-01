@@ -103,14 +103,12 @@ export class MyLevel extends Scene {
                 } else {
                     const group = unit.groupRef ?? this.groupsManager.createGroup(unit);
                     this.groupsManager.addToGroup(other, group);
-                    console.log(`${other.id} added to group ${group}`);
                 }
 
                 processedUnits.add(other);
             });
 
             processedUnits.add(unit);
-            console.log(`${unit.id} colliding with ${collidingWith.map(u => u.id).join(', ')}`);
         });
 
         this.groupsManager.update();

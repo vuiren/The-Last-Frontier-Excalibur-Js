@@ -131,7 +131,6 @@ export class PlayerUnit extends Unit {
     // Selects this unit (and group members if leader). Purely unit-side state + tint.
     select(selectColor = Color.Red): void {
         if(this.isSelected) return
-        console.log("Selecting unit: " + this.name)
         this.isSelected = true;
         this.setTint(selectColor);
         this.propagateToGroupMembers(m => m.select());
@@ -139,7 +138,6 @@ export class PlayerUnit extends Unit {
 
     deselect(): void {
         if(!this.isSelected) return
-        console.log("Deselecting unit: " + this.name)
         this.isSelected = false;
         this.setTint(Color.White);
         this.propagateToGroupMembers(m => m.deselect());

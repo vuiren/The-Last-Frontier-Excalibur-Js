@@ -12,7 +12,6 @@ export class EnemyUnit extends Unit {
 
     constructor(posX: number, allUnits: ICombatant[], config: UnitConfig, lane: Lane) {
         super(posX, config, allUnits, lane);
-        console.log(`Spawned enemy at ${this.pos.x}, ${this.pos.y} in lane ${lane}`);
     }
 
     protected override selectActivity(): UnitActivity {

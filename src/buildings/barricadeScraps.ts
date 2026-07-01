@@ -46,7 +46,6 @@ export class BarricadeScraps extends Actor {
 
         nearbyGroupables.forEach(groupable => {
             this.buildProgress += this.buildProgressIncreaseRate * delta;
-            console.log(`Applying barricade buff to groupable with ID: ${groupable.id}`);
         });
 
         this.progressBar.setValue(this.buildProgress);
@@ -54,7 +53,7 @@ export class BarricadeScraps extends Actor {
 
         if (this.buildProgress >= 100) {
             this.buildProgress = 100;
-            this.buildingsManager.spawnBarricade(engine.currentScene, this.pos, Faction.Player, this.lane);
+            this.buildingsManager.spawnBarricade(engine.currentScene, this.pos.x, Faction.Player, this.lane);
             this.kill();
             this.progressBar.kill();
         }

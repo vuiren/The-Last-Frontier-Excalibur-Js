@@ -47,7 +47,6 @@ export class Bullet extends Actor {
         );
 
         if (hitTarget !== undefined) {
-            console.log("Dealt damage")
             hitTarget.takeDamage(this.damage, this.direction.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left)
             this.kill()
         }

@@ -26,7 +26,6 @@ export class AnimComponent {
     setTint(color: Color): void {
         if (this.current){
             this.currentTint = color;
-            console.log("Setting tint to " + color)
             this.current.tint = color;
         } 
     }
