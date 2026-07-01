@@ -1,4 +1,4 @@
-import { Engine, Scene, vec } from "excalibur";
+import { Engine, ExcaliburGraphicsContext, Scene, vec } from "excalibur";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
 import { BackGroundYLevel, Faction, FrontGroundYLevel, Lane } from "./constants";
@@ -114,11 +114,11 @@ export class MyLevel extends Scene {
         this.groupsManager.update();
     }
 
-    onPostUpdate(engine: ex.Engine, delta: number) {
+    onPostUpdate(engine: Engine, delta: number) {
         this.dashOffset = (this.dashOffset + delta * 0.04) % (this.dashLen + this.gapLen);
     }
 
-    onPreDraw(ctx: ex.ExcaliburGraphicsContext) {
+    onPreDraw(ctx: ExcaliburGraphicsContext) {
         for (const group of this.groupsManager.groups) {
             for (let i = 0; i < group.members.length - 1; i++) {
                 const fromScreen = this.engine.worldToScreenCoordinates(group.members[i].globalPos);

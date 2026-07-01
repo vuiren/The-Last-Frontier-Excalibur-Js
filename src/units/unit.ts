@@ -80,13 +80,19 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.playAnimation("Idle");
 
         this.on('pointerenter', () => {
-            this.isUnitHovered = true;
-            this.showFollowerMarkers();
+            this.onPointerEnter();
         });
         this.on('pointerleave', () => {
-            this.isUnitHovered = false;
-            this.hideFollowerMarkers();
+            this.onPointerLeave();
         });
+    }
+
+    onPointerEnter() {
+        this.isUnitHovered = true;
+    }
+
+    onPointerLeave() {
+        this.isUnitHovered = false;
     }
 
     protected playAnimation(name: string): void {

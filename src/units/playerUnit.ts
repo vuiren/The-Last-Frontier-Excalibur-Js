@@ -1,4 +1,4 @@
-import { Vector, Engine, Color, vec } from "excalibur";
+import { Vector, Engine, Color } from "excalibur";
 import { ICombatant } from "../combatant";
 import { GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
@@ -8,13 +8,12 @@ import { UnitMoveMarker } from "../unitMoveMarker";
 import { Unit, UnitActivity } from "./unit";
 import { UnitsManager } from "../unitsManager";
 
-
 export class PlayerUnit extends Unit {
     isSelected = false;
     moveMarker!: UnitMoveMarker;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
-    private closestEnemy: ICombatant | null = null;
+    private bestEnemy: ICombatant | null = null;
     private unitsManager: UnitsManager;
 
     constructor(
@@ -32,11 +31,43 @@ export class PlayerUnit extends Unit {
         super.onInitialize(engine);
         this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.globalPos);
 
-        // Wire marker drag events — the marker reports back, we decide what it means
         this.moveMarker.onHoverStart = () => this.select();
         this.moveMarker.onHoverEnd = () => this.deselect();
         this.moveMarker.onDragEnd = (destination) => this.moveTo(destination);
+        this.moveMarker.onDragStart = () => this.extractFromGroupIfFollower();
+
+        this.pointer.useGraphicsBounds = true;
     }
+
+    override onPointerEnter() {
+        super.onPointerEnter();
+        if(this.activity === "idle") {
+            this.toggleFollowerMarkers(true);
+        }
+    }
+    
+    override onPointerLeave() {
+        super.onPointerLeave();
+        this.toggleFollowerMarkers(false);
+    }
+    // ------------------------------------------------------------------ //
+    //  Group split                                                         //
+    // ------------------------------------------------------------------ //
+
+    private toggleFollowerMarkers(set: boolean): void {
+        if (!this.groupRef || this.groupRef.leader.id === this.id) return;
+        this.moveMarker.setFollowerMode(set);
+
+    }
+
+    private extractFromGroupIfFollower(): void {
+        if (!this.groupRef || this.groupRef.leader.id === this.id) return;
+        this.unitsManager.groupsManager.removeFromAnyGroup(this);
+    }
+
+    // ------------------------------------------------------------------ //
+    //  Activity selection                                                  //
+    // ------------------------------------------------------------------ //
 
     protected override selectActivity(): UnitActivity {
         if (this.isDead) return "dead";
@@ -51,19 +82,18 @@ export class PlayerUnit extends Unit {
             this.groupRef.spreadNow();
         }
 
-        this.closestEnemy = this.findBestEnemy();
+        this.bestEnemy = this.findBestEnemy();
         const isOutOfDistanceFromDestination = this.globalPos.distance(this.orderedDestination) > 5;
 
-        if (this.closestEnemy) this.hasSightedEnemy = true;
+        if (this.bestEnemy) this.hasSightedEnemy = true;
 
-        // Arriving clears the move order
         if (!isOutOfDistanceFromDestination) {
             this.hasActiveOrder = false;
         }
 
         switch (this.activity) {
             case "moving":
-                if (!this.hasActiveOrder && this.closestEnemy && this.isInAttackRange(this.closestEnemy)) {
+                if (!this.hasActiveOrder && this.bestEnemy && this.isInAttackRange(this.bestEnemy)) {
                     return "attacking";
                 }
                 if (isOutOfDistanceFromDestination) return "moving";
@@ -71,12 +101,13 @@ export class PlayerUnit extends Unit {
 
             case "attacking":
                 if (isOutOfDistanceFromDestination) return "moving";
-                if (this.closestEnemy && this.isInAttackRange(this.closestEnemy)) return "attacking";
+                if (this.bestEnemy && this.isInAttackRange(this.bestEnemy)) return "attacking";
                 return "idle";
         }
 
-        if (this.closestEnemy && this.isInAttackRange(this.closestEnemy)) return "attacking";
+        if (this.bestEnemy && this.isInAttackRange(this.bestEnemy)) return "attacking";
         if (isOutOfDistanceFromDestination) return "moving";
+        if(this.isUnitHovered) return "greeting";
         return "idle";
     }
 
@@ -84,7 +115,7 @@ export class PlayerUnit extends Unit {
         switch (activity) {
             case "attacking":
                 this.orderedDestination = this.globalPos;
-                this.lookDirection = this.closestEnemy!.globalPos.x < this.globalPos.x
+                this.lookDirection = this.bestEnemy!.globalPos.x < this.globalPos.x
                     ? HorizontalDirection.Left
                     : HorizontalDirection.Right;
                 if (!this.moveMarker.isDragging) {
@@ -98,28 +129,33 @@ export class PlayerUnit extends Unit {
         switch (activity) {
             case "movingAndAttacking":
                 this.moveTowardDestination();
-                this.tryPerformAttack(this.findBestEnemy()!);
+                this.tryPerformAttack(this.bestEnemy!);
                 break;
             case "attacking":
-                this.vel = Vector.Zero;
-                this.tryPerformAttack(this.findBestEnemy()!);
+                this.vel.setTo(0, 0);
+                this.tryPerformAttack(this.bestEnemy!);
                 break;
             case "moving":
             case "crossingBridge":
                 this.moveTowardDestination();
                 break;
             case "idle":
-                this.vel = Vector.Zero;
+                this.vel.setTo(0, 0);
                 break;
         }
     }
 
     private tryPerformAttack(enemy: ICombatant): void {
+        if (!enemy) return;
         if (this.attackCooldown <= 0) {
             this.performAttack(enemy);
             this.attackCooldown = this.config.attackCooldown;
         }
     }
+
+    // ------------------------------------------------------------------ //
+    //  Movement                                                            //
+    // ------------------------------------------------------------------ //
 
     override moveTo(destination: Vector): void {
         super.moveTo(destination);
@@ -128,22 +164,24 @@ export class PlayerUnit extends Unit {
         }
     }
 
-    // Selects this unit (and group members if leader). Purely unit-side state + tint.
+    // ------------------------------------------------------------------ //
+    //  Selection                                                           //
+    // ------------------------------------------------------------------ //
+
     select(selectColor = Color.Red): void {
-        if(this.isSelected) return
+        if (this.isSelected) return;
         this.isSelected = true;
         this.setTint(selectColor);
         this.propagateToGroupMembers(m => m.select());
     }
 
     deselect(): void {
-        if(!this.isSelected) return
+        if (!this.isSelected) return;
         this.isSelected = false;
         this.setTint(Color.White);
         this.propagateToGroupMembers(m => m.deselect());
     }
 
-    // Propagates an action to all non-leader group members, if this unit is the leader.
     private propagateToGroupMembers(action: (member: PlayerUnit) => void): void {
         if (!this.groupRef || this.groupRef.leader.id !== this.id) return;
         for (const member of this.groupRef.members) {
@@ -153,8 +191,14 @@ export class PlayerUnit extends Unit {
         }
     }
 
+    // ------------------------------------------------------------------ //
+    //  Group membership                                                    //
+    // ------------------------------------------------------------------ //
+
     override joinGroup(group: Group): void {
         super.joinGroup(group);
+        // Followers hide their own leader-style marker; it reappears as a
+        // small follower handle when the group is hovered.
         if (this.id !== group.leader.id) this.moveMarker.setVisible(false);
     }
 
