@@ -2,7 +2,7 @@ import { Vector } from "excalibur";
 import { HorizontalDirection, Lane } from "../constants";
 import { Unit, UnitActivity } from "./unit";
 import { UnitConfig } from "../unitConfigs";
-import { ICombatant } from "../combatant";
+import { ICombatant, IGroupable } from "../combatant";
 
 export class EnemyUnit extends Unit {
     wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination
@@ -10,8 +10,8 @@ export class EnemyUnit extends Unit {
     aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
     detectedEnemy: ICombatant | null = null;
 
-    constructor(posX: number, allUnits: ICombatant[], config: UnitConfig, lane: Lane) {
-        super(posX, config, allUnits, lane);
+    constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig, lane: Lane) {
+        super(posX, config, allUnits, allGroupables, lane);
     }
 
     protected override selectActivity(): UnitActivity {
@@ -47,6 +47,11 @@ export class EnemyUnit extends Unit {
             case "moving":
                 this.moveTowardDestination();
                 break;
+            case "stunned":
+                this.vel = this.lastDamageDirection === HorizontalDirection.Right
+                    ? Vector.Left.scale(50)
+                    : Vector.Right.scale(50);
+                break;
             case "chasing":
                 if (enemy) {
                     this.moveTowardEnemy(enemy);
@@ -71,6 +76,9 @@ export class EnemyUnit extends Unit {
             case "idle":
                 this.vel = Vector.Zero;
                 break;
+            case "dead":
+                this.vel = Vector.Zero;
+                break;
         }
     }
 
@@ -80,7 +88,6 @@ export class EnemyUnit extends Unit {
         if (this.isDead) return;
 
         this.increaseAggression(damage);
-
         const { hitReactChance } = this.config;
         if (hitReactChance && Math.random() > hitReactChance) return;
 

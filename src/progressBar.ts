@@ -16,9 +16,10 @@ export class ProgressBar extends Actor {
     barWidth = 50,
     barHeight = 6,
     maxValue = 100,
-    color = Color.Green
+    color = Color.Green,
+    z = 1,
   ) {
-    super({ pos: pos, anchor: vec(0.5, 1) });
+    super({ pos: pos, anchor: vec(0.5, 1), z: z });
     this.barWidth = barWidth;
     this.barHeight = barHeight;
     this.maxValue = maxValue;

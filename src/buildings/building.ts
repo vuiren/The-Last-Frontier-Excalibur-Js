@@ -47,9 +47,13 @@ export class Building extends Actor implements ICombatant {
         this.health -= damage;
         this.healthBar.setValue(this.health);
         if (this.health <= 0) {
-            this.isDead = true;
-            this.healthBar.kill();
-            this.kill();
+            this.onDeath();
         }
+    }
+
+    onDeath(): void {
+        this.isDead = true;
+        this.healthBar.kill();
+        this.kill();
     }
 }

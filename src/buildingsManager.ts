@@ -1,8 +1,9 @@
 import { Scene } from "excalibur";
-import { ICombatant } from "./combatant";
+import { ICombatant, IGroupable } from "./combatant";
 import { Faction, Lane } from "./constants";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
+import { UnitsManager } from "./unitsManager";
 
 export class BuildingsManager {
     allBuildings: ICombatant[] = [];
@@ -14,8 +15,8 @@ export class BuildingsManager {
         this.allBuildings = allBuildings;
     }
 
-    spawnPlayerBase(scene: Scene, posX: number, faction: Faction, lane: Lane): PlayerBase {
-        const playerBase = new PlayerBase(posX, faction, 100, lane);
+    spawnPlayerBase(scene: Scene, posX: number, faction: Faction, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]): PlayerBase {
+        const playerBase = new PlayerBase(posX, faction, 100, lane, unitsManager, allGroupables);
         this.allBuildings.push(playerBase);
         playerBase.on('died', () => this.removeBuilding(playerBase));
         this.onBuildingAdded?.(playerBase);

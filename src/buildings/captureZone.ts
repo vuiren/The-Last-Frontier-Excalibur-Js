@@ -9,7 +9,7 @@ export class CaptureZone extends Actor {
     allGroupables: IGroupable[] = [];
     captureProgress: number = 0;
 
-    captureProgressIncreaseRate: number = 0.1; // Adjust this value to control how fast the barricade scraps build up
+    captureProgressIncreaseRate: number = 0.01;
     faction: Faction = Faction.Player; // The faction that currently controls the zone, default to Player
     private animComponent: AnimComponent;
     private progressBar: ProgressBar;
@@ -18,13 +18,13 @@ export class CaptureZone extends Actor {
     private nearbyEnemyCount: number = 0;
 
     constructor(startPosition: Vector, allGroupables: IGroupable[], lane: Lane) {
-        super({ name: 'CaptureZone', pos: startPosition, width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
+        super({ name: 'CaptureZone', pos: startPosition, width: 32, height: 32, z: -1, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
         this.scale = vec(4, 4);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.allGroupables = allGroupables;
-        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -50)), 32, 6, 100, Color.Red);
+        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -100)), 32, 6, 100, Color.Red);
     }
 
     override onInitialize(engine: Engine): void {

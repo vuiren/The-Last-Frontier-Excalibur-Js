@@ -1,5 +1,5 @@
 import { Vector, Engine, Color } from "excalibur";
-import { ICombatant } from "../combatant";
+import { ICombatant, IGroupable } from "../combatant";
 import { GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
 import { spawnDeadSoldier, spawnUnitMoveMarker } from "../spawnFunctions";
@@ -19,11 +19,12 @@ export class PlayerUnit extends Unit {
     constructor(
         posX: number,
         allCombatants: ICombatant[],
+        allGroupables: IGroupable[],
         config: UnitConfig,
         unitsManager: UnitsManager,
         startLane = Lane.Front,
     ) {
-        super(posX, config, allCombatants, startLane);
+        super(posX, config, allCombatants, allGroupables, startLane);
         this.unitsManager = unitsManager;
     }
 
@@ -57,7 +58,6 @@ export class PlayerUnit extends Unit {
     private toggleFollowerMarkers(set: boolean): void {
         if (!this.groupRef || this.groupRef.leader.id === this.id) return;
         this.moveMarker.setFollowerMode(set);
-
     }
 
     private extractFromGroupIfFollower(): void {

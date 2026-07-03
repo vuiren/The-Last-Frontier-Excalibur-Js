@@ -8,12 +8,13 @@ import { ProgressBar } from "../progressBar";
 import { UnitConfig } from "../unitConfigs";
 import { queryNearby } from "../proximityQuery";
 
-export type UnitActivity = "idle" | "greeting" | "moving" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
+export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
 
 const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     idle: "Idle",
-    greeting: "Walking",
+    greeting: "Greeting",
     moving: "Walking",
+    stunned: "Walking",
     attacking: "Shooting",
     movingAndAttacking: "RunNShoot",
     crossingBridge: "Walking",
@@ -21,6 +22,7 @@ const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
 
 export class Unit extends Actor implements ICombatant, IGroupable {
     allCombatants: ICombatant[] = [];
+    allGroupables: IGroupable[] = [];
     health: number;
     lane: Lane;
     groupRef: Group | null = null;
@@ -35,15 +37,17 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     faction: Faction;
     attackPriority: number = 0;
     isUnitHovered = false;
-
+    tookDamageLastFrame = false;
+    lastDamageDirection: HorizontalDirection | null = null;
     private healthBar: ProgressBar;
     private animComponent: AnimComponent;
 
-    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], startLane = Lane.Front) {
+    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], allGroupables: IGroupable[], startLane = Lane.Front) {
         const startPosition = vec(startX, GetYLevel(startLane));
         super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1) });
         this.config = config;
         this.allCombatants = allCombatants;
+        this.allGroupables = allGroupables;
         this.orderedDestination = startPosition;
         this.lane = startLane;
         this.health = config.health;
@@ -240,6 +244,8 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {
         if (this.isDead) return;
+        this.tookDamageLastFrame = true;
+        this.lastDamageDirection = hitDirection;
         this.health -= damage;
         this.healthBar.setValue(this.health);
         if (this.health <= 0) {

@@ -12,7 +12,7 @@ export class BarricadeScraps extends Actor {
     buildProgress: number = 0;
     buildingsManager: BuildingsManager;
 
-    buildProgressIncreaseRate: number = 0.1; // Adjust this value to control how fast the barricade scraps build up
+    buildProgressIncreaseRate: number = 0.01;
 
     private animComponent: AnimComponent;
     private progressBar: ProgressBar;

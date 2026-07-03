@@ -3,7 +3,7 @@ import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitsManager } from "./unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { DeadSoldier } from "./deadSoldier";
-import { Faction, Lane } from "./constants";
+import { Lane } from "./constants";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
 import { IGroupable } from "./combatant";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
@@ -28,8 +28,8 @@ export function spawnChangeLaneButton(scene: Scene, pos: Vector, allGroupables: 
     scene.add(button);
 }
 
-export function spawnInfectedFarmHouse(scene: Scene, posX: number, faction: Faction, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
-    const infectedBuilding = new InfectedBuilding(posX, faction, health, lane, unitsManager, allGroupables);
+export function spawnInfectedFarmHouse(scene: Scene, posX: number, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
+    const infectedBuilding = new InfectedBuilding(posX, health, lane, unitsManager, allGroupables);
     scene.add(infectedBuilding);
 }
 

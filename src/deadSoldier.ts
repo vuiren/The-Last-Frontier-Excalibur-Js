@@ -40,7 +40,7 @@ export class DeadSoldier extends Actor {
         this.progressBar.setValue(this.revivalProgress);
 
         if (!this.spawnedUnit && this.revivalProgress >= 1000) {
-            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos, "enemyZombie", this.lane);
+            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos.x, "enemyZombie", this.lane);
             this.kill();
             this.progressBar.kill();
             this.spawnedUnit = true;

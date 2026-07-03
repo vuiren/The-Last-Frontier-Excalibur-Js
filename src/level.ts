@@ -53,13 +53,13 @@ export class MyLevel extends Scene {
         this.unitsManager.spawnEnemyUnit(this, 700, "enemyZombie", Lane.Front)
         this.unitsManager.spawnEnemyUnit(this, 650, "enemyZombie", Lane.Back)
 
-        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Front)
+        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Front, this.unitsManager, this.allGroupables)
         this.buildingsManager.spawnBarricade(this, 200, Faction.Player, Lane.Front)
-        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Back)
+        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Back, this.unitsManager, this.allGroupables)
 
 
-        spawnInfectedFarmHouse(this, 650, Faction.Enemy, 100, Lane.Front, this.unitsManager, this.allGroupables)
-        spawnInfectedFarmHouse(this, 650, Faction.Enemy, 100, Lane.Back, this.unitsManager, this.allGroupables)
+        spawnInfectedFarmHouse(this, 650, 100, Lane.Front, this.unitsManager, this.allGroupables)
+        spawnInfectedFarmHouse(this, 650, 100, Lane.Back, this.unitsManager, this.allGroupables)
 
         spawnCaptureZone(this, vec(330, FrontGroundYLevel), this.allGroupables, Lane.Front)
 

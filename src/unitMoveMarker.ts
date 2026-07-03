@@ -90,7 +90,7 @@ export class UnitMoveMarker extends Actor {
         this.graphics.isVisible = visible;
         this.pointer.useGraphicsBounds = visible;
         this.isHidden = !visible;
-            this.scale = GetScaleByLane(this.assignedUnit.lane).scale(Follower_Scale);
+        this.scale = GetScaleByLane(this.assignedUnit.lane).scale(Follower_Scale);
 
         // Snap immediately so there is no 1-frame flash at the stale position.
         if (visible) this.pos = this.assignedUnit.pos;

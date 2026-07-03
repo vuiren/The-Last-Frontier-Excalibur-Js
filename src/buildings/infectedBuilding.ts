@@ -7,22 +7,27 @@ import { IGroupable } from "../combatant";
 import { UnitsManager } from "../unitsManager";
 
 export class InfectedBuilding extends Building {
-    spawnDelay = 500000;
-    remainingSpawnDelay = 0;
     allGroupables: IGroupable[];
 
     private unitsManager: UnitsManager;
     private progressBar: ProgressBar;
     private spawnProgressIncreaseRate: number = 0.1;
     private spawnProgress: number = 0;
+    private spawnDelay = 5000;
 
-    constructor(xPos: number, faction: Faction, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
+    constructor(xPos: number, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
         const startPosition = vec(xPos, GetYLevel(lane));
-        super({ name: 'InfectedBuilding', pos: startPosition, width: 48, height: 32, z: -2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, faction, health, lane);
+        super({ name: 'InfectedBuilding', pos: startPosition, width: 48, height: 32, z: -2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, health, lane);
         
-        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -80)), 32, 6, 100, Color.Red);
+        this.progressBar = new ProgressBar(startPosition.add(vec(-25, lane === Lane.Front ? -140 : -70)), 40, 6, this.spawnDelay, Color.Red);
+        this.progressBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
         this.unitsManager = unitsManager;
         this.allGroupables = allGroupables;
+    }
+
+    override onInitialize(engine: Engine): void {
+        super.onInitialize(engine);
+        engine.currentScene.add(this.progressBar);
     }
 
     override onPreUpdate(engine: Engine, delta: number): void {

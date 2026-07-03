@@ -1,6 +1,6 @@
 import { Vector } from "excalibur";
 import { Faction, Lane } from "./constants";
-import { ICombatant } from "./combatant";
+import { ICombatant, IGroupable } from "./combatant";
 import { UnitActivity } from "./units/unit";
 
 export interface ProximityFilter {
@@ -9,7 +9,7 @@ export interface ProximityFilter {
     lane?: Lane;
     faction?: Faction;
     activity?: UnitActivity;
-    excludeSelf?: ICombatant;
+    excludeSelf?: IGroupable;
 }
 
 export function queryNearby(
@@ -20,6 +20,20 @@ export function queryNearby(
         if (filter.excludeSelf && c === filter.excludeSelf) return false;
         if (filter.lane !== undefined && c.lane !== filter.lane) return false;
         if (filter.faction !== undefined && c.faction !== filter.faction) return false;
+        if (c.globalPos.distance(filter.origin) > filter.radius) return false;
+        return true;
+    });
+}
+
+export function queryNearbyWithActivity(
+    candidates: IGroupable[],
+    filter: ProximityFilter
+): IGroupable[] {
+    return candidates.filter(c => {
+        if (filter.excludeSelf && c === filter.excludeSelf) return false;
+        if (filter.lane !== undefined && c.lane !== filter.lane) return false;
+        if (filter.faction !== undefined && c.faction !== filter.faction) return false;
+        if (filter.activity !== undefined && c.activity !== filter.activity) return false;
         if (c.globalPos.distance(filter.origin) > filter.radius) return false;
         return true;
     });

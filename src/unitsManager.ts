@@ -31,7 +31,7 @@ export class UnitsManager {
         startLane: Lane,
     ) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, config, this, startLane);
+        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this, startLane);
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
         unit.config.attackCooldown = config.attackCooldown;
@@ -41,7 +41,7 @@ export class UnitsManager {
 
     spawnEnemyUnit(scene: Scene, posX: number, configKey: UnitConfigKey, startLane: Lane) {
         const config = UnitConfigs[configKey];
-        const unit = new EnemyUnit(posX, this.allCombatants, config, startLane);
+        const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config, startLane);
 
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
