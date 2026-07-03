@@ -26,14 +26,20 @@ export function spawnDeadSoldier(scene: Scene, pos: Vector, unitsManager: UnitsM
 export function spawnChangeLaneButton(scene: Scene, pos: Vector, allGroupables: IGroupable[], lane: Lane) {
     const button = new ChangeLaneButton(pos, allGroupables, lane);
     scene.add(button);
+
+    return button;
 }
 
 export function spawnInfectedFarmHouse(scene: Scene, posX: number, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
     const infectedBuilding = new InfectedBuilding(posX, health, lane, unitsManager, allGroupables);
     scene.add(infectedBuilding);
+
+    return infectedBuilding;
 }
 
 export function spawnCaptureZone(scene: Scene, pos: Vector, allGroupables: IGroupable[], lane: Lane) {
     const captureZone = new CaptureZone(pos, allGroupables, lane);
     scene.add(captureZone);
+
+    return captureZone;
 }

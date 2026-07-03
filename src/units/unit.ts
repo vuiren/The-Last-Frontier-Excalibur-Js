@@ -55,7 +55,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
 
-        this.healthBar = new ProgressBar(vec(0, 0), 20, 6, config.health);
+        this.healthBar = new ProgressBar(vec(0, 0), 16, 6, config.health);
         this.healthBar.scale = GetHealthBarScaleByLane(startLane);
     }
 
@@ -147,11 +147,11 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         if (this.lane === Lane.Back) {
             percent = currentY / backY;
             this.scale = GetScaleByLane(Lane.Back).scale(percent);
-            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Back).scale(percent);
+           // this.healthBar.scale = GetHealthBarScaleByLane(Lane.Back).scale(percent);
         } else {
             percent = currentY / frontY;
             this.scale = GetScaleByLane(Lane.Front).scale(percent);
-            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Front).scale(percent);
+         //   this.healthBar.scale = GetHealthBarScaleByLane(Lane.Front).scale(percent);
         }
     }
 

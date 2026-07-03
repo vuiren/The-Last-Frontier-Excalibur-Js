@@ -1,4 +1,5 @@
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
+import { LdtkResource } from "@excaliburjs/plugin-ldtk";
 import { ImageSource, Loader } from "excalibur";
 
 export const Resources = {
@@ -18,6 +19,9 @@ export const Resources = {
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
+
+  FirstLevel: new LdtkResource('./ldtk/FirstLevel.ldtk'),
+
 } as const;
 
 export const loader = new Loader();

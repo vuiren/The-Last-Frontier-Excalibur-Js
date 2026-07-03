@@ -10,6 +10,7 @@ import { drawDottedLine } from "./drawDottedLine";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
 import { spawnCaptureZone, spawnInfectedFarmHouse } from "./spawnFunctions";
+import { importLdtkLevel } from "./ldtkImporter";
 
 export class MyLevel extends Scene {
     allGroupables: IGroupable[] = [];
@@ -42,37 +43,20 @@ export class MyLevel extends Scene {
         btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
         btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
 
-        this.unitsManager.spawnPlayerUnit(this, 200, "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, 250, "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, 150, "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, 100, "playerSoldier", Lane.Front)
-        this.unitsManager.spawnPlayerUnit(this, 300, "playerSoldier", Lane.Back)
+        importLdtkLevel(this, {
+            unitsManager: this.unitsManager,
+            buildingsManager: this.buildingsManager,
+            allGroupables: this.allGroupables,
+        });
+      //  spawnCaptureZone(this, vec(330, FrontGroundYLevel), this.allGroupables, Lane.Front)
 
-        this.unitsManager.spawnEnemyUnit(this, 600, "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, 650, "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, 700, "enemyZombie", Lane.Front)
-        this.unitsManager.spawnEnemyUnit(this, 650, "enemyZombie", Lane.Back)
+     //   const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allGroupables, Lane.Front);
+    //    const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allGroupables, Lane.Back);
+     //   this.add(changeLaneButtonFront);
+     //   this.add(changeLaneButtonBack);
 
-        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Front, this.unitsManager, this.allGroupables)
-        this.buildingsManager.spawnBarricade(this, 200, Faction.Player, Lane.Front)
-        this.buildingsManager.spawnPlayerBase(this, 100, Faction.Player, Lane.Back, this.unitsManager, this.allGroupables)
-
-
-        spawnInfectedFarmHouse(this, 650, 100, Lane.Front, this.unitsManager, this.allGroupables)
-        spawnInfectedFarmHouse(this, 650, 100, Lane.Back, this.unitsManager, this.allGroupables)
-
-        spawnCaptureZone(this, vec(330, FrontGroundYLevel), this.allGroupables, Lane.Front)
-
-        const bridge = new Bridge(vec(300, 420))
-        this.add(bridge);
-
-        const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allGroupables, Lane.Front);
-        const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allGroupables, Lane.Back);
-        this.add(changeLaneButtonFront);
-        this.add(changeLaneButtonBack);
-
-        const barricadeScraps = new BarricadeScraps(vec(-100, FrontGroundYLevel), this.allGroupables, this.buildingsManager, Lane.Front);
-        this.add(barricadeScraps);
+      //  const barricadeScraps = new BarricadeScraps(vec(-100, FrontGroundYLevel), this.allGroupables, this.buildingsManager, Lane.Front);
+      //  this.add(barricadeScraps);
     }
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
