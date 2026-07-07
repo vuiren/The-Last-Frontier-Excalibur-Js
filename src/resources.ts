@@ -20,7 +20,7 @@ export const Resources = {
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
 
-  FirstLevel: new LdtkResource('./ldtk/FirstLevel.ldtk'),
+  FirstLevel: new LdtkResource('./Ldtk/FirstLevel.ldtk'),
 
 } as const;
 
