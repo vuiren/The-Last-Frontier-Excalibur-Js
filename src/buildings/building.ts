@@ -23,7 +23,7 @@ export class Building extends Actor implements ICombatant {
         this.faction = faction;
         this.health = health;
         this.lane = lane;
-        this.healthBar = new ProgressBar(vec(this.pos.x - 25, lane === Lane.Front ? this.pos.y - 150 : this.pos.y - 80), 50, 6, 100, Color.DarkGray);
+        this.healthBar = new ProgressBar(vec(this.pos.x - 8, lane === Lane.Front ? this.pos.y - 50 : this.pos.y - 25), 16, 4, 100, Color.DarkGray);
         this.animComponent = new AnimComponent(asepriteResouce);
         this.scale = GetScaleByLane(lane);
         this.healthBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);

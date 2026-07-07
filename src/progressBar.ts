@@ -13,8 +13,8 @@ export class ProgressBar extends Actor {
 
   constructor(
     pos: Vector,
-    barWidth = 16,
-    barHeight = 6,
+    barWidth = 4,
+    barHeight = 1,
     maxValue = 100,
     color = Color.Green,
     z = 1,

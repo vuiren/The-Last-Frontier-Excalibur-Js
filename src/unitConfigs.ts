@@ -18,8 +18,8 @@ export interface UnitConfig {
 export const UnitConfigs = {
     playerSoldier: {
         health: 50,
-        speed: 150,
-        detectionRange: 250,
+        speed: 35,
+        detectionRange: 60,
         attackCooldown: 500,
         attackType: AttackType.Ranged,
         faction: Faction.Player,
@@ -29,9 +29,9 @@ export const UnitConfigs = {
 
     enemyZombie: {
         health: 250,
-        speed: 100,
-        attackRange: 50,
-        detectionRange: 200,
+        speed: 25,
+        attackRange: 12,
+        detectionRange: 50,
         attackCooldown: 700,
         attackType: AttackType.Melee,
         faction: Faction.Enemy,

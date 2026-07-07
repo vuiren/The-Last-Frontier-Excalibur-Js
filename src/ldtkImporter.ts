@@ -1,16 +1,11 @@
 import { FactoryProps, LdtkResource } from '@excaliburjs/plugin-ldtk';
 import { Scene } from 'excalibur';
-import { BuildingsManager } from './buildingsManager';
-import { Lane, Faction } from './constants';
-import { spawnInfectedFarmHouse } from './spawnFunctions';
-import { UnitsManager } from './unitsManager';
+import { Lane } from './constants';
 import { Resources } from './resources';
-import { IGroupable } from './combatant';
+import { EntitySpawner } from './entitySpawner';
 
 export interface LevelImportDeps {
-    unitsManager: UnitsManager;
-    buildingsManager: BuildingsManager;
-    allGroupables: IGroupable[];
+    entitySpawner: EntitySpawner;
 }
 
 // ---------------------------------------------------------------------------
@@ -36,49 +31,44 @@ function ldtkYToLane(worldY: number): Lane {
 //    Call this BEFORE addToScene()/before the resource is processed.
 // ---------------------------------------------------------------------------
 export function registerLevelFactories(
-    scene: Scene,
     deps: LevelImportDeps,
     resource: LdtkResource = Resources.FirstLevel,
 ): void {
-    const { unitsManager, buildingsManager, allGroupables } = deps;
+    const { entitySpawner } = deps;
 
     resource.registerEntityIdentifierFactories({
         // --- Player units (Units layer) ---
         PlayerSoldier: ({ worldPos }: FactoryProps) => {
-            return unitsManager.spawnPlayerUnit(scene, worldPos.x, 'playerSoldier', ldtkYToLane(worldPos.y));
+            return entitySpawner.spawnPlayerUnit(worldPos.x, 'playerSoldier', ldtkYToLane(worldPos.y));
         },
 
         // --- Enemy units (Zombies layer) ---
         Zombie: ({ worldPos }: FactoryProps) => {
-            return unitsManager.spawnEnemyUnit(scene, worldPos.x, 'enemyZombie', ldtkYToLane(worldPos.y));;
+            return entitySpawner.spawnEnemyUnit(worldPos.x, 'enemyZombie', ldtkYToLane(worldPos.y));;
         },
 
         // --- Player base (Buildings layer) ---
         Casarm: ({ worldPos }: FactoryProps) => {
-            return buildingsManager.spawnPlayerBase(
-                scene,
+            return entitySpawner.spawnPlayerBase(
                 worldPos.x,
-                Faction.Player,
                 ldtkYToLane(worldPos.y),
-                unitsManager,
-                allGroupables,
             );;
         },
 
         // --- Player barricade (Buildings layer) ---
         Barricade: ({ worldPos }: FactoryProps) => {
-            return buildingsManager.spawnBarricade(scene, worldPos.x, Faction.Player, ldtkYToLane(worldPos.y));
+            return entitySpawner.spawnBarricade(
+                worldPos.x,
+                ldtkYToLane(worldPos.y)
+            );
         },
 
         // --- Infected building (Infected_Buildings layer) ---
         Infected_Building: ({ worldPos }: FactoryProps) => {
-            return spawnInfectedFarmHouse(
-                scene,
+            return entitySpawner.spawnInfectedFarmHouse(
                 worldPos.x,
-                worldPos.y,
+                100,
                 ldtkYToLane(worldPos.y),
-                unitsManager,
-                allGroupables,
             );;
         },
     });
@@ -93,7 +83,7 @@ export function importLdtkLevel(
     deps: LevelImportDeps,
     resource: LdtkResource = Resources.FirstLevel,
 ): void {
-    registerLevelFactories(scene, deps, resource);
+    registerLevelFactories(deps, resource);
 
     // Draws the Floor & Bridges tile layers and runs the entity factories above.
     // useLevelOffsets:false keeps the level at (0,0); drop it to keep LDtk's world layout.

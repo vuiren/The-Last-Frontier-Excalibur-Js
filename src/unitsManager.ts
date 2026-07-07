@@ -1,10 +1,6 @@
 import { Scene } from "excalibur";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
-import { EnemyUnit } from "./units/enemyUnit";
-import { UnitConfigs, UnitConfigKey } from "./unitConfigs";
-import { Lane } from "./constants";
 import { ICombatant, IGroupable } from "./combatant";
-import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
 import { GroupsManager } from "./groupsManager";
 
@@ -24,33 +20,7 @@ export class UnitsManager {
         this.groupsManager = groupsManager;
     }
 
-    spawnPlayerUnit(
-        scene: Scene,
-        posX: number,
-        configKey: UnitConfigKey,
-        startLane: Lane,
-    ) {
-        const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this, startLane);
-        unit.config.speed = config.speed;
-        unit.config.detectionRange = config.detectionRange;
-        unit.config.attackCooldown = config.attackCooldown;
-
-        return this.registerUnit(scene, unit);
-    }
-
-    spawnEnemyUnit(scene: Scene, posX: number, configKey: UnitConfigKey, startLane: Lane) {
-        const config = UnitConfigs[configKey];
-        const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config, startLane);
-
-        unit.config.speed = config.speed;
-        unit.config.detectionRange = config.detectionRange;
-        unit.config.attackCooldown = config.attackCooldown;
-
-        return this.registerUnit(scene, unit);
-    }
-
-    private registerUnit(scene: Scene, unit: Unit) {
+    registerUnit(scene: Scene, unit: Unit) {
         this.allCombatants.push(unit);
         this.allGroupables.push(unit);
         this.collisionManager.collidingUnits.set(unit, []);

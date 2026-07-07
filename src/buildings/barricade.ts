@@ -4,9 +4,9 @@ import { Building } from "./building";
 import { Resources } from "../resources";
 
 export class Barricade extends Building {
-    constructor(posX: number, faction: Faction, health: number, lane: Lane) {
+    constructor(posX: number, health: number, lane: Lane) {
         const startPosition = vec(posX, GetYLevel(lane));
-        super({ name: 'Barricade', pos: startPosition, width: 16, height: 16, z: 1, anchor: vec(0.5, 1) }, Resources.Barricade, faction, health, lane);
+        super({ name: 'Barricade', pos: startPosition, width: 8, height: 4, z: 1, anchor: vec(0.5, 1) }, Resources.Barricade, Faction.Player, health, lane);
         this.scale = GetScaleByLane(lane);
     }
 }

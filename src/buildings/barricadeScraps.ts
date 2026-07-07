@@ -2,7 +2,7 @@ import { Actor, Color, Engine, vec, Vector } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Resources } from "../resources";
 import { IGroupable } from "../combatant";
-import { Faction, Lane } from "../constants";
+import { Faction, GetScaleByLane, Lane } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { BuildingsManager } from "../buildingsManager";
 import { queryNearby } from "../proximityQuery";
@@ -21,7 +21,7 @@ export class BarricadeScraps extends Actor {
     constructor(startPosition: Vector, allGroupables: IGroupable[], buildingsManager: BuildingsManager, lane: Lane) {
         super({ name: 'BarricadeScraps', pos: startPosition, width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.Barricade);
-        this.scale = vec(2, 2);
+        this.scale = GetScaleByLane(lane);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.buildingsManager = buildingsManager

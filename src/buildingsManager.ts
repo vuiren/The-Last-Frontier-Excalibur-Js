@@ -1,9 +1,5 @@
-import { Scene } from "excalibur";
-import { ICombatant, IGroupable } from "./combatant";
-import { Faction, Lane } from "./constants";
-import { PlayerBase } from "./buildings/playerBase";
-import { Barricade } from "./buildings/barricade";
-import { UnitsManager } from "./unitsManager";
+import { ICombatant } from "./combatant";
+import { Building } from "./buildings/building";
 
 export class BuildingsManager {
     allBuildings: ICombatant[] = [];
@@ -15,22 +11,10 @@ export class BuildingsManager {
         this.allBuildings = allBuildings;
     }
 
-    spawnPlayerBase(scene: Scene, posX: number, faction: Faction, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]): PlayerBase {
-        const playerBase = new PlayerBase(posX, faction, 100, lane, unitsManager, allGroupables);
-        this.allBuildings.push(playerBase);
-        playerBase.on('died', () => this.removeBuilding(playerBase));
-        this.onBuildingAdded?.(playerBase);
-        scene.add(playerBase);
-        return playerBase;
-    }
-
-    spawnBarricade(scene: Scene, posX: number, faction: Faction, lane: Lane): Barricade {
-        const barricade = new Barricade(posX, faction, 100, lane);
-        this.allBuildings.push(barricade);
-        barricade.on('died', () => this.removeBuilding(barricade));
-        this.onBuildingAdded?.(barricade);
-        scene.add(barricade);
-        return barricade;
+    registerBuilding(building: Building) {
+        this.allBuildings.push(building);
+        building.on('died', () => this.removeBuilding(building));
+        this.onBuildingAdded?.(building);
     }
 
     removeBuilding(building: ICombatant) {

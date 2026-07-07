@@ -8,7 +8,7 @@ import { AnimComponent } from "./animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
 
-const HOVER_LIFT_OFFSET = vec(0, -10);
+const HOVER_LIFT_OFFSET = vec(0, -3);
 const DRAG_TINT = Color.Red;
 const Follower_Scale = 0.7;
 
@@ -144,8 +144,6 @@ export class UnitMoveMarker extends Actor {
         this.isDragging = true;
         this.dragOffset = this.pos.sub(evt.worldPos);
         this.applyHoverVisuals();
-        // onDragStart fires before any movement — PlayerUnit uses this to
-        // extract from the group when this is a follower marker.
         this.onDragStart?.();
     }
 

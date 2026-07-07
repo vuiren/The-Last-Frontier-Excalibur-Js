@@ -49,8 +49,8 @@ export class EnemyUnit extends Unit {
                 break;
             case "stunned":
                 this.vel = this.lastDamageDirection === HorizontalDirection.Right
-                    ? Vector.Left.scale(50)
-                    : Vector.Right.scale(50);
+                    ? Vector.Left.scale(15)
+                    : Vector.Right.scale(15);
                 break;
             case "chasing":
                 if (enemy) {
@@ -62,7 +62,7 @@ export class EnemyUnit extends Unit {
                 if (this.timeInCurrentActivity > this.wanderTimer) {
                     // Pick a new random destination within a certain radius
                     const randomDirection = Math.random() <= 0.5 ? Vector.Left : Vector.Right;
-                    const randomDistance = 50 + Math.random() * 50;
+                    const randomDistance = 15 + Math.random() * 15;
                     const newDestination = this.pos.add(randomDirection.scale(randomDistance));
                     this.moveTo(newDestination);
                 }

@@ -13,7 +13,8 @@
   }
 
   #move-camera-left,
-  #move-camera-right {
+  #move-camera-right,
+  #place-barricade {
     position: absolute;
     top: 12px;
     pointer-events: all;
@@ -48,5 +49,10 @@
 
   #move-camera-right {
     left: 96px;
+  }
+
+  #place-barricade {
+    left: 180px;
+    width: 100px;
   }
 }

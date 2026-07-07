@@ -55,7 +55,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
 
-        this.healthBar = new ProgressBar(vec(0, 0), 16, 6, config.health);
+        this.healthBar = new ProgressBar(vec(0, 0), 8, 2, config.health);
         this.healthBar.scale = GetHealthBarScaleByLane(startLane);
     }
 
@@ -68,11 +68,11 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     private get laneSpeedCoef(): number {
-        return this.lane === Lane.Front ? 1 : 0.6;
+        return this.lane === Lane.Front ? 1 : 0.7;
     }
 
     private get healthBarYOffset(): number {
-        return this.lane === Lane.Front ? -80 : -50;
+        return this.lane === Lane.Front ? -20 : -15;
     }
 
     // ------------------------------------------------------------------ //
@@ -113,7 +113,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.updateBehavior(elapsedMs);
 
         this.animComponent.flipHorizontal(this.lookDirection === HorizontalDirection.Left);
-        this.healthBar.pos = vec(this.pos.x - 15, this.pos.y + this.healthBarYOffset);
+        this.healthBar.pos = vec(this.pos.x - 4, this.pos.y + this.healthBarYOffset);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -147,11 +147,11 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         if (this.lane === Lane.Back) {
             percent = currentY / backY;
             this.scale = GetScaleByLane(Lane.Back).scale(percent);
-           // this.healthBar.scale = GetHealthBarScaleByLane(Lane.Back).scale(percent);
+            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Back).scale(percent);
         } else {
             percent = currentY / frontY;
             this.scale = GetScaleByLane(Lane.Front).scale(percent);
-         //   this.healthBar.scale = GetHealthBarScaleByLane(Lane.Front).scale(percent);
+            this.healthBar.scale = GetHealthBarScaleByLane(Lane.Front).scale(percent);
         }
     }
 
@@ -238,7 +238,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
             const dir = target.globalPos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos.add(vec(10, this.lane === Lane.Front ? -40 : -20)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
+            this.scene?.add(new Bullet(this.pos.add(vec(10, this.lane === Lane.Front ? -8 : -4)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
         }
     }
 

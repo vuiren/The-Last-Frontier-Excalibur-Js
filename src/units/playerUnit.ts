@@ -2,11 +2,11 @@ import { Vector, Engine, Color } from "excalibur";
 import { ICombatant, IGroupable } from "../combatant";
 import { GetYLevel, HorizontalDirection, Lane } from "../constants";
 import { Group } from "../group";
-import { spawnDeadSoldier, spawnUnitMoveMarker } from "../spawnFunctions";
 import { UnitConfig } from "../unitConfigs";
 import { UnitMoveMarker } from "../unitMoveMarker";
 import { Unit, UnitActivity } from "./unit";
 import { UnitsManager } from "../unitsManager";
+import { EntitySpawner } from "../entitySpawner";
 
 export class PlayerUnit extends Unit {
     isSelected = false;
@@ -15,6 +15,7 @@ export class PlayerUnit extends Unit {
     private hasActiveOrder = false;
     private bestEnemy: ICombatant | null = null;
     private unitsManager: UnitsManager;
+    private entitySpawner: EntitySpawner;
 
     constructor(
         posX: number,
@@ -22,15 +23,17 @@ export class PlayerUnit extends Unit {
         allGroupables: IGroupable[],
         config: UnitConfig,
         unitsManager: UnitsManager,
+        entitySpawner: EntitySpawner,
         startLane = Lane.Front,
     ) {
         super(posX, config, allCombatants, allGroupables, startLane);
         this.unitsManager = unitsManager;
+        this.entitySpawner = entitySpawner;
     }
 
     override onInitialize(engine: Engine): void {
         super.onInitialize(engine);
-        this.moveMarker = spawnUnitMoveMarker(engine.currentScene, this, this.globalPos);
+        this.moveMarker = this.entitySpawner.spawnUnitMoveMarker(this, this.globalPos);
 
         this.moveMarker.onHoverStart = () => this.select();
         this.moveMarker.onHoverEnd = () => this.deselect();
@@ -222,6 +225,7 @@ export class PlayerUnit extends Unit {
         super.cleanUpOnDeath();
         this.deselect();
         this.moveMarker.kill();
-        spawnDeadSoldier(this.scene!, this.pos, this.unitsManager, this.lane);
+
+        this.entitySpawner.spawnDeadSoldier(this.pos, this.lane);
     }
 }

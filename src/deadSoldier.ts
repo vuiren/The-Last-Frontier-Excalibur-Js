@@ -1,5 +1,5 @@
 import { Actor, Color, Engine, vec, Vector } from "excalibur";
-import { Lane } from "./constants";
+import { GetScaleByLane, Lane } from "./constants";
 import { ProgressBar } from "./progressBar";
 import { AnimComponent } from "./animComponent";
 import { UnitsManager } from "./unitsManager";
@@ -19,7 +19,7 @@ export class DeadSoldier extends Actor {
     constructor(startPosition: Vector,  unitsManager: UnitsManager, lane: Lane) {
         super({ name: 'DeadSoldier', pos: startPosition, width: 8, height: 8, z: 2, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.DeadSoldier);
-        this.scale = lane === Lane.Front ? vec(4, 4) : vec(2, 2);
+        this.scale = GetScaleByLane(lane);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.unitsManager = unitsManager;

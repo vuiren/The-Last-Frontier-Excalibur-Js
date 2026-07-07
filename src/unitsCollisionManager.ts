@@ -6,7 +6,7 @@ import { GroupsManager } from "./groupsManager";
 export class UnitsCollisionManager {
     groupsManager: GroupsManager;
     allGroupables: IGroupable[] = [];
-    groupCreationThreshold = 20;
+    groupCreationThreshold = 12;
 
     // Pre-allocated to worst case: n*(n-1)/2 pairs * 2
     collidingPairs: IGroupable[];
