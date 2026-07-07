@@ -59,8 +59,8 @@ export class EntitySpawner {
         return captureZone;
     }
 
-    spawnBarricadeScraps(pos: Vector, lane: Lane) {
-        const barricadeScraps = new BarricadeScraps(pos, this.allGroupables, this.buildingsManager, lane);
+    spawnBarricadeScraps(posX: number, lane: Lane) {
+        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this.buildingsManager, lane);
         this.scene.add(barricadeScraps);
 
         return barricadeScraps;

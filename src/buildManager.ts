@@ -53,7 +53,7 @@ export class BuildManager {
         if (!this.isPlacingBuilding) return;
 
         if (evt.button === PointerButton.Left) {
-            this.entitySpawner.spawnBarricade(this.buildPreview.pos.x, GetLaneByYLevel(this.lastPointerPos!.y));
+            this.entitySpawner.spawnBarricadeScraps(this.buildPreview.pos.x, GetLaneByYLevel(this.lastPointerPos!.y));
         }
     }
 }
