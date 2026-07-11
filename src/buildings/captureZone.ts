@@ -2,7 +2,7 @@ import { Actor, Color, Engine, vec, Vector } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Resources } from "../resources";
 import { IGroupable } from "../combatant";
-import { Faction, Lane } from "../constants";
+import { Faction, GetYLevel, Lane } from "../constants";
 import { ProgressBar } from "../progressBar";
 
 export class CaptureZone extends Actor {
@@ -13,18 +13,20 @@ export class CaptureZone extends Actor {
     faction: Faction = Faction.Player; // The faction that currently controls the zone, default to Player
     private animComponent: AnimComponent;
     private progressBar: ProgressBar;
-    private lane: Lane; // Default lane, you can modify this as needed
     private nearbyPlayerCount: number = 0;
     private nearbyEnemyCount: number = 0;
 
     constructor(startPosition: Vector, allGroupables: IGroupable[], lane: Lane) {
+        const y = GetYLevel(lane)
+        startPosition.y = y;
+
         super({ name: 'CaptureZone', pos: startPosition, width: 32, height: 32, z: -1, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
         this.scale = vec(4, 4);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
-        this.lane = lane;
         this.allGroupables = allGroupables;
-        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -100)), 32, 6, 100, 0, Color.Red);
+        this.progressBar = new ProgressBar(vec(-16, -100), 32, 6, 100, 0, Color.Red);
+        this.addChild(this.progressBar)
     }
 
     override onInitialize(engine: Engine): void {

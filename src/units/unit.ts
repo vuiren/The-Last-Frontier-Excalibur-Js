@@ -2,7 +2,7 @@ import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Bullet } from "../bullet";
 import { ICombatant, IGroupable } from "../combatant";
-import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane, GetHealthBarScaleByLane } from "../constants";
+import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane } from "../constants";
 import { Group } from "../group";
 import { ProgressBar } from "../progressBar";
 import { UnitConfig } from "../unitConfigs";

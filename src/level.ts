@@ -1,4 +1,4 @@
-import { Engine, ExcaliburGraphicsContext, Scene, Timer, Vector } from "excalibur";
+import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, Vector } from "excalibur";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
 import { UnitsManager } from "./unitsManager";
@@ -35,6 +35,8 @@ export class MyLevel extends Scene {
     }
 
     override onInitialize(engine: Engine): void {
+        this.backgroundColor = Color.fromHex("1F4073"); 
+        
         this.buildManager = new BuildManager(this.engine, this.entitySpawner);
         this.camera.zoom = 3
         this.camera.pos = engine.screen.center.add(new Vector(0, 60));

@@ -1,7 +1,7 @@
 import { Actor, Color, Engine, PointerButton, vec, Vector } from "excalibur";
 import { Faction, Lane } from "../constants";
 import { Resources } from "../resources";
-import { ICombatant, IGroupable } from "../combatant";
+import { IGroupable } from "../combatant";
 import { PlayerUnit } from "../units/playerUnit";
 
 

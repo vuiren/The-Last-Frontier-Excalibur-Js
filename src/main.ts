@@ -19,7 +19,7 @@ await game.start('start', { // name of the start scene 'start'
   inTransition: new FadeInOut({ // Optional in transition
     duration: 1000,
     direction: 'in',
-    color: Color.ExcaliburBlue
+    color: Color.fromHex("1F4073")
   })
 }).then(() => {
 });

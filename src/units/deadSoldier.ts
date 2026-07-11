@@ -21,7 +21,7 @@ export class DeadSoldier extends Actor {
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.entitySpawner = entitySpawner;
-        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -50)), 32, 6, 1000, Color.Red);
+        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -50)), 32, 6, 0, 1000, Color.Red);
         this.progressBar.scale = GetScaleByLane(lane)
     }
 
