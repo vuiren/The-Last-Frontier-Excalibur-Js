@@ -1,4 +1,4 @@
-import { Engine, ExcaliburGraphicsContext, Scene, Vector } from "excalibur";
+import { Engine, ExcaliburGraphicsContext, Scene, Timer, Vector } from "excalibur";
 import { GroupsManager } from "./groupsManager";
 import { Group } from "./group";
 import { UnitsManager } from "./unitsManager";
@@ -50,15 +50,23 @@ export class MyLevel extends Scene {
         const buildBarricadeBtn = document.getElementById('place-barricade') as HTMLButtonElement;
         const COOLDOWN_MS = 3000;
 
+        const cooldownTimer = new Timer({
+            repeats: false,
+            interval: COOLDOWN_MS,
+            onComplete: () => {
+                buildBarricadeBtn.classList.remove('cooldown');
+                buildBarricadeBtn.disabled = false;
+            }
+        });
+
+        engine.add(cooldownTimer)
+
         const startCooldown = (button: HTMLButtonElement, duration: number) => {
             button.style.setProperty('--cooldown', `${duration}ms`);
             button.classList.add('cooldown');
             button.disabled = true;
 
-            setTimeout(() => {
-                button.classList.remove('cooldown');
-                button.disabled = false;
-            }, COOLDOWN_MS);
+            cooldownTimer.start()
         }
 
         buildBarricadeBtn.addEventListener('click', () => {
@@ -84,9 +92,6 @@ export class MyLevel extends Scene {
         //    const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allGroupables, Lane.Back);
         //   this.add(changeLaneButtonFront);
         //   this.add(changeLaneButtonBack);
-
-        //  const barricadeScraps = new BarricadeScraps(vec(-100, FrontGroundYLevel), this.allGroupables, this.buildingsManager, Lane.Front);
-        //  this.add(barricadeScraps);
     }
 
     override onPreUpdate(engine: Engine, elapsed: number): void {

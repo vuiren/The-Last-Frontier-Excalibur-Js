@@ -281,8 +281,10 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
     override onPostUpdate(_engine: Engine, _elapsedMs: number): void {
         if (!import.meta.env.DEV) return; // Skip debug drawing in production
-        Debug.drawCircle(this.pos, this.config.detectionRange, { color: Color.Transparent, strokeColor: Color.Green, width: 1 });
-        Debug.drawCircle(this.pos, this.effectiveAttackRange, { color: Color.Transparent, strokeColor: Color.Red, width: 1 });
-        Debug.drawText(this.activity, this.pos.add(vec(0, -50)));
+
+        const sign = this.lookDirection == HorizontalDirection.Right ? 1 : -1;
+        Debug.drawLine(this.pos.add(vec(0, -8)), this.pos.add(vec(sign * this.config.detectionRange, -8)), { color: Color.Yellow });
+        Debug.drawLine(this.pos.add(vec(0, -4)), this.pos.add(vec(sign * this.config.detectionRange, -4)), { color: Color.Red });
+        Debug.drawText(this.activity, this.pos);
     }
 }
