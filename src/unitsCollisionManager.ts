@@ -41,7 +41,6 @@ export class UnitsCollisionManager {
                 const unitA = units[i];
                 const unitB = units[j];
 
-                if (unitA.lane !== unitB.lane) continue;
                 if (unitA.faction !== unitB.faction) continue;
 
                 const dist = unitA.globalPos.distance(unitB.globalPos);

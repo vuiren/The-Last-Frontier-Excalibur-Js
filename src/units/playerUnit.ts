@@ -123,16 +123,11 @@ export class PlayerUnit extends Unit {
 
     protected override onUpdateActivity(activity: UnitActivity): void {
         switch (activity) {
-            case "movingAndAttacking":
-                this.moveTowardDestination();
-                this.tryPerformAttack(this.bestEnemy!);
-                break;
             case "attacking":
                 this.vel.setTo(0, 0);
                 this.tryPerformAttack(this.bestEnemy!);
                 break;
             case "moving":
-            case "crossingBridge":
                 this.moveTowardDestination();
                 break;
             case "idle":

@@ -1,6 +1,6 @@
 import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
 import { AnimComponent } from "../animComponent";
-import { Bullet } from "../bullet";
+import { Bullet } from "./bullet";
 import { ICombatant, IGroupable } from "../combatant";
 import { Group } from "../group";
 import { ProgressBar } from "../progressBar";
@@ -205,7 +205,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
             const dir = target.globalPos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos.add(vec(10, -8)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
+            this.scene?.add(new Bullet(this.pos.add(vec(this.lookDirection === HorizontalDirection.Right ? 10 : -10, -8)), dir, this.allCombatants, this.config.faction, this.config.attackDamage));
         }
     }
 

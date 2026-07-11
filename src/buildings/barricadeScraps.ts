@@ -3,7 +3,7 @@ import { Resources } from "../resources";
 import { IGroupable } from "../combatant";
 import { Faction, FrontGroundYLevel } from "../constants";
 import { ProgressBar } from "../progressBar";
-import { queryNearby } from "../proximityQuery";
+import { queryNearby, queryNearbyWithActivity } from "../proximityQuery";
 import { EntitySpawner } from "../entitySpawner";
 import { Building } from "./building";
 
@@ -36,7 +36,7 @@ export class BarricadeScraps extends Building {
 
     override onPreUpdate(engine: Engine, delta: number): void {
         // Check for nearby groupables and apply buffs
-        const nearbyGroupables = queryNearby(this.allGroupables, {
+        const nearbyGroupables = queryNearbyWithActivity(this.allGroupables, {
             origin: this.pos,
             radius: 10,
             faction: Faction.Player,

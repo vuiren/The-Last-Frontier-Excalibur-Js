@@ -62,9 +62,6 @@ export class EntitySpawner {
     spawnPlayerUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
         const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.unitsManager, this);
-        unit.config.speed = config.speed;
-        unit.config.detectionRange = config.detectionRange;
-        unit.config.attackCooldown = config.attackCooldown;
 
         return this.unitsManager.registerUnit(this.scene, unit);
     }
@@ -72,10 +69,6 @@ export class EntitySpawner {
     spawnEnemyUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
         const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config);
-
-        unit.config.speed = config.speed;
-        unit.config.detectionRange = config.detectionRange;
-        unit.config.attackCooldown = config.attackCooldown;
 
         return this.unitsManager.registerUnit(this.scene, unit);
     }

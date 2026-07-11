@@ -33,7 +33,6 @@ export class Building extends Actor implements ICombatant {
     }
 
     override onInitialize(engine: Engine): void {
-        engine.currentScene.add(this.healthBar);
         this.playAnimation("Idle");
     }
 
