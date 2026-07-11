@@ -1,5 +1,5 @@
 import { Actor, ActorArgs, Color, Engine, vec } from "excalibur";
-import { HorizontalDirection, Faction, Lane, GetScaleByLane, GetHealthBarScaleByLane, GetYLevel } from "../constants";
+import { HorizontalDirection, Faction } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
@@ -13,22 +13,19 @@ export class Building extends Actor implements ICombatant {
     faction: Faction;
     activity: UnitActivity = "idle";
     groupRef: Group | null = null;
-    lane: Lane;
     attackPriority: number = 1;
 
     private animComponent: AnimComponent;
     private healthBar: ProgressBar;
 
-    constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, lane: Lane) {
+    constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number) {
         super(config);
         this.faction = faction;
         this.health = health;
-        this.lane = lane;
         this.animComponent = new AnimComponent(asepriteResouce);
-        this.scale = GetScaleByLane(lane);
 
         this.healthBar = new ProgressBar(
-            vec(-8, lane === Lane.Front ? -45 : -40),
+            vec(-8, -45),
             16, 4, health, health, Color.DarkGray
         );
 
@@ -42,13 +39,6 @@ export class Building extends Actor implements ICombatant {
 
     protected playAnimation(name: string): void {
         this.animComponent.play(name, this.graphics);
-    }
-
-    changeLane(): void {
-        this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
-        this.scale = GetScaleByLane(this.lane)
-        this.healthBar.scale = GetHealthBarScaleByLane(this.lane)
-        this.pos.y = GetYLevel(this.lane)
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {

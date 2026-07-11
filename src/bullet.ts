@@ -1,5 +1,5 @@
 import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction, Lane } from "./constants";
+import { HorizontalDirection, Faction } from "./constants";
 import { ICombatant } from "./combatant";
 
 export class Bullet extends Actor {
@@ -9,11 +9,10 @@ export class Bullet extends Actor {
     gravity = 10;
     liveTime = 3000;
     allCombatants: ICombatant[] = [];
-    lane: Lane = Lane.Front;
     hitDistance = 5;
     damage: number;
 
-    constructor(startPosition: Vector, direction: Vector, allCombatants: ICombatant[], faction: Faction, damage: number, lane: Lane) {
+    constructor(startPosition: Vector, direction: Vector, allCombatants: ICombatant[], faction: Faction, damage: number) {
         super({
             name: 'Bullet',
             pos: startPosition,
@@ -24,7 +23,6 @@ export class Bullet extends Actor {
             z: 2
         });
 
-        this.lane = lane;
         this.allCombatants = allCombatants;
         this.direction = direction;
         this.faction = faction
@@ -42,7 +40,6 @@ export class Bullet extends Actor {
 
         const hitTarget = this.allCombatants.find(x =>
             x.faction !== this.faction &&
-            x.lane === this.lane &&
             Math.abs(x.globalPos.x - this.globalPos.x) <= this.hitDistance
         );
 

@@ -1,5 +1,5 @@
 import { vec } from "excalibur";
-import { GetYLevel, HorizontalDirection } from "./constants";
+import { FrontGroundYLevel, HorizontalDirection } from "./constants";
 import { IGroupable } from "./combatant";
 
 const BASE_FORMATION_SPACING = 12; // Base distance between units in a formation
@@ -57,7 +57,7 @@ export class Group {
         for (const [i, follower] of this.followers.entries()) {
             const offsetX = getFormationOffset(i) * facingSign;
             const target = this.leader.globalPos.add(vec(offsetX, 0));
-            target.y = GetYLevel(follower.lane);
+            target.y = FrontGroundYLevel;
             const distance = follower.globalPos.distance(this.leader.globalPos);
 
             if (distance > FORMATION_SPREAD_THRESHOLD || this.pendingSpread) {

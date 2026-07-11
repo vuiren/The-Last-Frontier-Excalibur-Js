@@ -1,8 +1,8 @@
-import { Actor, Color, Engine, vec, Vector } from "excalibur";
+import { Actor, Color, Engine, vec } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Resources } from "../resources";
 import { IGroupable } from "../combatant";
-import { Faction, GetYLevel, Lane } from "../constants";
+import { Faction, FrontGroundYLevel } from "../constants";
 import { ProgressBar } from "../progressBar";
 
 export class CaptureZone extends Actor {
@@ -16,11 +16,9 @@ export class CaptureZone extends Actor {
     private nearbyPlayerCount: number = 0;
     private nearbyEnemyCount: number = 0;
 
-    constructor(startPosition: Vector, allGroupables: IGroupable[], lane: Lane) {
-        const y = GetYLevel(lane)
-        startPosition.y = y;
+    constructor(startPositionX: number, allGroupables: IGroupable[]) {
 
-        super({ name: 'CaptureZone', pos: startPosition, width: 32, height: 32, z: -1, anchor: vec(0.5, 1) });
+        super({ name: 'CaptureZone', pos: vec(startPositionX, FrontGroundYLevel), width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
         this.scale = vec(4, 4);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built

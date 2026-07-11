@@ -1,5 +1,5 @@
 import { Vector } from "excalibur";
-import { HorizontalDirection, Faction, Lane } from "./constants";
+import { HorizontalDirection, Faction } from "./constants";
 import { Group } from "./group";
 import { UnitActivity } from "./units/unit";
 
@@ -8,10 +8,8 @@ export interface ICombatant {
     isDead: boolean;
     faction: Faction;
     globalPos: Vector;
-    lane: Lane;
     attackPriority: number; // Higher value means higher priority as a target
     takeDamage(damage: number, hitDirection: HorizontalDirection): void;
-    changeLane(targetX: number): void;
 }
 
 export interface IGroupable extends ICombatant {

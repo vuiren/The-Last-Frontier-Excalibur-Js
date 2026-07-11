@@ -1,23 +1,10 @@
 import { FactoryProps, LdtkResource } from '@excaliburjs/plugin-ldtk';
 import { Scene } from 'excalibur';
-import { Lane } from './constants';
 import { Resources } from './resources';
 import { EntitySpawner } from './entitySpawner';
 
 export interface LevelImportDeps {
     entitySpawner: EntitySpawner;
-}
-
-// ---------------------------------------------------------------------------
-// 3. Lane resolution.
-//    In First_level.ldtk the two rows sit at y = 96 (Back) and y = 224 (Front)
-//    inside a 256px-tall level. Anything above the mid-line is Back, below is Front.
-//    Override the threshold if your level height changes.
-// ---------------------------------------------------------------------------
-const LANE_Y_THRESHOLD = 160;
-
-function ldtkYToLane(worldY: number): Lane {
-    return worldY < LANE_Y_THRESHOLD ? Lane.Back : Lane.Front;
 }
 
 // ---------------------------------------------------------------------------
@@ -39,27 +26,25 @@ export function registerLevelFactories(
     resource.registerEntityIdentifierFactories({
         // --- Player units (Units layer) ---
         PlayerSoldier: ({ worldPos }: FactoryProps) => {
-            return entitySpawner.spawnPlayerUnit(worldPos.x, 'playerSoldier', ldtkYToLane(worldPos.y));
+            return entitySpawner.spawnPlayerUnit(worldPos.x, 'playerSoldier');
         },
 
         // --- Enemy units (Zombies layer) ---
         Zombie: ({ worldPos }: FactoryProps) => {
-            return entitySpawner.spawnEnemyUnit(worldPos.x, 'enemyZombie', ldtkYToLane(worldPos.y));;
+            return entitySpawner.spawnEnemyUnit(worldPos.x, 'enemyZombie');;
         },
 
         // --- Player base (Buildings layer) ---
         Casarm: ({ worldPos }: FactoryProps) => {
             return entitySpawner.spawnPlayerBase(
                 worldPos.x,
-                ldtkYToLane(worldPos.y),
             );;
         },
 
         // --- Player barricade (Buildings layer) ---
         Barricade: ({ worldPos }: FactoryProps) => {
             return entitySpawner.spawnBarricade(
-                worldPos.x,
-                ldtkYToLane(worldPos.y)
+                worldPos.x
             );
         },
 
@@ -67,8 +52,7 @@ export function registerLevelFactories(
         Infected_Building: ({ worldPos }: FactoryProps) => {
             return entitySpawner.spawnInfectedFarmHouse(
                 worldPos.x,
-                100,
-                ldtkYToLane(worldPos.y),
+                100
             );;
         },
     });

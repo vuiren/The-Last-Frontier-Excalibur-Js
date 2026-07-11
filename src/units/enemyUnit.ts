@@ -1,5 +1,5 @@
 import { Vector } from "excalibur";
-import { HorizontalDirection, Lane } from "../constants";
+import { HorizontalDirection } from "../constants";
 import { Unit, UnitActivity } from "./unit";
 import { UnitConfig } from "../unitConfigs";
 import { ICombatant, IGroupable } from "../combatant";
@@ -10,8 +10,8 @@ export class EnemyUnit extends Unit {
     private aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
     private detectedEnemy: ICombatant | null = null;
 
-    constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig, lane: Lane) {
-        super(posX, config, allUnits, allGroupables, lane);
+    constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig) {
+        super(posX, config, allUnits, allGroupables);
     }
 
     protected override selectActivity(): UnitActivity {

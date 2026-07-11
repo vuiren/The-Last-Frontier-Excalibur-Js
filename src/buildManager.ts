@@ -1,11 +1,11 @@
 import { Actor, Engine, EventEmitter, PointerButton, PointerEvent, vec, Vector } from "excalibur";
-import { GetLaneByYLevel, GetScaleByLane, GetYLevel } from "./constants";
 import { AnimComponent } from "./animComponent";
 import { Resources } from "./resources";
 import { EntitySpawner } from "./entitySpawner";
+import { FrontGroundYLevel } from "./constants";
 
 export type BuildManagerEvents = {
-    barricadeSpawn: { x: number; lane: number };
+    barricadeSpawn: { x: number };
 };
 
 export class BuildManager {
@@ -44,17 +44,16 @@ export class BuildManager {
         if (!this.isPlacingBuilding) return
 
         this.lastPointerPos = evt.worldPos;
-        this.buildPreview.pos = vec(this.lastPointerPos.x, GetYLevel(GetLaneByYLevel(this.lastPointerPos.y)));
-        this.buildPreview.scale = GetScaleByLane(GetLaneByYLevel(this.lastPointerPos.y));
+        this.buildPreview.pos = vec(this.lastPointerPos.x, FrontGroundYLevel);
     }
 
     private onPointerDown(evt: PointerEvent): void {
         if (!this.isPlacingBuilding) return;
 
         if (evt.button === PointerButton.Left) {
-            this.entitySpawner.spawnBarricadeScraps(this.buildPreview.pos.x, GetLaneByYLevel(this.lastPointerPos!.y));
+            this.entitySpawner.spawnBarricadeScraps(this.buildPreview.pos.x);
             this.stopPlacingBuilding();
-            this.events.emit("barricadeSpawn", { x: this.buildPreview.pos.x, lane: GetLaneByYLevel(this.lastPointerPos!.y) });
+            this.events.emit("barricadeSpawn", { x: this.buildPreview.pos.x });
         }
     }
 }

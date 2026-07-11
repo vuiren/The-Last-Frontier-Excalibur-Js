@@ -1,7 +1,7 @@
 import { Color, Engine, vec } from "excalibur";
 import { Resources } from "../resources";
 import { IGroupable } from "../combatant";
-import { Faction, GetYLevel, Lane } from "../constants";
+import { Faction, FrontGroundYLevel } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { queryNearby } from "../proximityQuery";
 import { EntitySpawner } from "../entitySpawner";
@@ -14,15 +14,15 @@ export class BarricadeScraps extends Building {
     private buildProgressIncreaseRate: number = 0.01;
     private progressBar: ProgressBar;
 
-    constructor(posX: number, allGroupables: IGroupable[], entitySpawner: EntitySpawner, lane: Lane) {
-        super({ name: 'BarricadeScraps', pos: vec(posX, GetYLevel(lane)), width: 8, height: 4, z: 2, anchor: vec(0.5, 1) },
-            Resources.Barricade, Faction.Player, 1, lane);
+    constructor(posX: number, allGroupables: IGroupable[], entitySpawner: EntitySpawner) {
+        super({ name: 'BarricadeScraps', pos: vec(posX, FrontGroundYLevel), width: 8, height: 4, z: 5, anchor: vec(0.5, 1) },
+            Resources.Barricade, Faction.Player, 1);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.entitySpawner = entitySpawner;
         this.allGroupables = allGroupables;
 
         this.progressBar = new ProgressBar(
-            vec(-8, lane === Lane.Front ? -40 : -35),
+            vec(-8, -40),
             16, 4, 100, 100, Color.ExcaliburBlue
         );
 
@@ -39,7 +39,6 @@ export class BarricadeScraps extends Building {
         const nearbyGroupables = queryNearby(this.allGroupables, {
             origin: this.pos,
             radius: 10,
-            lane: this.lane,
             faction: Faction.Player,
             activity: "idle",   // if you add activity to the filter
         });
@@ -52,7 +51,7 @@ export class BarricadeScraps extends Building {
 
         if (this.buildProgress >= 100) {
             this.buildProgress = 100;
-            this.entitySpawner.spawnBarricade(this.pos.x, this.lane);
+            this.entitySpawner.spawnBarricade(this.pos.x);
             this.kill();
         }
     }

@@ -18,7 +18,7 @@ export class ProgressBar extends Actor {
     curValue = 100,
     maxValue = 100,
     color = Color.Green,
-    z = 1,
+    z = 3,
   ) {
     super({ pos: pos, anchor: vec(0.5, 1), z: z });
     this.barWidth = barWidth;

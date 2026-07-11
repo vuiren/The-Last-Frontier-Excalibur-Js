@@ -38,8 +38,8 @@ export class MyLevel extends Scene {
         this.backgroundColor = Color.fromHex("1F4073"); 
         
         this.buildManager = new BuildManager(this.engine, this.entitySpawner);
-        this.camera.zoom = 3
-        this.camera.pos = engine.screen.center.add(new Vector(0, 60));
+        this.camera.zoom = 2.5
+        this.camera.pos = engine.screen.center.add(new Vector(0, 30));
 
         const btnRight = document.getElementById('move-camera-right')!;
         btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });

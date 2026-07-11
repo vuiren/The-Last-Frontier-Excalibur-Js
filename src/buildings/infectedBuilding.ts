@@ -1,5 +1,5 @@
 import { Color, Engine, vec } from "excalibur";
-import { Faction, Lane, GetYLevel } from "../constants";
+import { Faction, FrontGroundYLevel } from "../constants";
 import { Resources } from "../resources";
 import { Building } from "./building";
 import { ProgressBar } from "../progressBar";
@@ -12,13 +12,13 @@ export class InfectedBuilding extends Building {
     private spawnProgress: number = 0;
     private spawnDelay = 5000;
 
-    constructor(xPos: number, health: number, lane: Lane, entitySpawner: EntitySpawner) {
-        const startPosition = vec(xPos, GetYLevel(lane));
-        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: -2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, health, lane);
-        
+    constructor(xPos: number, health: number, entitySpawner: EntitySpawner) {
+        const startPosition = vec(xPos, FrontGroundYLevel);
+        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: 2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, health);
+
         this.entitySpawner = entitySpawner;
-       
-        this.progressBar = new ProgressBar(vec(-8, lane === Lane.Front ? -40 : -35), 16, 4, 0, this.spawnDelay, Color.Red);
+
+        this.progressBar = new ProgressBar(vec(-8, -40), 16, 4, 0, this.spawnDelay, Color.Red);
         this.addChild(this.progressBar)
     }
 
@@ -33,7 +33,7 @@ export class InfectedBuilding extends Building {
 
         if (this.spawnProgress >= this.spawnDelay) {
             this.spawnProgress = 0;
-            this.entitySpawner.spawnEnemyUnit(this.pos.x, "enemyZombie", this.lane);
+            this.entitySpawner.spawnEnemyUnit(this.pos.x, "enemyZombie");
         }
     }
 }

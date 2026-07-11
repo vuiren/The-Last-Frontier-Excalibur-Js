@@ -2,13 +2,13 @@ import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Bullet } from "../bullet";
 import { ICombatant, IGroupable } from "../combatant";
-import { Lane, Faction, AttackType, HorizontalDirection, GetYLevel, GetScaleByLane } from "../constants";
 import { Group } from "../group";
 import { ProgressBar } from "../progressBar";
 import { UnitConfig } from "../unitConfigs";
 import { queryNearby } from "../proximityQuery";
+import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType } from "../constants";
 
-export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead" | "movingAndAttacking" | "crossingBridge";
+export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead";
 
 const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     idle: "Idle",
@@ -16,13 +16,10 @@ const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     moving: "Walking",
     stunned: "Walking",
     attacking: "Shooting",
-    movingAndAttacking: "RunNShoot",
-    crossingBridge: "Walking",
 };
 
 export class Unit extends Actor implements ICombatant, IGroupable {
     health: number;
-    lane: Lane;
     groupRef: Group | null = null;
     lookDirection: HorizontalDirection = HorizontalDirection.Right;
     config: UnitConfig;
@@ -43,17 +40,15 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     protected allCombatants: ICombatant[] = [];
     protected allGroupables: IGroupable[] = [];
 
-    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], allGroupables: IGroupable[], startLane = Lane.Front) {
-        const startPosition = vec(startX, GetYLevel(startLane));
-        super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1) });
+    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], allGroupables: IGroupable[]) {
+        const startPosition = vec(startX, FrontGroundYLevel);
+        super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1), z: 3 });
         this.config = config;
         this.allCombatants = allCombatants;
         this.allGroupables = allGroupables;
         this.orderedDestination = startPosition;
-        this.lane = startLane;
         this.health = config.health;
         this.faction = config.faction;
-        this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
 
         this.healthBar = new ProgressBar(vec(-4, -20), 8, 2, config.health, config.health);
@@ -66,10 +61,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
     protected get effectiveAttackRange(): number {
         return this.config.attackRange ?? this.config.detectionRange;
-    }
-
-    private get laneSpeedCoef(): number {
-        return this.lane === Lane.Front ? 1 : 0.7;
     }
 
     // ------------------------------------------------------------------ //
@@ -102,8 +93,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     override onPreUpdate(_engine: Engine, elapsedMs: number): void {
         if (this.isDead) return;
 
-        this.scaleElementsByLane();
-
         this.attackCooldown -= elapsedMs;
         this.previousActivity = this.activity;
         this.updateBehavior(elapsedMs);
@@ -133,20 +122,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         return ACTIVITY_ANIMATION[activity] ?? "Idle";
     }
 
-    protected scaleElementsByLane(): void {
-        const backY = GetYLevel(Lane.Back);
-        const frontY = GetYLevel(Lane.Front);
-        const currentY = this.pos.y;
-
-        let percent = 1;
-        if (this.lane === Lane.Back) {
-            percent = currentY / backY;
-            this.scale = GetScaleByLane(Lane.Back).scale(percent);
-        } else {
-            percent = currentY / frontY;
-            this.scale = GetScaleByLane(Lane.Front).scale(percent);
-        }
-    }
 
     // ------------------------------------------------------------------ //
     //  Movement helpers                                                    //
@@ -177,7 +152,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     }
 
     private setVelocityToward(direction: Vector): void {
-        this.vel = direction.normalize().scale(this.config.speed * this.laneSpeedCoef);
+        this.vel = direction.normalize().scale(this.config.speed);
         this.lookDirection = this.vel.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left;
     }
 
@@ -192,7 +167,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         const candidates = queryNearby(this.allCombatants, {
             origin: this.pos,
             radius: this.config.detectionRange,
-            lane: this.lane,
             excludeSelf: this,
         }).filter(c => this.isHostile(c) && !c.isDead);
 
@@ -231,7 +205,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
             target.takeDamage(this.config.attackDamage, this.lookDirection);
         } else {
             const dir = target.globalPos.sub(this.pos).normalize();
-            this.scene?.add(new Bullet(this.pos.add(vec(10, this.lane === Lane.Front ? -8 : -4)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
+            this.scene?.add(new Bullet(this.pos.add(vec(10, -8)), dir, this.allCombatants, this.config.faction, this.config.attackDamage, this.lane));
         }
     }
 
@@ -262,15 +236,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
     isHostile(other: ICombatant): boolean {
         return other.faction !== this.faction;
-    }
-
-    changeLane(targetX: number): void {
-        this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
-        this.orderedDestination = vec(targetX, GetYLevel(this.lane));
-
-        if (this.groupRef !== null && this.groupRef.leader.id === this.id) {
-            this.groupRef.followers.forEach(follower => follower.changeLane(targetX));
-        }
     }
 
     joinGroup(group: Group): void { this.groupRef = group; }

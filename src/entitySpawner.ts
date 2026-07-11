@@ -2,8 +2,6 @@ import { Actor, Scene, vec, Vector } from "excalibur";
 import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitsManager } from "./unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
-import { Lane } from "./constants";
-import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
 import { ICombatant, IGroupable } from "./combatant";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
 import { CaptureZone } from "./buildings/captureZone";
@@ -31,36 +29,29 @@ export class EntitySpawner {
         return unitMoveMarker;
     }
 
-    spawnDeadSoldier(pos: Vector, lane: Lane) {
-        const deadSoldier = new DeadSoldier(pos, this, lane);
+    spawnDeadSoldier(posX: number) {
+        const deadSoldier = new DeadSoldier(posX, this);
         this.scene.add(deadSoldier);
 
         return deadSoldier;
     }
 
-    spawnChangeLaneButton(pos: Vector, lane: Lane) {
-        const button = new ChangeLaneButton(pos, this.allGroupables, lane);
-        this.scene.add(button);
-
-        return button;
-    }
-
-    spawnInfectedFarmHouse(posX: number, health: number, lane: Lane) {
-        const infectedBuilding = new InfectedBuilding(posX, health, lane, this);
+    spawnInfectedFarmHouse(posX: number, health: number) {
+        const infectedBuilding = new InfectedBuilding(posX, health, this);
         this.scene.add(infectedBuilding);
 
         return infectedBuilding;
     }
 
-    spawnCaptureZone(pos: Vector, lane: Lane) {
-        const captureZone = new CaptureZone(pos, this.allGroupables, lane);
+    spawnCaptureZone(posX: number) {
+        const captureZone = new CaptureZone(posX, this.allGroupables);
         this.scene.add(captureZone);
 
         return captureZone;
     }
 
-    spawnBarricadeScraps(posX: number, lane: Lane) {
-        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this, lane);
+    spawnBarricadeScraps(posX: number) {
+        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this);
         this.scene.add(barricadeScraps);
 
         this.buildingsManager.registerBuilding(barricadeScraps)
@@ -68,9 +59,9 @@ export class EntitySpawner {
         return barricadeScraps;
     }
 
-    spawnPlayerUnit(posX: number, configKey: UnitConfigKey, startLane: Lane) {
+    spawnPlayerUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.unitsManager, this, startLane);
+        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.unitsManager, this);
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
         unit.config.attackCooldown = config.attackCooldown;
@@ -78,9 +69,9 @@ export class EntitySpawner {
         return this.unitsManager.registerUnit(this.scene, unit);
     }
 
-    spawnEnemyUnit(posX: number, configKey: UnitConfigKey, startLane: Lane) {
+    spawnEnemyUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config, startLane);
+        const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config);
 
         unit.config.speed = config.speed;
         unit.config.detectionRange = config.detectionRange;
@@ -89,15 +80,15 @@ export class EntitySpawner {
         return this.unitsManager.registerUnit(this.scene, unit);
     }
 
-    spawnPlayerBase(posX: number, lane: Lane): PlayerBase {
-        const playerBase = new PlayerBase(posX, 100, lane, this);
+    spawnPlayerBase(posX: number): PlayerBase {
+        const playerBase = new PlayerBase(posX, 100, this);
         this.buildingsManager.registerBuilding(playerBase);
         this.scene.add(playerBase);
         return playerBase;
     }
 
-    spawnBarricade(posX: number, lane: Lane): Barricade {
-        const barricade = new Barricade(posX, 100, lane);
+    spawnBarricade(posX: number): Barricade {
+        const barricade = new Barricade(posX, 100);
         this.buildingsManager.registerBuilding(barricade);
         this.scene.add(barricade);
         return barricade;

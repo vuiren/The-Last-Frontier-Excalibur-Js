@@ -3,14 +3,13 @@ import {
     vec, PointerButton, Color
 } from "excalibur";
 import { Resources } from "./resources";
-import { BackGroundYLevel, FrontGroundYLevel, GetMoveMarkerScaleByLane, GetScaleByLane, GetYLevel, Lane } from "./constants";
 import { AnimComponent } from "./animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
+import { FrontGroundYLevel } from "./constants";
 
 const HOVER_LIFT_OFFSET = vec(0, -3);
 const DRAG_TINT = Color.Red;
-const Follower_Scale = 0.7;
 
 export class UnitMoveMarker extends Actor {
     allUnits: Unit[] = [];
@@ -34,12 +33,11 @@ export class UnitMoveMarker extends Actor {
             pos: startPosition,
             width: 9,
             height: 24,
-            z: -1,
+            z: 4,
             anchor: vec(0.5, 1),
         });
 
         this.assignedUnit = assignedUnit;
-        this.scale = GetMoveMarkerScaleByLane(assignedUnit.lane);
 
         assignedUnit.on("beganAttacking", () => {
             this.pos = assignedUnit.pos;
@@ -56,15 +54,8 @@ export class UnitMoveMarker extends Actor {
             if (!this.isDragging) {
                 this.pos = this.assignedUnit.pos;
             }
-            this.scale = GetScaleByLane(this.assignedUnit.lane).scale(Follower_Scale);
             return;
         }
-
-        const targetLane = this.assignedUnit.lane;
-        const targetY = GetYLevel(targetLane);
-        const currentY = this.pos.y;
-        const percent = currentY / targetY;
-        this.scale = GetScaleByLane(targetLane).scale(percent);
     }
 
     // --- Public API ---
@@ -88,14 +79,13 @@ export class UnitMoveMarker extends Actor {
         this.graphics.isVisible = visible;
         this.pointer.useGraphicsBounds = visible;
         this.isHidden = !visible;
-        this.scale = GetScaleByLane(this.assignedUnit.lane).scale(Follower_Scale);
 
         // Snap immediately so there is no 1-frame flash at the stale position.
         if (visible) this.pos = this.assignedUnit.pos;
     }
 
     changeLane(targetX: number): void {
-        this.pos = vec(targetX, this.groundY);
+        this.pos = vec(targetX, FrontGroundYLevel);
     }
 
     snapToUnit(): void {
@@ -104,14 +94,8 @@ export class UnitMoveMarker extends Actor {
 
     // --- Private ---
 
-    private get groundY(): number {
-        return this.assignedUnit.lane === Lane.Front
-            ? FrontGroundYLevel
-            : BackGroundYLevel;
-    }
-
     private get groundPos(): Vector {
-        return vec(this.pos.x, this.groundY);
+        return vec(this.pos.x, FrontGroundYLevel);
     }
 
     private snapToGround(): void {
@@ -148,7 +132,7 @@ export class UnitMoveMarker extends Actor {
     private onPointerMove(evt: { worldPos: Vector }): void {
         if (this.isDragging) {
             const rawPos = evt.worldPos.add(this.dragOffset);
-            this.pos = vec(rawPos.x, Math.min(rawPos.y, this.groundY));
+            this.pos = vec(rawPos.x, Math.min(rawPos.y, FrontGroundYLevel));
             return;
         }
 

@@ -1,6 +1,6 @@
 import { Vector, Engine, Color } from "excalibur";
 import { ICombatant, IGroupable } from "../combatant";
-import { GetYLevel, HorizontalDirection, Lane } from "../constants";
+import { HorizontalDirection } from "../constants";
 import { Group } from "../group";
 import { UnitConfig } from "../unitConfigs";
 import { UnitMoveMarker } from "../unitMoveMarker";
@@ -24,9 +24,8 @@ export class PlayerUnit extends Unit {
         config: UnitConfig,
         unitsManager: UnitsManager,
         entitySpawner: EntitySpawner,
-        startLane = Lane.Front,
     ) {
-        super(posX, config, allCombatants, allGroupables, startLane);
+        super(posX, config, allCombatants, allGroupables);
         this.unitsManager = unitsManager;
         this.entitySpawner = entitySpawner;
     }
@@ -75,13 +74,7 @@ export class PlayerUnit extends Unit {
     protected override selectActivity(): UnitActivity {
         if (this.isDead) return "dead";
 
-        const orderedY = GetYLevel(this.lane);
-        const currentY = this.globalPos.y;
-        if (Math.abs(currentY - orderedY) > 5) {
-            return "crossingBridge";
-        }
-
-        if (this.previousActivity === "crossingBridge" && this.groupRef !== null && this.groupRef.leader.id === this.id) {
+        if (this.groupRef !== null && this.groupRef.leader.id === this.id) {
             this.groupRef.spreadNow();
         }
 
@@ -216,16 +209,11 @@ export class PlayerUnit extends Unit {
         }
     }
 
-    override changeLane(targetX: number): void {
-        super.changeLane(targetX);
-        this.moveMarker.changeLane(targetX);
-    }
-
     override cleanUpOnDeath(): void {
         super.cleanUpOnDeath();
         this.deselect();
         this.moveMarker.kill();
 
-        this.entitySpawner.spawnDeadSoldier(this.pos, this.lane);
+        this.entitySpawner.spawnDeadSoldier(this.pos.x);
     }
 }

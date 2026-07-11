@@ -10,7 +10,7 @@ export function drawDottedLine(
     gapLen = 4
 ) {
     const dir = to.sub(from).normalize();
-    const total = to.sub(from).size;
+    const total = to.sub(from).magnitude;
     let traveled = -dashOffset;
     let drawing = false; // starts in a gap
 
