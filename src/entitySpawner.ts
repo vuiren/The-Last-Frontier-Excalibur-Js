@@ -6,12 +6,13 @@ import { ICombatant, IGroupable } from "./combatant";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
 import { CaptureZone } from "./buildings/captureZone";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
-import { BuildingsManager } from "./buildingsManager";
 import { UnitConfigKey, UnitConfigs } from "./unitConfigs";
 import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
 import { DeadSoldier } from "./units/deadSoldier";
+import { OrderFlag } from "./buildings/orderFlag";
+import { Building } from "./buildings/building";
 
 export class EntitySpawner {
     constructor(
@@ -19,7 +20,7 @@ export class EntitySpawner {
         private readonly unitsManager: UnitsManager,
         private readonly allGroupables: IGroupable[],
         private readonly allCombatants: ICombatant[],
-        private readonly buildingsManager: BuildingsManager,
+        private readonly allOrderFlags: OrderFlag[],
     ) { }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -54,7 +55,7 @@ export class EntitySpawner {
         const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this);
         this.scene.add(barricadeScraps);
 
-        this.buildingsManager.registerBuilding(barricadeScraps)
+        this.registerBuilding(barricadeScraps)
 
         return barricadeScraps;
     }
@@ -75,14 +76,14 @@ export class EntitySpawner {
 
     spawnPlayerBase(posX: number): PlayerBase {
         const playerBase = new PlayerBase(posX, 100, this);
-        this.buildingsManager.registerBuilding(playerBase);
+        this.registerBuilding(playerBase);
         this.scene.add(playerBase);
         return playerBase;
     }
 
     spawnBarricade(posX: number): Barricade {
         const barricade = new Barricade(posX, 100);
-        this.buildingsManager.registerBuilding(barricade);
+        this.registerBuilding(barricade);
         this.scene.add(barricade);
         return barricade;
     }
@@ -95,9 +96,34 @@ export class EntitySpawner {
             z: 2,
             opacity: 0.5,
         });
-        
+
         this.scene.add(buildPreview);
 
         return buildPreview
+    }
+
+    spawnOrderFlag(posX: number): Actor {
+        const orderFlag = new OrderFlag(posX, this.allOrderFlags);
+        this.scene.add(orderFlag);
+
+        this.allOrderFlags.push(orderFlag)
+
+        orderFlag.on("kill", () => {
+            const index = this.allOrderFlags.indexOf(orderFlag);
+            if (index !== -1) this.allCombatants.splice(index, 1);
+        })
+
+        return orderFlag
+    }
+
+
+    private registerBuilding(building: Building) {
+        this.allCombatants.push(building);
+        building.on('kill', () => this.removeBuilding(building));
+    }
+
+    private removeBuilding(building: ICombatant) {
+        const index = this.allCombatants.indexOf(building);
+        if (index !== -1) this.allCombatants.splice(index, 1);
     }
 }

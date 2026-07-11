@@ -12,9 +12,13 @@
 <body>
   <script type="module" src="./src/main.ts"></script>
   <div id="ui-overlay">
-    <button id="move-camera-left" aria-label="Move camera left">←</button>
-    <button id="move-camera-right" aria-label="Move camera right">→</button>
-    <button id="place-barricade" aria-label="Place barricade">Barricade</button>
+    <div class="button-bar">
+      <button class="game-button" id="move-camera-left" aria-label="Move camera left">←</button>
+      <button class="game-button" id="move-camera-right" aria-label="Move camera right">→</button>
+      <button class="game-button" id="place-barricade" aria-label="Place barricade">Barricade</button>
+      <button class="game-button" id="place-order-flag" aria-label="Place order flag">Order Flag</button>
+      <button class="game-button" id="assign-units-to-flags" aria-label="Assign units to flags">Assign Units to Flags</button>
+    </div>
   </div>
 </body>
 

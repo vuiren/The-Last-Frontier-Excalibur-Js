@@ -17,10 +17,9 @@ export class CaptureZone extends Actor {
     private nearbyEnemyCount: number = 0;
 
     constructor(startPositionX: number, allGroupables: IGroupable[]) {
-
         super({ name: 'CaptureZone', pos: vec(startPositionX, FrontGroundYLevel), width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
+       
         this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
-        this.scale = vec(4, 4);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.allGroupables = allGroupables;
         this.progressBar = new ProgressBar(vec(-16, -100), 32, 6, 100, 0, Color.Red);
@@ -28,7 +27,6 @@ export class CaptureZone extends Actor {
     }
 
     override onInitialize(engine: Engine): void {
-        engine.currentScene.add(this.progressBar);
         this.playAnimation("NotCaptured");
     }
 

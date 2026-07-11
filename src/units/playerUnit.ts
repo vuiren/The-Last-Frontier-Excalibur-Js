@@ -10,7 +10,7 @@ import { EntitySpawner } from "../entitySpawner";
 
 export class PlayerUnit extends Unit {
     private isSelected = false;
-    private moveMarker!: UnitMoveMarker;
+   // private moveMarker!: UnitMoveMarker;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
     private bestEnemy: ICombatant | null = null;
@@ -32,12 +32,12 @@ export class PlayerUnit extends Unit {
 
     override onInitialize(engine: Engine): void {
         super.onInitialize(engine);
-        this.moveMarker = this.entitySpawner.spawnUnitMoveMarker(this, this.globalPos);
+        //this.moveMarker = this.entitySpawner.spawnUnitMoveMarker(this, this.globalPos);
 
-        this.moveMarker.onHoverStart = () => this.select();
-        this.moveMarker.onHoverEnd = () => this.deselect();
-        this.moveMarker.onDragEnd = (destination) => this.moveTo(destination);
-        this.moveMarker.onDragStart = () => this.extractFromGroupIfFollower();
+       // this.moveMarker.onHoverStart = () => this.select();
+       // this.moveMarker.onHoverEnd = () => this.deselect();
+       // this.moveMarker.onDragEnd = (destination) => this.moveTo(destination);
+       // this.moveMarker.onDragStart = () => this.extractFromGroupIfFollower();
 
         this.pointer.useGraphicsBounds = true;
     }
@@ -59,7 +59,7 @@ export class PlayerUnit extends Unit {
 
     private toggleFollowerMarkers(set: boolean): void {
         if (!this.groupRef || this.groupRef.leader.id === this.id) return;
-        this.moveMarker.setFollowerMode(set);
+      //  this.moveMarker.setFollowerMode(set);
     }
 
     private extractFromGroupIfFollower(): void {
@@ -114,9 +114,9 @@ export class PlayerUnit extends Unit {
                 this.lookDirection = this.bestEnemy!.globalPos.x < this.globalPos.x
                     ? HorizontalDirection.Left
                     : HorizontalDirection.Right;
-                if (!this.moveMarker.isDragging) {
-                    this.moveMarker.snapToUnit();
-                }
+               // if (!this.moveMarker.isDragging) {
+               //     this.moveMarker.snapToUnit();
+               // }
                 break;
         }
     }
@@ -190,24 +190,24 @@ export class PlayerUnit extends Unit {
         super.joinGroup(group);
         // Followers hide their own leader-style marker; it reappears as a
         // small follower handle when the group is hovered.
-        if (this.id !== group.leader.id) this.moveMarker.setVisible(false);
+      //  if (this.id !== group.leader.id) this.moveMarker.setVisible(false);
     }
 
     override leaveGroup(): void {
         super.leaveGroup();
-        this.moveMarker.setVisible(true);
+        //this.moveMarker.setVisible(true);
     }
 
     override onRoleInGroupChanged(): void {
         if (this.groupRef) {
-            this.moveMarker.setVisible(this.id === this.groupRef.leader.id);
+           // this.moveMarker.setVisible(this.id === this.groupRef.leader.id);
         }
     }
 
     override cleanUpOnDeath(): void {
         super.cleanUpOnDeath();
         this.deselect();
-        this.moveMarker.kill();
+        //this.moveMarker.kill();
 
         this.entitySpawner.spawnDeadSoldier(this.pos.x);
     }

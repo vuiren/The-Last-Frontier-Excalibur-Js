@@ -19,6 +19,7 @@ export const Resources = {
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
+  OrderFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
 
   FirstLevel: new LdtkResource('./Ldtk/FirstLevel.ldtk'),
 

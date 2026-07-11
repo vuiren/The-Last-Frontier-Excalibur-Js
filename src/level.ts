@@ -1,25 +1,23 @@
-import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, Vector } from "excalibur";
+import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, vec } from "excalibur";
 import { GroupsManager } from "./groupsManager";
-import { Group } from "./group";
 import { UnitsManager } from "./unitsManager";
 import { ICombatant, IGroupable } from "./combatant";
-import { BuildingsManager } from "./buildingsManager";
 import { drawDottedLine } from "./drawDottedLine";
 import { importLdtkLevel } from "./ldtkImporter";
-import { BuildManager } from "./buildManager";
+import { BuildManager, BuildSpawns } from "./buildManager";
 import { EntitySpawner } from "./entitySpawner";
+import { OrderFlag } from "./buildings/orderFlag";
 
 export class MyLevel extends Scene {
-    allGroupables: IGroupable[] = [];
-    allCombatants: ICombatant[] = [];
+    private readonly allGroupables: IGroupable[] = [];
+    private readonly allCombatants: ICombatant[] = [];
+    private readonly allOrderFlags: OrderFlag[] = [];
+    private readonly unitsManager: UnitsManager;
+    private readonly groupsManager: GroupsManager = new GroupsManager();
+    private readonly entitySpawner: EntitySpawner;
 
-    unitsManager: UnitsManager;
-    buildingsManager: BuildingsManager;
-    buildManager!: BuildManager;
-    groupsManager: GroupsManager = new GroupsManager();
-    selectedUnit: ICombatant | null = null;
-    playerGroup: Group | null = null;
-    entitySpawner: EntitySpawner;
+    private buildManager!: BuildManager;
+
     private dashOffset = 0;
     private dashLen = 6;
     private gapLen = 4;
@@ -29,17 +27,16 @@ export class MyLevel extends Scene {
 
     constructor() {
         super();
-        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
-        this.buildingsManager = new BuildingsManager(this.allCombatants);
-        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.allGroupables, this.allCombatants, this.buildingsManager);
+        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.allOrderFlags, this.groupsManager);
+        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.allGroupables, this.allCombatants, this.allOrderFlags, this.buildingsManager);
     }
 
     override onInitialize(engine: Engine): void {
-        this.backgroundColor = Color.fromHex("1F4073"); 
-        
+        this.backgroundColor = Color.fromHex("1F4073");
         this.buildManager = new BuildManager(this.engine, this.entitySpawner);
+
         this.camera.zoom = 2.5
-        this.camera.pos = engine.screen.center.add(new Vector(0, 30));
+        this.camera.pos = vec(400, 150);
 
         const btnRight = document.getElementById('move-camera-right')!;
         btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
@@ -49,41 +46,9 @@ export class MyLevel extends Scene {
         btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
         btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
 
-        const buildBarricadeBtn = document.getElementById('place-barricade') as HTMLButtonElement;
         const COOLDOWN_MS = 3000;
-
-        const cooldownTimer = new Timer({
-            repeats: false,
-            interval: COOLDOWN_MS,
-            onComplete: () => {
-                buildBarricadeBtn.classList.remove('cooldown');
-                buildBarricadeBtn.disabled = false;
-            }
-        });
-
-        engine.add(cooldownTimer)
-
-        const startCooldown = (button: HTMLButtonElement, duration: number) => {
-            button.style.setProperty('--cooldown', `${duration}ms`);
-            button.classList.add('cooldown');
-            button.disabled = true;
-
-            cooldownTimer.start()
-        }
-
-        buildBarricadeBtn.addEventListener('click', () => {
-            if (buildBarricadeBtn.classList.contains('cooldown')) return;
-
-            if (this.buildManager.isPlacingBuilding) {
-                this.buildManager.stopPlacingBuilding();
-            } else {
-                this.buildManager.startPlacingBuilding();
-            }
-        });
-
-        this.buildManager.events.on('barricadeSpawn', () => {
-            startCooldown(buildBarricadeBtn, COOLDOWN_MS);
-        });
+        this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-order-flag', 'orderFlagSpawn', COOLDOWN_MS);
 
         importLdtkLevel(this, {
             entitySpawner: this.entitySpawner,
@@ -149,4 +114,41 @@ export class MyLevel extends Scene {
             }
         }
     }
+
+    private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {
+        const button = document.getElementById(elementId) as HTMLButtonElement;
+
+        const cooldownTimer = new Timer({
+            repeats: false,
+            interval: cooldownMs,
+            onComplete: () => {
+                button.classList.remove('cooldown');
+                button.disabled = false;
+                this.buildManager.onCooldown = false;
+            }
+        });
+        this.engine.add(cooldownTimer);
+
+        button.addEventListener('click', () => {
+            if (button.disabled) return;
+
+            if (this.buildManager.isPlacingBuilding && this.buildManager.buildType === buildType) {
+                this.buildManager.stopPlacingBuilding();
+            } else {
+                this.buildManager.onCooldown = false;
+                this.buildManager.setBuildingType(buildType);
+                this.buildManager.startPlacingBuilding();
+            }
+        });
+
+        this.buildManager.events.on(buildType, () => {
+            button.style.setProperty('--cooldown', `${cooldownMs}ms`);
+            button.classList.add('cooldown');
+            button.disabled = true;
+            this.buildManager.onCooldown = true;
+            cooldownTimer.reset();
+            cooldownTimer.start();
+        });
+    }
 }
+

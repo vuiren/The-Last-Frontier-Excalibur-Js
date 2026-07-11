@@ -1,59 +1,61 @@
-import { Actor, Engine, EventEmitter, PointerButton, PointerEvent, vec, Vector } from "excalibur";
-import { AnimComponent } from "./animComponent";
-import { Resources } from "./resources";
+import { Engine, EventEmitter, PointerButton, PointerEvent, Vector } from "excalibur";
 import { EntitySpawner } from "./entitySpawner";
-import { FrontGroundYLevel } from "./constants";
+import { BuildPreview } from "./buildings/buildPreview";
+
+export type BuildSpawns = "barricadeSpawn" | "orderFlagSpawn";
 
 export type BuildManagerEvents = {
     barricadeSpawn: { x: number };
+    orderFlagSpawn: { x: number };
 };
 
 export class BuildManager {
     events = new EventEmitter<BuildManagerEvents>();
     isPlacingBuilding: boolean = false;
+    buildType: BuildSpawns = "barricadeSpawn";
+    onCooldown = false;
+    private buildPreview: BuildPreview;
 
-    private buildPreview: Actor;
-    private entitySpawner: EntitySpawner;
-    private animComponent: AnimComponent;
-    private lastPointerPos: Vector | null = null;
-
-    constructor(engine: Engine, entitySpawner: EntitySpawner) {
-        this.entitySpawner = entitySpawner;
-
-        this.buildPreview = this.entitySpawner.spawnBarricadeBuildPreview();
-        this.buildPreview.graphics.isVisible = false;
-        this.animComponent = new AnimComponent(Resources.Barricade);
-        this.animComponent.play("Idle", this.buildPreview.graphics);
+    constructor(engine: Engine, private readonly entitySpawner: EntitySpawner) {
+        this.buildPreview = new BuildPreview(entitySpawner);
 
         engine.input.pointers.primary.on("move", this.onPointerMove.bind(this));
-        engine.input.pointers.primary.on("down", (x) => this.onPointerDown(x));
-
+        engine.input.pointers.primary.on("down", (evt) => this.onPointerDown(evt));
     }
 
     startPlacingBuilding() {
         this.isPlacingBuilding = true;
-        this.buildPreview.graphics.isVisible = true;
+        this.buildPreview.show();
     }
 
     stopPlacingBuilding() {
         this.isPlacingBuilding = false;
-        this.buildPreview.graphics.isVisible = false;
+        this.buildPreview.hide();
+    }
+
+    setBuildingType(buildingType: BuildSpawns){
+        this.buildType = buildingType
+        this.buildPreview.changeSprite(this.buildType)
     }
 
     private onPointerMove(evt: { worldPos: Vector }): void {
-        if (!this.isPlacingBuilding) return
-
-        this.lastPointerPos = evt.worldPos;
-        this.buildPreview.pos = vec(this.lastPointerPos.x, FrontGroundYLevel);
+        if (!this.isPlacingBuilding) return;
+        this.buildPreview.moveTo(evt.worldPos);
     }
 
     private onPointerDown(evt: PointerEvent): void {
-        if (!this.isPlacingBuilding) return;
+        if (!this.isPlacingBuilding || this.onCooldown) return;
 
         if (evt.button === PointerButton.Left) {
-            this.entitySpawner.spawnBarricadeScraps(this.buildPreview.pos.x);
-            this.stopPlacingBuilding();
-            this.events.emit("barricadeSpawn", { x: this.buildPreview.pos.x });
+            switch(this.buildType){
+                case "barricadeSpawn":
+                    this.entitySpawner.spawnBarricadeScraps(this.buildPreview.x);
+                    break;
+                case "orderFlagSpawn":
+                    this.entitySpawner.spawnOrderFlag(this.buildPreview.x)
+                    break;
+            }
+            this.events.emit(this.buildType, { x: this.buildPreview.x });
         }
     }
 }
