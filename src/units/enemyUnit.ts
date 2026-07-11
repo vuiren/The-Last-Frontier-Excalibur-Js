@@ -5,10 +5,10 @@ import { UnitConfig } from "../unitConfigs";
 import { ICombatant, IGroupable } from "../combatant";
 
 export class EnemyUnit extends Unit {
-    wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination
-    currentAggression: number = 0;
-    aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
-    detectedEnemy: ICombatant | null = null;
+    private wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination
+    private currentAggression: number = 0;
+    private aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
+    private detectedEnemy: ICombatant | null = null;
 
     constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig, lane: Lane) {
         super(posX, config, allUnits, allGroupables, lane);

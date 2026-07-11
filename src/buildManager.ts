@@ -1,30 +1,27 @@
-import { Actor, Engine, PointerButton, PointerEvent, vec, Vector } from "excalibur";
-import { BuildingsManager } from "./buildingsManager";
+import { Actor, Engine, EventEmitter, PointerButton, PointerEvent, vec, Vector } from "excalibur";
 import { GetLaneByYLevel, GetScaleByLane, GetYLevel } from "./constants";
 import { AnimComponent } from "./animComponent";
 import { Resources } from "./resources";
 import { EntitySpawner } from "./entitySpawner";
 
+export type BuildManagerEvents = {
+    barricadeSpawn: { x: number; lane: number };
+};
+
 export class BuildManager {
+    events = new EventEmitter<BuildManagerEvents>();
     isPlacingBuilding: boolean = false;
-    buildPreview: Actor;
+
+    private buildPreview: Actor;
     private entitySpawner: EntitySpawner;
     private animComponent: AnimComponent;
-    private engine: Engine;
     private lastPointerPos: Vector | null = null;
 
     constructor(engine: Engine, entitySpawner: EntitySpawner) {
         this.entitySpawner = entitySpawner;
-        this.engine = engine;
-        this.buildPreview = new Actor({
-            width: 8,
-            height: 4,
-            anchor: vec(0.5, 1),
-            z: 2,
-            opacity: 0.5,
-        });
-        engine.add(this.buildPreview);
 
+        this.buildPreview = this.entitySpawner.spawnBarricadeBuildPreview();
+        this.buildPreview.graphics.isVisible = false;
         this.animComponent = new AnimComponent(Resources.Barricade);
         this.animComponent.play("Idle", this.buildPreview.graphics);
 
@@ -35,10 +32,12 @@ export class BuildManager {
 
     startPlacingBuilding() {
         this.isPlacingBuilding = true;
+        this.buildPreview.graphics.isVisible = true;
     }
 
     stopPlacingBuilding() {
         this.isPlacingBuilding = false;
+        this.buildPreview.graphics.isVisible = false;
     }
 
     private onPointerMove(evt: { worldPos: Vector }): void {
@@ -54,6 +53,8 @@ export class BuildManager {
 
         if (evt.button === PointerButton.Left) {
             this.entitySpawner.spawnBarricadeScraps(this.buildPreview.pos.x, GetLaneByYLevel(this.lastPointerPos!.y));
+            this.stopPlacingBuilding();
+            this.events.emit("barricadeSpawn", { x: this.buildPreview.pos.x, lane: GetLaneByYLevel(this.lastPointerPos!.y) });
         }
     }
 }

@@ -24,7 +24,7 @@ export class CaptureZone extends Actor {
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.lane = lane;
         this.allGroupables = allGroupables;
-        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -100)), 32, 6, 100, Color.Red);
+        this.progressBar = new ProgressBar(startPosition.add(vec(-16, -100)), 32, 6, 100, 0, Color.Red);
     }
 
     override onInitialize(engine: Engine): void {

@@ -3,26 +3,23 @@ import { Faction, Lane, GetYLevel } from "../constants";
 import { Resources } from "../resources";
 import { Building } from "./building";
 import { ProgressBar } from "../progressBar";
-import { IGroupable } from "../combatant";
-import { UnitsManager } from "../unitsManager";
+import { EntitySpawner } from "../entitySpawner";
 
 export class InfectedBuilding extends Building {
-    allGroupables: IGroupable[];
-
-    private unitsManager: UnitsManager;
     private progressBar: ProgressBar;
+    private entitySpawner: EntitySpawner;
     private spawnProgressIncreaseRate: number = 0.1;
     private spawnProgress: number = 0;
     private spawnDelay = 5000;
 
-    constructor(xPos: number, health: number, lane: Lane, unitsManager: UnitsManager, allGroupables: IGroupable[]) {
+    constructor(xPos: number, health: number, lane: Lane, entitySpawner: EntitySpawner) {
         const startPosition = vec(xPos, GetYLevel(lane));
         super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: -2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, health, lane);
-
-        this.progressBar = new ProgressBar(startPosition.add(vec(-8, lane === Lane.Front ? -40 : -20)), 16, 4, this.spawnDelay, Color.Red);
-        this.progressBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
-        this.unitsManager = unitsManager;
-        this.allGroupables = allGroupables;
+        
+        this.entitySpawner = entitySpawner;
+       
+        this.progressBar = new ProgressBar(vec(-8, lane === Lane.Front ? -40 : -35), 16, 4, 0, this.spawnDelay, Color.Red);
+        this.addChild(this.progressBar)
     }
 
     override onInitialize(engine: Engine): void {
@@ -36,7 +33,7 @@ export class InfectedBuilding extends Building {
 
         if (this.spawnProgress >= this.spawnDelay) {
             this.spawnProgress = 0;
-            this.unitsManager.spawnEnemyUnit(engine.currentScene, this.pos.x, "enemyZombie", this.lane);
+            this.entitySpawner.spawnEnemyUnit(this.pos.x, "enemyZombie", this.lane);
         }
     }
 }

@@ -31,6 +31,10 @@ export function GetLaneByYLevel(yLevel: number): Lane {
     return yLevel >= BackGroundYLevel ? Lane.Front : Lane.Back;
 }
 
+export function GetLaneYLevel(posY: number): number {
+    return GetYLevel(GetLaneByYLevel(posY));
+}
+
 export function GetScaleByLane(lane: Lane): Vector {
     return lane === Lane.Front ? vec(1, 1) : vec(0.7, 0.7);
 }

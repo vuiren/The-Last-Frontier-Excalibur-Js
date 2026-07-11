@@ -2,24 +2,24 @@ import { ICombatant } from "./combatant";
 import { Building } from "./buildings/building";
 
 export class BuildingsManager {
-    allBuildings: ICombatant[] = [];
+    private allCombatants: ICombatant[] = [];
 
     onBuildingAdded?: (building: ICombatant) => void;
     onBuildingRemoved?: (building: ICombatant) => void;
 
-    constructor(allBuildings: ICombatant[]) {
-        this.allBuildings = allBuildings;
+    constructor(allCombatants: ICombatant[]) {
+        this.allCombatants = allCombatants;
     }
 
     registerBuilding(building: Building) {
-        this.allBuildings.push(building);
-        building.on('died', () => this.removeBuilding(building));
+        this.allCombatants.push(building);
+        building.on('kill', () => this.removeBuilding(building));
         this.onBuildingAdded?.(building);
     }
 
     removeBuilding(building: ICombatant) {
-        const index = this.allBuildings.indexOf(building);
-        if (index !== -1) this.allBuildings.splice(index, 1);
+        const index = this.allCombatants.indexOf(building);
+        if (index !== -1) this.allCombatants.splice(index, 1);
         this.onBuildingRemoved?.(building);
     }
 }

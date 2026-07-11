@@ -9,8 +9,8 @@ import { UnitsManager } from "../unitsManager";
 import { EntitySpawner } from "../entitySpawner";
 
 export class PlayerUnit extends Unit {
-    isSelected = false;
-    moveMarker!: UnitMoveMarker;
+    private isSelected = false;
+    private moveMarker!: UnitMoveMarker;
     private hasSightedEnemy = false;
     private hasActiveOrder = false;
     private bestEnemy: ICombatant | null = null;

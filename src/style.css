@@ -55,4 +55,41 @@
     left: 180px;
     width: 100px;
   }
+
+  #place-barricade {
+    position: absolute;
+    /* you already have this */
+    overflow: hidden;
+    /* keeps the fill inside the rounded corners */
+  }
+
+  #place-barricade::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0;
+    background: rgba(255, 255, 255, 0.25);
+    pointer-events: none;
+  }
+
+  #place-barricade.cooldown {
+    cursor: not-allowed;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  #place-barricade.cooldown::after {
+    animation: cooldown-fill var(--cooldown, 3s) linear forwards;
+  }
+
+  @keyframes cooldown-fill {
+    from {
+      width: 0;
+    }
+
+    to {
+      width: 100%;
+    }
+  }
 }

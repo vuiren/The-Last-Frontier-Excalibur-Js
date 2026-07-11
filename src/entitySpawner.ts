@@ -1,8 +1,7 @@
-import { Scene, Vector } from "excalibur";
+import { Actor, Scene, vec, Vector } from "excalibur";
 import { UnitMoveMarker } from "./unitMoveMarker";
 import { UnitsManager } from "./unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
-import { DeadSoldier } from "./deadSoldier";
 import { Lane } from "./constants";
 import { ChangeLaneButton } from "./ingameButtons/changeLaneButton";
 import { ICombatant, IGroupable } from "./combatant";
@@ -14,6 +13,7 @@ import { UnitConfigKey, UnitConfigs } from "./unitConfigs";
 import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
+import { DeadSoldier } from "./units/deadSoldier";
 
 export class EntitySpawner {
     constructor(
@@ -32,7 +32,7 @@ export class EntitySpawner {
     }
 
     spawnDeadSoldier(pos: Vector, lane: Lane) {
-        const deadSoldier = new DeadSoldier(pos, this.unitsManager, lane);
+        const deadSoldier = new DeadSoldier(pos, this, lane);
         this.scene.add(deadSoldier);
 
         return deadSoldier;
@@ -46,7 +46,7 @@ export class EntitySpawner {
     }
 
     spawnInfectedFarmHouse(posX: number, health: number, lane: Lane) {
-        const infectedBuilding = new InfectedBuilding(posX, health, lane, this.unitsManager, this.allGroupables);
+        const infectedBuilding = new InfectedBuilding(posX, health, lane, this);
         this.scene.add(infectedBuilding);
 
         return infectedBuilding;
@@ -60,8 +60,10 @@ export class EntitySpawner {
     }
 
     spawnBarricadeScraps(posX: number, lane: Lane) {
-        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this.buildingsManager, lane);
+        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this, lane);
         this.scene.add(barricadeScraps);
+
+        this.buildingsManager.registerBuilding(barricadeScraps)
 
         return barricadeScraps;
     }
@@ -99,5 +101,19 @@ export class EntitySpawner {
         this.buildingsManager.registerBuilding(barricade);
         this.scene.add(barricade);
         return barricade;
+    }
+
+    spawnBarricadeBuildPreview(): Actor {
+        const buildPreview = new Actor({
+            width: 8,
+            height: 4,
+            anchor: vec(0.5, 1),
+            z: 2,
+            opacity: 0.5,
+        });
+        
+        this.scene.add(buildPreview);
+
+        return buildPreview
     }
 }

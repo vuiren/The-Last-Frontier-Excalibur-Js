@@ -44,8 +44,6 @@ export class UnitMoveMarker extends Actor {
         assignedUnit.on("beganAttacking", () => {
             this.pos = assignedUnit.pos;
         });
-
-        assignedUnit.on("died", () => this.kill());
     }
 
     override onInitialize(engine: Engine): void {

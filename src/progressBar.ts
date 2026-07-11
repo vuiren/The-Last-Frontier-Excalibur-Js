@@ -15,6 +15,7 @@ export class ProgressBar extends Actor {
     pos: Vector,
     barWidth = 4,
     barHeight = 1,
+    curValue = 100,
     maxValue = 100,
     color = Color.Green,
     z = 1,
@@ -23,7 +24,7 @@ export class ProgressBar extends Actor {
     this.barWidth = barWidth;
     this.barHeight = barHeight;
     this.maxValue = maxValue;
-    this.currentValue = maxValue;
+    this.currentValue = curValue;
     this.barColor = color;
   }
 
@@ -50,6 +51,7 @@ export class ProgressBar extends Actor {
         ],
       })
     );
+
   }
 
   show(): void {

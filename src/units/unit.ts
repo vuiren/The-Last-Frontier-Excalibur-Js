@@ -21,8 +21,6 @@ const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
 };
 
 export class Unit extends Actor implements ICombatant, IGroupable {
-    allCombatants: ICombatant[] = [];
-    allGroupables: IGroupable[] = [];
     health: number;
     lane: Lane;
     groupRef: Group | null = null;
@@ -42,6 +40,9 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     private healthBar: ProgressBar;
     private animComponent: AnimComponent;
 
+    protected allCombatants: ICombatant[] = [];
+    protected allGroupables: IGroupable[] = [];
+
     constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], allGroupables: IGroupable[], startLane = Lane.Front) {
         const startPosition = vec(startX, GetYLevel(startLane));
         super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1) });
@@ -55,7 +56,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.scale = GetScaleByLane(startLane);
         this.animComponent = new AnimComponent(config.graphicSource);
 
-        this.healthBar = new ProgressBar(vec(0, 0), 8, 2, config.health);
+        this.healthBar = new ProgressBar(vec(0, 0), 8, 2, config.health, config.health);
         this.healthBar.scale = GetHealthBarScaleByLane(startLane);
     }
 
@@ -285,10 +286,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     leaveGroup(): void { this.groupRef = null; }
 
     onRoleInGroupChanged(): void {
-    }
-
-    override onPostKill(): void {
-        this.emit('died', this);
     }
 
     override onPostUpdate(_engine: Engine, _elapsedMs: number): void {

@@ -1,5 +1,5 @@
 import { Actor, ActorArgs, Color, Engine, vec } from "excalibur";
-import { HorizontalDirection, Faction, Lane, GetScaleByLane } from "../constants";
+import { HorizontalDirection, Faction, Lane, GetScaleByLane, GetHealthBarScaleByLane, GetYLevel } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
@@ -10,23 +10,29 @@ import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 export class Building extends Actor implements ICombatant {
     health: number = 100;
     isDead: boolean = false;
-    private healthBar: ProgressBar;
     faction: Faction;
     activity: UnitActivity = "idle";
     groupRef: Group | null = null;
     lane: Lane;
     attackPriority: number = 1;
+
     private animComponent: AnimComponent;
+    private healthBar: ProgressBar;
 
     constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, lane: Lane) {
         super(config);
         this.faction = faction;
         this.health = health;
         this.lane = lane;
-        this.healthBar = new ProgressBar(vec(this.pos.x - 8, lane === Lane.Front ? this.pos.y - 50 : this.pos.y - 25), 16, 4, 100, Color.DarkGray);
         this.animComponent = new AnimComponent(asepriteResouce);
         this.scale = GetScaleByLane(lane);
-        this.healthBar.scale = this.lane === Lane.Front ? vec(1, 1) : vec(0.75, 0.75);
+
+        this.healthBar = new ProgressBar(
+            vec(-8, lane === Lane.Front ? -45 : -40),
+            16, 4, health, health, Color.DarkGray
+        );
+
+        this.addChild(this.healthBar);
     }
 
     override onInitialize(engine: Engine): void {
@@ -39,7 +45,10 @@ export class Building extends Actor implements ICombatant {
     }
 
     changeLane(): void {
-        console.warn("Buildings cannot change lanes");
+        this.lane = this.lane === Lane.Front ? Lane.Back : Lane.Front;
+        this.scale = GetScaleByLane(this.lane)
+        this.healthBar.scale = GetHealthBarScaleByLane(this.lane)
+        this.pos.y = GetYLevel(this.lane)
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {
@@ -53,7 +62,6 @@ export class Building extends Actor implements ICombatant {
 
     onDeath(): void {
         this.isDead = true;
-        this.healthBar.kill();
         this.kill();
     }
 }

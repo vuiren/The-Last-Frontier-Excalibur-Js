@@ -47,13 +47,32 @@ export class MyLevel extends Scene {
         btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
         btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
 
-        const buildBarricadeBtn = document.getElementById('place-barricade')!;
+        const buildBarricadeBtn = document.getElementById('place-barricade') as HTMLButtonElement;
+        const COOLDOWN_MS = 3000;
+
+        const startCooldown = (button: HTMLButtonElement, duration: number) => {
+            button.style.setProperty('--cooldown', `${duration}ms`);
+            button.classList.add('cooldown');
+            button.disabled = true;
+
+            setTimeout(() => {
+                button.classList.remove('cooldown');
+                button.disabled = false;
+            }, COOLDOWN_MS);
+        }
+
         buildBarricadeBtn.addEventListener('click', () => {
+            if (buildBarricadeBtn.classList.contains('cooldown')) return;
+
             if (this.buildManager.isPlacingBuilding) {
                 this.buildManager.stopPlacingBuilding();
             } else {
                 this.buildManager.startPlacingBuilding();
             }
+        });
+
+        this.buildManager.events.on('barricadeSpawn', () => {
+            startCooldown(buildBarricadeBtn, COOLDOWN_MS);
         });
 
         importLdtkLevel(this, {

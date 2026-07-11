@@ -25,7 +25,7 @@ export class UnitsManager {
         this.allGroupables.push(unit);
         this.collisionManager.collidingUnits.set(unit, []);
         this.onUnitAdded?.(unit);
-        unit.on('died', (e) => this.removeUnit(e as IGroupable));
+        unit.on('kill', () => this.removeUnit(unit));
         scene.add(unit);
         return unit;
     }
