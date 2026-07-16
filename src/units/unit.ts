@@ -50,6 +50,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.health = config.health;
         this.faction = config.faction;
         this.animComponent = new AnimComponent(config.graphicSource);
+        this.orderedDestination = this.globalPos
 
         this.healthBar = new ProgressBar(vec(-4, -20), 8, 2, config.health, config.health);
         this.addChild(this.healthBar)
@@ -242,14 +243,5 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     leaveGroup(): void { this.groupRef = null; }
 
     onRoleInGroupChanged(): void {
-    }
-
-    override onPostUpdate(_engine: Engine, _elapsedMs: number): void {
-        if (!import.meta.env.DEV) return; // Skip debug drawing in production
-
-        const sign = this.lookDirection == HorizontalDirection.Right ? 1 : -1;
-        Debug.drawLine(this.pos.add(vec(0, -8)), this.pos.add(vec(sign * this.config.detectionRange, -8)), { color: Color.Yellow });
-        Debug.drawLine(this.pos.add(vec(0, -4)), this.pos.add(vec(sign * this.config.detectionRange, -4)), { color: Color.Red });
-        Debug.drawText(this.activity, this.pos);
     }
 }
