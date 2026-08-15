@@ -1,6 +1,6 @@
-import { IGroupable } from "./combatant";
-import { Faction } from "./constants";
-import { Group } from "./group";
+import { IGroupable } from "../combatant";
+import { Faction } from "../../constants";
+import { Group } from "../group";
 import { GroupsManager } from "./groupsManager";
 
 export class UnitsCollisionManager {

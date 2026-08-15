@@ -1,12 +1,12 @@
 import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, vec } from "excalibur";
-import { GroupsManager } from "./groupsManager";
-import { UnitsManager } from "./unitsManager";
+import { UnitsManager } from "./managers/unitsManager";
 import { ICombatant, IGroupable } from "./combatant";
-import { drawDottedLine } from "./drawDottedLine";
-import { importLdtkLevel } from "./ldtkImporter";
-import { BuildManager, BuildSpawns } from "./buildManager";
+import { drawDottedLine } from "../drawDottedLine";
+import { importLdtkLevel } from "../ldtkImporter";
 import { EntitySpawner } from "./entitySpawner";
 import { Building } from "./buildings/building";
+import { BuildManager, BuildSpawns } from "./managers/buildManager";
+import { GroupsManager } from "./managers/groupsManager";
 
 export class MyLevel extends Scene {
     private readonly allGroupables: IGroupable[] = [];

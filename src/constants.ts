@@ -14,3 +14,9 @@ export enum AttackType {
     Melee,
     Ranged
 }
+
+export enum Ownership {
+    Player,
+    Enemy,
+    Neutral
+}

@@ -1,6 +1,6 @@
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
-import { AttackType, Faction } from "./constants";
-import { Resources } from "./resources";
+import { Faction, AttackType } from "../../constants";
+import { Resources } from "../../resources";
 
 export interface UnitConfig {
     health: number;

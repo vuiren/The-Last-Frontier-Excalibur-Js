@@ -1,9 +1,9 @@
 import { Actor, Color, Engine, vec } from "excalibur";
-import { AnimComponent } from "../animComponent";
-import { ProgressBar } from "../progressBar";
-import { Resources } from "../resources";
+import { AnimComponent } from "../../animComponent";
+import { ProgressBar } from "../../progressBar";
+import { Resources } from "../../resources";
 import { EntitySpawner } from "../entitySpawner";
-import { FrontGroundYLevel } from "../constants";
+import { FrontGroundYLevel } from "../../constants";
 
 export class DeadSoldier extends Actor {
     private revivalProgress: number = 0;

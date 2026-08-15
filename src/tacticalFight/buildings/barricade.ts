@@ -1,7 +1,7 @@
 import { vec } from "excalibur";
-import { Faction, FrontGroundYLevel } from "../constants";
+import { Faction, FrontGroundYLevel } from "../../constants";
 import { Building } from "./building";
-import { Resources } from "../resources";
+import { Resources } from "../../resources";
 
 export class Barricade extends Building {
     constructor(posX: number, health: number) {

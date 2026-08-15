@@ -1,5 +1,5 @@
 import { vec } from "excalibur";
-import { FrontGroundYLevel, HorizontalDirection } from "./constants";
+import { FrontGroundYLevel, HorizontalDirection } from "../constants";
 import { IGroupable } from "./combatant";
 
 const BASE_FORMATION_SPACING = 8; // Base distance between units in a formation

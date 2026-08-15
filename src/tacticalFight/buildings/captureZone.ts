@@ -1,9 +1,9 @@
 import { Actor, Color, Engine, vec } from "excalibur";
-import { AnimComponent } from "../animComponent";
-import { Resources } from "../resources";
+import { AnimComponent } from "../../animComponent";
+import { Resources } from "../../resources";
 import { IGroupable } from "../combatant";
-import { Faction, FrontGroundYLevel } from "../constants";
-import { ProgressBar } from "../progressBar";
+import { Faction, FrontGroundYLevel } from "../../constants";
+import { ProgressBar } from "../../progressBar";
 
 export class CaptureZone extends Actor {
     allGroupables: IGroupable[] = [];

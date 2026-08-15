@@ -1,5 +1,5 @@
 import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction } from "../constants";
+import { HorizontalDirection, Faction } from "../../constants";
 import { ICombatant } from "../combatant";
 
 export class Bullet extends Actor {

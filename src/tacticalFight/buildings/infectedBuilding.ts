@@ -1,8 +1,8 @@
 import { Color, Engine, vec } from "excalibur";
-import { Faction, FrontGroundYLevel } from "../constants";
-import { Resources } from "../resources";
+import { Faction, FrontGroundYLevel } from "../../constants";
+import { Resources } from "../../resources";
 import { Building } from "./building";
-import { ProgressBar } from "../progressBar";
+import { ProgressBar } from "../../progressBar";
 import { EntitySpawner } from "../entitySpawner";
 
 export class InfectedBuilding extends Building {

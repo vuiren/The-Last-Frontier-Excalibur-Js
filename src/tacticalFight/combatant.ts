@@ -1,5 +1,5 @@
 import { Vector } from "excalibur";
-import { HorizontalDirection, Faction } from "./constants";
+import { HorizontalDirection, Faction } from "../constants";
 import { Group } from "./group";
 import { UnitActivity } from "./units/unit";
 

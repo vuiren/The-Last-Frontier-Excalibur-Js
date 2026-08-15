@@ -1,7 +1,7 @@
 import { Scene } from "excalibur";
 import { UnitsCollisionManager } from "./unitsCollisionManager";
-import { ICombatant, IGroupable } from "./combatant";
-import { Unit } from "./units/unit";
+import { ICombatant, IGroupable } from "../combatant";
+import { Unit } from "../units/unit";
 import { GroupsManager } from "./groupsManager";
 
 export class UnitsManager {

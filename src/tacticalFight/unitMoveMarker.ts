@@ -2,11 +2,11 @@ import {
     Actor, Engine, Vector, PointerEvent,
     vec, PointerButton, Color
 } from "excalibur";
-import { Resources } from "./resources";
-import { AnimComponent } from "./animComponent";
+import { Resources } from "../resources";
+import { AnimComponent } from "../animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
-import { FrontGroundYLevel } from "./constants";
+import { FrontGroundYLevel } from "../constants";
 
 const HOVER_LIFT_OFFSET = vec(0, -3);
 const DRAG_TINT = Color.Red;

@@ -1,9 +1,9 @@
 import { Actor, Color, vec, Vector } from "excalibur";
-import { AnimComponent } from "../animComponent";
-import { FrontGroundYLevel } from "../constants";
-import { EntitySpawner } from "../tacticalFight/entitySpawner";
-import { Resources } from "../resources";
-import { BuildSpawns } from "../buildManager";
+import { AnimComponent } from "../../animComponent";
+import { FrontGroundYLevel } from "../../constants";
+import { EntitySpawner } from "../entitySpawner";
+import { Resources } from "../../resources";
+import { BuildSpawns } from "../managers/buildManager";
 
 export class BuildPreview {
     private actor: Actor;

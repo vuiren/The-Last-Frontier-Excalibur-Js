@@ -1,10 +1,10 @@
 import { Actor, ActorArgs, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction } from "../constants";
-import { ProgressBar } from "../progressBar";
+import { HorizontalDirection, Faction } from "../../constants";
+import { ProgressBar } from "../../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
 import { UnitActivity } from "../units/unit";
-import { AnimComponent } from "../animComponent";
+import { AnimComponent } from "../../animComponent";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 
 export class Building extends Actor implements ICombatant {

@@ -1,6 +1,6 @@
 import { vec } from "excalibur";
-import { Faction, FrontGroundYLevel } from "../constants";
-import { Resources } from "../resources";
+import { Faction, FrontGroundYLevel } from "../../constants";
+import { Resources } from "../../resources";
 import { Building } from "./building";
 import { EntitySpawner } from "../entitySpawner";
 import { BuyButton } from "./buyButton";

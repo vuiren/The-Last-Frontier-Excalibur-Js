@@ -1,5 +1,5 @@
 import { Vector } from "excalibur";
-import { Faction } from "./constants";
+import { Faction } from "../constants";
 import { ICombatant, IGroupable } from "./combatant";
 import { UnitActivity } from "./units/unit";
 

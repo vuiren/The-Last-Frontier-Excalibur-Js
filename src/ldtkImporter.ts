@@ -1,7 +1,7 @@
 import { FactoryProps, LdtkResource } from '@excaliburjs/plugin-ldtk';
 import { Scene } from 'excalibur';
 import { Resources } from './resources';
-import { EntitySpawner } from './entitySpawner';
+import { EntitySpawner } from './tacticalFight/entitySpawner';
 
 export interface LevelImportDeps {
     entitySpawner: EntitySpawner;

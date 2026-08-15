@@ -1,5 +1,5 @@
-import { IGroupable } from "./combatant";
-import { Group } from "./group";
+import { IGroupable } from "../combatant";
+import { Group } from "../group";
 
 export class GroupsManager {
     groups: Group[] = [];

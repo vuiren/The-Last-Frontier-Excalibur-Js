@@ -1,13 +1,13 @@
 import { Color, Engine, vec } from "excalibur";
-import { Resources } from "../resources";
+import { Resources } from "../../resources";
 import { IGroupable } from "../combatant";
-import { Faction, FrontGroundYLevel } from "../constants";
-import { ProgressBar } from "../progressBar";
+import { Faction, FrontGroundYLevel } from "../../constants";
+import { ProgressBar } from "../../progressBar";
 import { queryNearbyWithActivity } from "../proximityQuery";
 import { EntitySpawner } from "../entitySpawner";
 import { Building } from "./building";
 
-export class FarmScraps extends Building {
+export class BarricadeScraps extends Building {
     private allGroupables: IGroupable[] = [];
     private buildProgress: number = 0;
     private entitySpawner: EntitySpawner;
@@ -15,14 +15,14 @@ export class FarmScraps extends Building {
     private progressBar: ProgressBar;
 
     constructor(posX: number, allGroupables: IGroupable[], entitySpawner: EntitySpawner) {
-        super({ name: 'FarmScraps', pos: vec(posX, FrontGroundYLevel), width: 32, height: 32, z: 2, anchor: vec(0.5, 1) },
-            Resources.FarmHouse, Faction.Player, 1);
+        super({ name: 'BarricadeScraps', pos: vec(posX, FrontGroundYLevel), width: 8, height: 4, z: 5, anchor: vec(0.5, 1) },
+            Resources.Barricade, Faction.Player, 1, vec(-8, -35));
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.entitySpawner = entitySpawner;
         this.allGroupables = allGroupables;
 
         this.progressBar = new ProgressBar(
-            vec(-8, -40),
+            vec(-8, -30),
             16, 4, 100, 100, Color.ExcaliburBlue
         );
 
@@ -51,7 +51,7 @@ export class FarmScraps extends Building {
 
         if (this.buildProgress >= 100) {
             this.buildProgress = 100;
-            this.entitySpawner.spawnFarmHouse(this.pos.x);
+            this.entitySpawner.spawnBarricade(this.pos.x);
             this.kill();
         }
     }

@@ -1,6 +1,6 @@
 import {
     Color, Engine, Font, FontUnit, GraphicsGroup, ImageSource, Rectangle,
-    ScreenElement, Sprite, Text, TextAlign, Vector, vec
+    ScreenElement, Sprite, Text, TextAlign, vec
 } from "excalibur";
 
 export interface BuyButtonOptions {

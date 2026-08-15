@@ -1,12 +1,12 @@
 import { Vector, Engine, Color } from "excalibur";
 import { ICombatant, IGroupable } from "../combatant";
-import { HorizontalDirection } from "../constants";
+import { HorizontalDirection } from "../../constants";
 import { Group } from "../group";
-import { UnitConfig } from "../unitConfigs";
 import { UnitMoveMarker } from "../unitMoveMarker";
 import { Unit, UnitActivity } from "./unit";
 import { EntitySpawner } from "../entitySpawner";
-import { GroupsManager } from "../groupsManager";
+import { GroupsManager } from "../managers/groupsManager";
+import { UnitConfig } from "./unitConfigs";
 
 export class PlayerUnit extends Unit {
     private isSelected = false;

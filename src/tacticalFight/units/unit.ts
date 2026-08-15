@@ -1,12 +1,12 @@
-import { Actor, Vector, vec, Engine, Debug, Color } from "excalibur";
-import { AnimComponent } from "../animComponent";
+import { Actor, Vector, vec, Engine, Color } from "excalibur";
+import { AnimComponent } from "../../animComponent";
 import { Bullet } from "./bullet";
 import { ICombatant, IGroupable } from "../combatant";
 import { Group } from "../group";
-import { ProgressBar } from "../progressBar";
-import { UnitConfig } from "../unitConfigs";
+import { ProgressBar } from "../../progressBar";
 import { queryNearby } from "../proximityQuery";
-import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType } from "../constants";
+import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType } from "../../constants";
+import { UnitConfig } from "./unitConfigs";
 
 export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead";
 

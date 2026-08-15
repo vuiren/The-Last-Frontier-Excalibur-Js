@@ -1,20 +1,20 @@
 import { Actor, Scene, vec, Vector } from "excalibur";
 import { UnitMoveMarker } from "./unitMoveMarker";
-import { UnitsManager } from "./unitsManager";
+import { UnitsManager } from "./managers/unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
 import { ICombatant, IGroupable } from "./combatant";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
 import { CaptureZone } from "./buildings/captureZone";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
-import { UnitConfigKey, UnitConfigs } from "./unitConfigs";
 import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
 import { DeadSoldier } from "./units/deadSoldier";
 import { Building } from "./buildings/building";
-import { GroupsManager } from "./groupsManager";
 import { Farm } from "./buildings/farm";
 import { FarmScraps } from "./buildings/farmScraps";
+import { GroupsManager } from "./managers/groupsManager";
+import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 
 export class EntitySpawner {
     constructor(
