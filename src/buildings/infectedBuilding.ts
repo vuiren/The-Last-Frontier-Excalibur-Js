@@ -12,9 +12,9 @@ export class InfectedBuilding extends Building {
     private spawnProgress: number = 0;
     private spawnDelay = 5000;
 
-    constructor(xPos: number, health: number, entitySpawner: EntitySpawner) {
+    constructor(xPos: number, entitySpawner: EntitySpawner) {
         const startPosition = vec(xPos, FrontGroundYLevel);
-        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: 2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, health);
+        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: 2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, 100);
 
         this.entitySpawner = entitySpawner;
 

@@ -11,16 +11,19 @@ import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
 import { DeadSoldier } from "./units/deadSoldier";
-import { OrderFlag } from "./buildings/orderFlag";
 import { Building } from "./buildings/building";
+import { GroupsManager } from "./groupsManager";
+import { Farm } from "./buildings/farm";
+import { FarmScraps } from "./buildings/farmScraps";
 
 export class EntitySpawner {
     constructor(
         private readonly scene: Scene,
         private readonly unitsManager: UnitsManager,
+        private readonly groupsManager: GroupsManager,
         private readonly allGroupables: IGroupable[],
         private readonly allCombatants: ICombatant[],
-        private readonly allOrderFlags: OrderFlag[],
+        private readonly allBuildings: Building[],
     ) { }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -37,8 +40,15 @@ export class EntitySpawner {
         return deadSoldier;
     }
 
-    spawnInfectedFarmHouse(posX: number, health: number) {
-        const infectedBuilding = new InfectedBuilding(posX, health, this);
+    spawnFarmHouse(posX: number) {
+        const farm = new Farm(posX, this);
+        this.scene.add(farm);
+
+        return farm;
+    }
+
+    spawnInfectedFarmHouse(posX: number) {
+        const infectedBuilding = new InfectedBuilding(posX, this);
         this.scene.add(infectedBuilding);
 
         return infectedBuilding;
@@ -60,9 +70,18 @@ export class EntitySpawner {
         return barricadeScraps;
     }
 
+    spawnFarmScraps(posX: number) {
+        const farmScraps = new FarmScraps(posX, this.allGroupables, this);
+        this.scene.add(farmScraps);
+
+        this.registerBuilding(farmScraps)
+
+        return farmScraps;
+    }
+
     spawnPlayerUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.unitsManager, this);
+        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.groupsManager, this);
 
         return this.unitsManager.registerUnit(this.scene, unit);
     }
@@ -93,7 +112,7 @@ export class EntitySpawner {
             width: 8,
             height: 4,
             anchor: vec(0.5, 1),
-            z: 2,
+            z: 6,
             opacity: 0.5,
         });
 
@@ -102,28 +121,17 @@ export class EntitySpawner {
         return buildPreview
     }
 
-    spawnOrderFlag(posX: number): Actor {
-        const orderFlag = new OrderFlag(posX, this.allOrderFlags);
-        this.scene.add(orderFlag);
-
-        this.allOrderFlags.push(orderFlag)
-
-        orderFlag.on("kill", () => {
-            const index = this.allOrderFlags.indexOf(orderFlag);
-            if (index !== -1) this.allCombatants.splice(index, 1);
-        })
-
-        return orderFlag
-    }
-
-
     private registerBuilding(building: Building) {
         this.allCombatants.push(building);
+        this.allBuildings.push(building)
         building.on('kill', () => this.removeBuilding(building));
     }
 
     private removeBuilding(building: ICombatant) {
         const index = this.allCombatants.indexOf(building);
         if (index !== -1) this.allCombatants.splice(index, 1);
+
+        const indexInBuildings = this.allBuildings.indexOf(building as Building)
+        if (indexInBuildings !== -1) this.allBuildings.splice(indexInBuildings, 1);
     }
 }

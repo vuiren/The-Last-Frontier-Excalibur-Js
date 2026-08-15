@@ -33,7 +33,7 @@ export class UnitMoveMarker extends Actor {
             pos: startPosition,
             width: 9,
             height: 24,
-            z: 4,
+            z: 2,
             anchor: vec(0.5, 1),
         });
 

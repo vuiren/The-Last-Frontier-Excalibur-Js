@@ -2,8 +2,8 @@ import { vec } from "excalibur";
 import { FrontGroundYLevel, HorizontalDirection } from "./constants";
 import { IGroupable } from "./combatant";
 
-const BASE_FORMATION_SPACING = 12; // Base distance between units in a formation
-const FORMATION_SPREAD_THRESHOLD = 13; // Distance at which followers will start trying to catch up to the leader (prevents jitter when units are close but not perfectly aligned)  
+const BASE_FORMATION_SPACING = 8; // Base distance between units in a formation
+const FORMATION_SPREAD_THRESHOLD = 9; // Distance at which followers will start trying to catch up to the leader (prevents jitter when units are close but not perfectly aligned)  
 
 function getFormationOffset(index: number): number {
     return BASE_FORMATION_SPACING * (index + 1);
@@ -12,6 +12,7 @@ function getFormationOffset(index: number): number {
 export class Group {
     leader: IGroupable;
     followers: IGroupable[] = [];
+    maxFollowersCount = 5
     private pendingSpread = false;
 
     constructor(leader: IGroupable) {
@@ -24,6 +25,10 @@ export class Group {
 
     get isEmpty(): boolean {
         return this.followers.length === 0;
+    }
+
+    get isFull(): boolean {
+        return this.followers.length >= this.maxFollowersCount
     }
 
     spreadNow(): void {

@@ -1,30 +1,39 @@
 import { Color, ExcaliburGraphicsContext, Vector } from "excalibur";
 
+const DEFAULT_COLOR = Color.fromHex('#00FF88');
+
 export function drawDottedLine(
     ctx: ExcaliburGraphicsContext,
     dashOffset: number,
     from: Vector,
     to: Vector,
-    color = Color.fromHex('#00FF88'),
+    color = DEFAULT_COLOR,
     dashLen = 6,
     gapLen = 4
 ) {
-    const dir = to.sub(from).normalize();
-    const total = to.sub(from).magnitude;
-    let traveled = -dashOffset;
+    const delta = to.sub(from);
+    const total = delta.magnitude;
+
+    if (total === 0) return;
+
+    const dir = delta.scale(1 / total);
+
+    const cycle = dashLen + gapLen;
+    const offset = ((dashOffset % cycle) + cycle) % cycle;
+
+    let traveled = -offset;
     let drawing = false; // starts in a gap
 
-
-    ctx.save();
     while (traveled < total) {
         const segLen = Math.min(drawing ? dashLen : gapLen, total - traveled);
         if (drawing) {
-            const start = from.add(dir.scale(traveled));
-            const end = from.add(dir.scale(traveled + segLen));
-            ctx.drawLine(start, end, color, 1.5);
+            const startX = from.x + dir.x * traveled;
+            const startY = from.y + dir.y * traveled;
+            const endX = from.x + dir.x * (traveled + segLen);
+            const endY = from.y + dir.y * (traveled + segLen);
+            ctx.drawLine(new Vector(startX, startY), new Vector(endX, endY), color, 1.5);
         }
         traveled += segLen;
         drawing = !drawing;
     }
-    ctx.restore();
 }

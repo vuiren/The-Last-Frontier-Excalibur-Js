@@ -24,10 +24,10 @@ export class AnimComponent {
     }
 
     setTint(color: Color): void {
-        if (this.current){
+        if (this.current) {
             this.currentTint = color;
             this.current.tint = color;
-        } 
+        }
     }
 
     flipHorizontal(value: boolean): void {

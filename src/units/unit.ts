@@ -46,7 +46,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.config = config;
         this.allCombatants = allCombatants;
         this.allGroupables = allGroupables;
-        this.orderedDestination = startPosition;
         this.health = config.health;
         this.faction = config.faction;
         this.animComponent = new AnimComponent(config.graphicSource);

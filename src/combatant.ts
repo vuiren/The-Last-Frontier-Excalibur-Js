@@ -14,6 +14,7 @@ export interface ICombatant {
 
 export interface IGroupable extends ICombatant {
     id: number;
+    isInitialized: boolean;
     activity: UnitActivity;
     lookDirection: HorizontalDirection;
     groupRef: Group | null;

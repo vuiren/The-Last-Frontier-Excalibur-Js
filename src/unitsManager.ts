@@ -3,8 +3,6 @@ import { UnitsCollisionManager } from "./unitsCollisionManager";
 import { ICombatant, IGroupable } from "./combatant";
 import { Unit } from "./units/unit";
 import { GroupsManager } from "./groupsManager";
-import { OrderFlag } from "./buildings/orderFlag";
-import { Faction } from "./constants";
 
 export class UnitsManager {
     collisionManager: UnitsCollisionManager
@@ -14,7 +12,6 @@ export class UnitsManager {
     constructor(
         private allCombatants: ICombatant[],
         private allGroupables: IGroupable[],
-        private allOrderFlags: OrderFlag[],
         groupsManager: GroupsManager) {
         this.collisionManager = new UnitsCollisionManager(this.allGroupables, groupsManager);
     }
@@ -24,7 +21,7 @@ export class UnitsManager {
         this.allGroupables.push(unit);
         this.collisionManager.collidingUnits.set(unit, []);
         this.onUnitAdded?.(unit);
-        unit.on('kill', () => this.removeUnit(unit));
+        unit.once('kill', () => this.removeUnit(unit));
         scene.add(unit);
         return unit;
     }
@@ -38,18 +35,5 @@ export class UnitsManager {
 
         this.collisionManager.collidingUnits.delete(unit);
         this.onUnitRemoved?.(unit);
-    }
-
-    assignUnitsToFlags() {
-        const playerUnits = this.allGroupables.filter(unit => unit.faction === Faction.Player);
-        for (const orderFlag of this.allOrderFlags) {
-            for (const unit of playerUnits) {
-                const distance = unit.globalPos.distance(orderFlag.globalPos);
-                if (distance <= orderFlag.range) {
-                    // Assign the unit to the order flag
-                    unit.moveTo(orderFlag.globalPos);
-                }
-            }
-        }
     }
 }

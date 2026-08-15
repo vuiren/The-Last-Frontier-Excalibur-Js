@@ -18,7 +18,7 @@ export class DeadSoldier extends Actor {
         this.animComponent = new AnimComponent(Resources.DeadSoldier);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.entitySpawner = entitySpawner;
-        this.progressBar = new ProgressBar(vec(-16, -50), 32, 6, 0, 1000, Color.Red);
+        this.progressBar = new ProgressBar(vec(-4, -8), 8, 2, 0, 1000, Color.Red);
         this.addChild(this.progressBar)
     }
 

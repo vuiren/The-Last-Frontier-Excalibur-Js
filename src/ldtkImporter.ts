@@ -48,11 +48,17 @@ export function registerLevelFactories(
             );
         },
 
+        // --- Player barricade (Buildings layer) ---
+        Dead_Soldier: ({ worldPos }: FactoryProps) => {
+            return entitySpawner.spawnDeadSoldier(
+                worldPos.x
+            );
+        },
+
         // --- Infected building (Infected_Buildings layer) ---
         Infected_Building: ({ worldPos }: FactoryProps) => {
             return entitySpawner.spawnInfectedFarmHouse(
                 worldPos.x,
-                100
             );;
         },
     });

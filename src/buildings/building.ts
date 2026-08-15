@@ -1,4 +1,4 @@
-import { Actor, ActorArgs, Color, Engine, vec } from "excalibur";
+import { Actor, ActorArgs, Color, Engine, vec, Vector } from "excalibur";
 import { HorizontalDirection, Faction } from "../constants";
 import { ProgressBar } from "../progressBar";
 import { Group } from "../group";
@@ -18,14 +18,14 @@ export class Building extends Actor implements ICombatant {
     private animComponent: AnimComponent;
     private healthBar: ProgressBar;
 
-    constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number) {
+    constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, healthBarOffset: Vector = vec(-8, -45)) {
         super(config);
         this.faction = faction;
         this.health = health;
         this.animComponent = new AnimComponent(asepriteResouce);
 
         this.healthBar = new ProgressBar(
-            vec(-8, -45),
+            healthBarOffset,
             16, 4, health, health, Color.DarkGray
         );
 

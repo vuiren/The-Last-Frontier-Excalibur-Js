@@ -14,6 +14,8 @@ export const Resources = {
 
   UpArrow: new ImageSource('./icons/upArrow.png'),
   DownArrow: new ImageSource('./icons/downArrow.png'),
+  BuyButtonBackground: new ImageSource('./icons/BuyButtonBackground.png'),
+  BuyButotnHovered: new ImageSource('./icons/BuyButtonHovered.png'),
 
   FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),

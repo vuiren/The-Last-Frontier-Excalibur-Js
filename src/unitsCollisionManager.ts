@@ -11,12 +11,13 @@ export class UnitsCollisionManager {
     // Pre-allocated to worst case: n*(n-1)/2 pairs * 2
     collidingPairs: IGroupable[];
     collidingUnits: Map<IGroupable, IGroupable[]> = new Map();
+    private units: IGroupable[] = [];
+    private thresholdSq = this.groupCreationThreshold ** 2;
 
     constructor(allCombatants: IGroupable[], groupsManager: GroupsManager) {
         this.allGroupables = allCombatants;
         this.groupsManager = groupsManager;
         this.collidingPairs = new Array(200); // way more than enough
-        this.collidingPairs.length = 0;
 
         for (const unit of allCombatants) {
             this.collidingUnits.set(unit, []);
@@ -30,21 +31,23 @@ export class UnitsCollisionManager {
             list.length = 0;
         }
 
-        const units = this.allGroupables.filter(
-            x => x.groupRef === null || x.groupRef.leader.id === x.id
-        );
+        this.units.length = 0;
+        for (const x of this.allGroupables) {
+            if (x.groupRef === null || (!x.groupRef.isFull && x.groupRef.leader.id === x.id)) this.units.push(x);
+        }
 
-        const len = units.length;
+        const len = this.units.length;
 
         for (let i = 0; i < len - 1; i++) {
             for (let j = i + 1; j < len; j++) {
-                const unitA = units[i];
-                const unitB = units[j];
+                const unitA = this.units[i];
+                const unitB = this.units[j];
 
                 if (unitA.faction !== unitB.faction) continue;
+                const bothInitialized = unitA.isInitialized && unitB.isInitialized
+                if (!bothInitialized) continue
 
-                const dist = unitA.globalPos.distance(unitB.globalPos);
-                if (dist > this.groupCreationThreshold) continue;
+                if (unitA.globalPos.squareDistance(unitB.globalPos) > this.thresholdSq) continue;
 
                 const eitherMoving = unitA.activity === "moving" || unitB.activity === "moving";
                 if (unitA.faction === Faction.Player && eitherMoving) continue;

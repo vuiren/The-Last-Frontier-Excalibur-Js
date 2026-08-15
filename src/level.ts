@@ -6,12 +6,12 @@ import { drawDottedLine } from "./drawDottedLine";
 import { importLdtkLevel } from "./ldtkImporter";
 import { BuildManager, BuildSpawns } from "./buildManager";
 import { EntitySpawner } from "./entitySpawner";
-import { OrderFlag } from "./buildings/orderFlag";
+import { Building } from "./buildings/building";
 
 export class MyLevel extends Scene {
     private readonly allGroupables: IGroupable[] = [];
     private readonly allCombatants: ICombatant[] = [];
-    private readonly allOrderFlags: OrderFlag[] = [];
+    private readonly allBuildings: Building[] = [];
     private readonly unitsManager: UnitsManager;
     private readonly groupsManager: GroupsManager = new GroupsManager();
     private readonly entitySpawner: EntitySpawner;
@@ -27,16 +27,16 @@ export class MyLevel extends Scene {
 
     constructor() {
         super();
-        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.allOrderFlags, this.groupsManager);
-        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.allGroupables, this.allCombatants, this.allOrderFlags, this.buildingsManager);
+        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
+        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.groupsManager, this.allGroupables, this.allCombatants, this.allBuildings);
     }
 
     override onInitialize(engine: Engine): void {
         this.backgroundColor = Color.fromHex("1F4073");
-        this.buildManager = new BuildManager(this.engine, this.entitySpawner);
+        this.buildManager = new BuildManager(this.engine, this.entitySpawner, this.allBuildings);
 
-        this.camera.zoom = 2.5
-        this.camera.pos = vec(400, 150);
+        this.camera.zoom = 2
+        this.camera.pos = vec(400, 125);
 
         const btnRight = document.getElementById('move-camera-right')!;
         btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
@@ -46,19 +46,40 @@ export class MyLevel extends Scene {
         btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
         btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
 
+        const btnCancel = document.getElementById('cancel-building') as HTMLButtonElement;
+        btnCancel.addEventListener('click', () => {
+            if (btnCancel.disabled) return;
+            this.buildManager.stopPlacingBuilding();
+            btnCancel.disabled = true
+        });
+
+        const zoomInButton = document.getElementById('zoom-in') as HTMLButtonElement
+        zoomInButton.addEventListener('click', () => {
+            this.camera.zoom = 3
+            this.camera.pos = vec(this.camera.pos.x, 175)
+        })
+
+        const zoomOutButton = document.getElementById('zoom-out') as HTMLButtonElement
+        zoomOutButton.addEventListener('click', () => {
+            this.camera.zoom = 2
+            this.camera.pos = vec(this.camera.pos.x, 125)
+        })
+
         const COOLDOWN_MS = 3000;
         this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
-        this.setupBuildButton('place-order-flag', 'orderFlagSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);
 
         importLdtkLevel(this, {
             entitySpawner: this.entitySpawner,
         });
-        //  spawnCaptureZone(this, vec(330, FrontGroundYLevel), this.allGroupables, Lane.Front)
 
-        //   const changeLaneButtonFront = new ChangeLaneButton(vec(300, FrontGroundYLevel - 50), this.allGroupables, Lane.Front);
-        //    const changeLaneButtonBack = new ChangeLaneButton(vec(300, BackGroundYLevel + 50), this.allGroupables, Lane.Back);
-        //   this.add(changeLaneButtonFront);
-        //   this.add(changeLaneButtonBack);
+        (window as any).debug = {
+            scene: this,
+            units: this.unitsManager,
+            groups: this.groupsManager,
+            buildings: this.allBuildings,
+            combatants: this.allCombatants,
+        };
     }
 
     override onPreUpdate(engine: Engine, elapsed: number): void {
@@ -106,17 +127,18 @@ export class MyLevel extends Scene {
 
     onPreDraw(ctx: ExcaliburGraphicsContext) {
         for (const group of this.groupsManager.groups) {
-            for (let i = 0; i < group.members.length - 1; i++) {
-                const fromScreen = this.engine.worldToScreenCoordinates(group.members[i].globalPos);
-                const toScreen = this.engine.worldToScreenCoordinates(group.members[i + 1].globalPos);
-
-                drawDottedLine(ctx, this.dashOffset, fromScreen, toScreen, undefined, this.dashLen, this.gapLen);
+            const screenPositions = group.members.map(m =>
+                this.engine.worldToScreenCoordinates(m.globalPos)
+            );
+            for (let i = 0; i < screenPositions.length - 1; i++) {
+                drawDottedLine(ctx, this.dashOffset, screenPositions[i], screenPositions[i + 1], undefined, this.dashLen, this.gapLen);
             }
         }
     }
 
     private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {
         const button = document.getElementById(elementId) as HTMLButtonElement;
+        const cancelButton = document.getElementById("cancel-building") as HTMLButtonElement;
 
         const cooldownTimer = new Timer({
             repeats: false,
@@ -133,8 +155,11 @@ export class MyLevel extends Scene {
             if (button.disabled) return;
 
             if (this.buildManager.isPlacingBuilding && this.buildManager.buildType === buildType) {
+                cancelButton.disabled = true
                 this.buildManager.stopPlacingBuilding();
+
             } else {
+                cancelButton.disabled = false
                 this.buildManager.onCooldown = false;
                 this.buildManager.setBuildingType(buildType);
                 this.buildManager.startPlacingBuilding();
