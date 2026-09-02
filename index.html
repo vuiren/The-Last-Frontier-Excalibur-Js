@@ -12,22 +12,61 @@
 <body>
   <script type="module" src="./src/main.ts"></script>
   <div id="ui-overlay">
-    <div class="button-bar">
-      <button class="game-button" id="move-camera-left" aria-label="Move camera left">←</button>
-      <button class="game-button" id="move-camera-right" aria-label="Move camera right">→</button>
-      <button class="game-button" id="cancel-building" aria-label="Cancel building">X</button>
-      <button class="game-button" id="place-barricade" aria-label="Place barricade">Barricade</button>
-      <button class="game-button" id="place-farm" aria-label="Place farm">Farm</button>
 
+    <div id="strategic-map-ui" hidden>
+      <div class="button-bar">
+        <button class="game-button" id="end-turn-button" aria-label="End Turn">End Turn</button>
+        <span id="current-turn-text" role="status" aria-live="polite">Current turn: Player</span>
+      </div>
+
+      <aside id="node-panel" class="node-panel is-empty" aria-live="polite">
+        <div class="node-panel__stripe"></div>
+
+        <div class="node-panel__body">
+          <p class="node-panel__empty">Hover a node to read its dispatch.</p>
+
+          <div class="node-panel__content">
+            <header class="node-panel__header">
+              <span class="node-panel__eyebrow" data-field="owner">Neutral</span>
+              <h2 class="node-panel__title" data-field="name">Sector 04</h2>
+            </header>
+
+            <dl class="node-panel__data">
+              <div class="node-panel__row">
+                <dt>Garrison</dt>
+                <dd data-field="garrison">0</dd>
+              </div>
+              <div class="node-panel__row">
+                <dt>Structures</dt>
+                <dd data-field="structures">None</dd>
+              </div>
+              <div class="node-panel__row">
+                <dt>Borders</dt>
+                <dd data-field="borders">0</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </aside>
     </div>
-    <div class="button-bar">
-      <button class="game-button" id="zoom-in" aria-label="Zoom in">+</button>
-      <button class="game-button" id="zoom-out" aria-label="Zoom out">-</button>
-    </div>
 
-    <div class="button-bar">
-    <div id="food-counter">Food: 0/0</div>
+    <div id="tactical-map-ui" hidden>
+      <div class="button-bar">
+        <button class="game-button" id="move-camera-left" aria-label="Move camera left">←</button>
+        <button class="game-button" id="move-camera-right" aria-label="Move camera right">→</button>
+        <button class="game-button" id="cancel-building" aria-label="Cancel building">X</button>
+        <button class="game-button" id="place-barricade" aria-label="Place barricade">Barricade</button>
+        <button class="game-button" id="place-farm" aria-label="Place farm">Farm</button>
+      </div>
 
+      <div class="button-bar">
+        <button class="game-button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button class="game-button" id="zoom-out" aria-label="Zoom out">-</button>
+      </div>
+
+      <div class="button-bar">
+        <div id="food-counter">Food: 0/0</div>
+      </div>
     </div>
   </div>
 </body>

@@ -6,8 +6,8 @@ import { StrategicMap } from "./strategicMap/strategicMap";
 // Goal is to keep main.ts small and just enough to configure the engine
 
 const game = new Engine({
-  width: 1920, // Logical width and height in game pixels
-  height: 1080,
+  width: 800, // Logical width and height in game pixels
+  height: 600,
   maxFps: 120,
   displayMode: DisplayMode.FitScreenAndFill, // Display mode tells excalibur how to fill the window
   snapToPixel: true,

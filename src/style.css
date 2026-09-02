@@ -119,3 +119,118 @@ body {
   pointer-events: none;
   /* so it doesn't block clicks on canvas */
 }
+
+:root {
+  /* Owner colors, shared with the map nodes */
+  --owner-player: #3fa7ff;
+  --owner-enemy: #e0483e;
+  --owner-neutral: #7a828e;
+
+  --panel-bg: rgba(255, 255, 255, 0.9);
+  --panel-border: rgba(0, 0, 0, 0.12);
+  --panel-text: rgba(0, 0, 0, 0.85);
+  --panel-text-dim: rgba(0, 0, 0, 0.5);
+  --panel-rule: rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --panel-bg: rgba(18, 21, 26, 0.92);
+    --panel-border: rgba(255, 255, 255, 0.12);
+    --panel-text: rgba(255, 255, 255, 0.88);
+    --panel-text-dim: rgba(255, 255, 255, 0.45);
+    --panel-rule: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.node-panel {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  bottom: 0.5em;
+  width: min(20rem, 28vw);
+  display: flex;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  color: var(--panel-text);
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+  /* Read-only: never intercept clicks meant for the map */
+  pointer-events: none;
+}
+
+/* Signature: owner stripe. Set data-owner on the panel to switch it. */
+.node-panel__stripe {
+  width: 4px;
+  flex: none;
+  background: var(--owner-neutral);
+  transition: background 0.2s;
+}
+.node-panel[data-owner="player"] .node-panel__stripe { background: var(--owner-player); }
+.node-panel[data-owner="enemy"]  .node-panel__stripe { background: var(--owner-enemy); }
+
+.node-panel__body {
+  flex: 1;
+  padding: 1.1em 1.2em;
+  min-width: 0;
+}
+
+.node-panel__eyebrow {
+  display: block;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--panel-text-dim);
+}
+
+.node-panel__title {
+  margin: 0.15em 0 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.node-panel__data {
+  margin: 1.2em 0 0;
+  border-top: 1px solid var(--panel-rule);
+}
+
+.node-panel__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1em;
+  padding: 0.55em 0;
+  border-bottom: 1px solid var(--panel-rule);
+}
+
+.node-panel__row dt {
+  font-size: 0.8rem;
+  color: var(--panel-text-dim);
+}
+
+.node-panel__row dd {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.node-panel__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--panel-text-dim);
+}
+
+/* Empty state swaps content without changing panel size */
+.node-panel__empty { display: none; }
+.node-panel.is-empty .node-panel__empty { display: block; }
+.node-panel.is-empty .node-panel__content { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .node-panel__stripe { transition: none; }
+}

@@ -16,7 +16,13 @@ export enum AttackType {
 }
 
 export enum Ownership {
-    Player,
-    Enemy,
-    Neutral
+    Player = "PLAYER",
+    Enemy = "ENEMY",
+    Neutral = "NEUTRAL"
 }
+
+export const OWNER_LABEL: Record<Ownership, string> = {
+    [Ownership.Player]: "Player",
+    [Ownership.Enemy]: "Enemy",
+    [Ownership.Neutral]: "Neutral",
+};
