@@ -13,7 +13,8 @@ const game = new Engine({
   snapToPixel: true,
   pixelArt: true, // pixelArt will turn on the correct settings to render pixel art without jaggies or shimmering artifacts
   scenes: {
-    start: StrategicMap
+    start: StrategicMap,
+    fight: MyLevel
   },
   physics: {
     enabled: false,

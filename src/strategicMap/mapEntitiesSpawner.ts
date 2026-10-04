@@ -4,6 +4,8 @@ import { MapNode } from "./mapNode";
 import { MapManager } from "./mapManager";
 import { EdgeActor } from "./edgeActor";
 import { MapPawn } from "./mapPawn";
+import { MapHudLayer } from "./mapHud/mapHudLayer";
+import { StartFightButton } from "./mapHud/startFightButton";
 
 export class MapEntitiesSpawner {
     constructor(
@@ -30,10 +32,20 @@ export class MapEntitiesSpawner {
     }
 
     createMapPawn(mapNode: MapNode) {
-        const pawn = new MapPawn(mapNode.pos.add(vec(0, -75)))
+        const pawn = new MapPawn(mapNode)
         this.scene.add(pawn)
 
         this.mapManager.placePawn(pawn, mapNode)
+        //   this.mapHudLayer.createHudForPawn(pawn, mapNode)
+
         return pawn;
+    }
+
+    createStartFightButton(mapNode: MapNode) {
+        const nodePos = mapNode.globalPos
+        const button = new StartFightButton(nodePos)
+        this.scene.add(button)
+
+        return button
     }
 }

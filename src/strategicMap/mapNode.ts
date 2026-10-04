@@ -5,6 +5,7 @@ export const OWNER_COLOR: Record<Ownership, Color> = {
     [Ownership.Player]: Color.fromHex('#3fa7ff'),
     [Ownership.Enemy]: Color.fromHex('#e0483e'),
     [Ownership.Neutral]: Color.fromHex('#7a828e'),
+    [Ownership.Contested]: Color.fromHex('#a28d03'),
 };
 
 export interface MapNodeInfo {
@@ -16,6 +17,7 @@ export class MapNode extends Actor {
     public customEvents = new EventEmitter<{
         nodeHovered: MapNodeInfo;
         nodeClicked: MapNodeInfo;
+        nodeRMBClicked: MapNodeInfo;
     }>();
 
     nodeId: string;
@@ -51,7 +53,12 @@ export class MapNode extends Actor {
 
         this.on('pointerenter', () => this.onHoverStart());
         this.on('pointerleave', () => this.onHoverEnd());
-        this.on('pointerdown', () => this.onPointerDown());
+        this.on('pointerdown', (evt) => this.onPointerDown());
+    }
+
+    changeOwnership(newOwnership: Ownership){
+        this.owner = newOwnership
+        this.refreshGraphics()
     }
 
     private onHoverStart() {

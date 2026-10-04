@@ -1,18 +1,24 @@
+import { Turn } from "../../constants";
 import { MapManager } from "../mapManager";
 import { MapNode } from "../mapNode";
+import { MapPawn } from "../mapPawn";
 import { TurnManager, TurnController } from "../turnManager";
 
 export class PlayerTurnController implements TurnController {
     public selectedMapNode: MapNode | null = null
 
-    private lastSelectedPawnIndex = 0
+    private selectedPawns: MapPawn[] = []
     private endTurn: (() => void) | null = null;
 
     constructor(
         private readonly turnManager: TurnManager,
         private readonly mapManager: MapManager
     ) {
-        mapManager.customEvents.on('nodeClicked', x => (this.selectStartNode(x.mapNode)))
+        mapManager.customEvents.on('nodeClicked', x => {
+            if (this.turnManager.currentTurn !== Turn.Player) return
+
+            this.selectStartNode(x.mapNode)
+        })
     }
 
     beginTurn(endTurn: () => void): void {
@@ -23,26 +29,34 @@ export class PlayerTurnController implements TurnController {
         const newNodePawns = [...this.mapManager.getPawnsAt(mapNode)]
 
         if (mapNode === this.selectedMapNode) {
-            if (newNodePawns.length + 1 >= this.lastSelectedPawnIndex) return
-            this.lastSelectedPawnIndex++;
-            newNodePawns[this.lastSelectedPawnIndex].selected = true
-            return;
+            if (newNodePawns.length === this.selectedPawns.length) return
+            const nextPawn = newNodePawns[this.selectedPawns.length]
+            nextPawn.selected = true
+            this.turnManager.positionPawn(nextPawn)
+            this.selectedPawns.push(nextPawn)
         } else {
-            if(this.lastSelectedPawnIndex)
-            if (this.selectedMapNode != null) {
-                const selectedNodePawns = [...this.mapManager.getPawnsAt(this.selectedMapNode)]
-                selectedNodePawns.forEach(x => {
-                    x.selected = false;
-                })
-            }
+            const neighbourClicked = this.selectedMapNode !== null && this.mapManager.areNeighbours(this.selectedMapNode, mapNode)
+
+            this.selectedPawns.forEach(x => {
+                if (neighbourClicked)
+                    this.mapManager.planPawnMove(x, mapNode)
+                x.selected = false;
+                this.turnManager.positionPawn(x)
+            })
 
             this.clearSelection()
 
-            this.selectedMapNode = mapNode;
-            mapNode.selected = true;
+            this.selectedPawns.length = 0
 
-            if (newNodePawns.length > 0) {
-                newNodePawns[this.lastSelectedPawnIndex].selected = true
+            if (!neighbourClicked) {
+                this.selectedMapNode = mapNode;
+                mapNode.selected = true;
+
+                if (newNodePawns.length > 0) {
+                    this.selectedPawns.push(newNodePawns[0])
+                    newNodePawns[0].selected = true
+                    this.turnManager.positionPawn(newNodePawns[0])
+                }
             }
         }
     }

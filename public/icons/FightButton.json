@@ -1,0 +1,36 @@
+{ "frames": {
+   "FightButton 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 28, "h": 10 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 28, "h": 10 },
+    "sourceSize": { "w": 28, "h": 10 },
+    "duration": 100
+   },
+   "FightButton 1.aseprite": {
+    "frame": { "x": 28, "y": 0, "w": 28, "h": 10 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 28, "h": 10 },
+    "sourceSize": { "w": 28, "h": 10 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.18.6-x64",
+  "image": "FightButton.png",
+  "format": "RGBA8888",
+  "size": { "w": 56, "h": 10 },
+  "scale": "1",
+  "frameTags": [
+   { "name": "Idle", "from": 0, "to": 0, "direction": "forward", "color": "#000000ff" },
+   { "name": "Hover", "from": 1, "to": 1, "direction": "forward", "color": "#000000ff" }
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

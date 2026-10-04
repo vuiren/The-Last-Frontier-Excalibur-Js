@@ -1,13 +1,17 @@
-import { Actor, vec, Vector } from "excalibur";
+import { Actor, vec } from "excalibur";
 import { AnimComponent } from "../animComponent";
 import { Resources } from "../resources";
+import { MapNode } from "./mapNode";
+import { Ownership } from "../constants";
 
 export class MapPawn extends Actor {
-    private readonly anim: AnimComponent = new AnimComponent(Resources.SoldierUnit)
+    faction: Ownership
+    private readonly anim: AnimComponent
     private _selected = false;
+    private _inFight = false;
 
-    private originalPos: Vector
-    private selectedOffset = vec(0, -25)
+    private ownerNode!: MapNode
+    private targetNode: MapNode | null = null
 
     get selected() { return this._selected; }
     set selected(value: boolean) {
@@ -16,20 +20,54 @@ export class MapPawn extends Actor {
         this.refreshGraphics();
     }
 
-    constructor(pos: Vector) {
-        super({
-            pos: pos,
-        })
+    get inFight() { return this._inFight; }
+    set inFight(value: boolean) {
+        if (this._inFight === value) return;
+        this._inFight = value;
+        this.refreshGraphics();
+    }
 
-        this.originalPos = pos
+    constructor(ownerNode: MapNode) {
+        super()
+
+        this.faction = ownerNode.owner
+        this.anim = new AnimComponent(this.faction === Ownership.Player ? Resources.SoldierUnit : Resources.SoldierZombie)
         this.anim.play("Idle", this.graphics)
-        this.scale = vec(3, 3)
+        this.setOwnerNode(ownerNode)
+
+        this.scale = vec(2, 2)
+    }
+
+    getOwnerNode() {
+        return this.ownerNode
+    }
+
+    setOwnerNode(newNode: MapNode) {
+        this.ownerNode = newNode
+        this.refreshGraphics()
+    }
+
+    getTargetNode() {
+        return this.targetNode
+    }
+
+    setTargetNode(newNode: MapNode | null) {
+        this.targetNode = newNode
+        this.refreshGraphics()
     }
 
     private refreshGraphics() {
-        if(this.selected)
-            this.pos = this.originalPos.add(this.selectedOffset)
-        else
-            this.pos = this.originalPos
+        if (this.inFight) {
+            this.anim.play("Shooting", this.graphics)
+            return
+        }
+
+        if (this.targetNode) {
+            this.anim.play("Walking", this.graphics)
+            this.anim.flipHorizontal(this.ownerNode.pos.x > this.targetNode.pos.x)
+            return
+        }
+
+        this.anim.play("Idle", this.graphics)
     }
 }

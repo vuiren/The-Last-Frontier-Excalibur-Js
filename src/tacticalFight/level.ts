@@ -53,6 +53,12 @@ export class MyLevel extends Scene {
             btnCancel.disabled = true
         });
 
+        const tacticalMapUi = document.getElementById("tactical-map-ui") as HTMLElement
+        tacticalMapUi.hidden = false
+
+        const strategicMapUi = document.getElementById("strategic-map-ui") as HTMLElement
+        strategicMapUi.hidden = true
+
         const zoomInButton = document.getElementById('zoom-in') as HTMLButtonElement
         zoomInButton.addEventListener('click', () => {
             this.camera.zoom = 3
