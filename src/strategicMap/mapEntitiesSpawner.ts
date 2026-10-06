@@ -42,7 +42,7 @@ export class MapEntitiesSpawner {
     }
 
     createStartFightButton(mapNode: MapNode) {
-        const nodePos = mapNode.globalPos
+        const nodePos = mapNode.globalPos.add(vec(0, -72))
         const button = new StartFightButton(nodePos)
         this.scene.add(button)
 

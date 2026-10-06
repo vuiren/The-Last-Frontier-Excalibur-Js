@@ -2,6 +2,7 @@ import {
     Color, Engine, Font, FontUnit, GraphicsGroup, ImageSource, Rectangle,
     ScreenElement, Sprite, Text, TextAlign, vec
 } from "excalibur";
+import { ResourcesManager } from "../managers/resourcesManager";
 
 export interface BuyButtonOptions {
     /** Text shown on the button, e.g. "Buy" or "Buy 50g" */
@@ -30,7 +31,8 @@ export class BuyButton extends ScreenElement {
         y: number,
         width: number,
         height: number,
-        private options: BuyButtonOptions
+        private options: BuyButtonOptions,
+        private resourcesManager: ResourcesManager
     ) {
         super({ x, y, width, height });
         this.targetWidth = width;

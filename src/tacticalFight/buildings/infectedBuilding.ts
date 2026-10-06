@@ -1,5 +1,5 @@
 import { Color, Engine, vec } from "excalibur";
-import { Faction, FrontGroundYLevel } from "../../constants";
+import { Faction, FrontGroundYLevel, zLabels } from "../../constants";
 import { Resources } from "../../resources";
 import { Building } from "./building";
 import { ProgressBar } from "../../progressBar";
@@ -14,7 +14,7 @@ export class InfectedBuilding extends Building {
 
     constructor(xPos: number, entitySpawner: EntitySpawner) {
         const startPosition = vec(xPos, FrontGroundYLevel);
-        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: 2, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, 100);
+        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: zLabels.Buildings, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, 100);
 
         this.entitySpawner = entitySpawner;
 

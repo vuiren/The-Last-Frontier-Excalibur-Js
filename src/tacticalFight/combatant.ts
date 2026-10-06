@@ -1,7 +1,7 @@
-import { Vector } from "excalibur";
+import { Actor, Vector } from "excalibur";
 import { HorizontalDirection, Faction } from "../constants";
 import { Group } from "./group";
-import { UnitActivity } from "./units/unit";
+import { Unit, UnitActivity } from "./units/unit";
 
 export interface ICombatant {
     health: number;
@@ -13,6 +13,7 @@ export interface ICombatant {
 }
 
 export interface IGroupable extends ICombatant {
+    unit: Unit;
     id: number;
     isInitialized: boolean;
     activity: UnitActivity;

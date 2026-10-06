@@ -31,6 +31,6 @@ export class StartFightButton extends ex.Actor {
             this.graphics.use('idle')
         })
 
-        this.scale = ex.vec(8, 8)
+        this.scale = ex.vec(2, 2)
     }
 }

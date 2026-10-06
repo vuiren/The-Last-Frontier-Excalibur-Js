@@ -21,7 +21,8 @@ export class BuildManager {
         this.buildPreview = new BuildPreview(entitySpawner);
 
         engine.input.pointers.primary.on("move", this.onPointerMove.bind(this));
-        engine.input.pointers.primary.on("down", (evt) => this.onPointerDown(evt));
+        engine.input.pointers.primary.on("down", this.onPointerDown.bind(this));
+
     }
 
     startPlacingBuilding() {
@@ -63,15 +64,19 @@ export class BuildManager {
     }
 
     private collisionCheck() {
-        if(!this.isPlacingBuilding) return
-        const collisionThreashold = 10;
+        if(!this.buildPreview.checkForCollisions) return
+        let colliding = false;
+
         for (const b of this.allBuildings) {
-            const distance = Math.abs(b.globalPos.x - this.buildPreview.x)
-            this.buildPreview.setTint(Color.White)
-            if (distance > collisionThreashold) continue;
+            const distance = Math.abs(b.globalPos.x - this.buildPreview.x);
+            const minDistance = (b.width + this.buildPreview.width) / 2;
 
-            this.buildPreview.setTint(Color.Red)
-
+            if (distance < minDistance) {
+                colliding = true;
+                break;
+            }
         }
+
+        this.buildPreview.setTint(colliding ? Color.Red : Color.White);
     }
 }

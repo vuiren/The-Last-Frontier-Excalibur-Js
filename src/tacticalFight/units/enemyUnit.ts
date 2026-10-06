@@ -11,7 +11,7 @@ export class EnemyUnit extends Unit {
     private detectedEnemy: ICombatant | null = null;
 
     constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig) {
-        super(posX, config, allUnits, allGroupables);
+        super(posX, config, allUnits);
     }
 
     protected override selectActivity(): UnitActivity {

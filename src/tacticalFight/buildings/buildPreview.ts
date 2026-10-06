@@ -6,7 +6,8 @@ import { Resources } from "../../resources";
 import { BuildSpawns } from "../managers/buildManager";
 
 export class BuildPreview {
-    private actor: Actor;
+    actor: Actor;
+    checkForCollisions: boolean = true;
     private animComponent: AnimComponent;
 
     constructor(entitySpawner: EntitySpawner) {
@@ -36,11 +37,16 @@ export class BuildPreview {
         this.animComponent.setTint(color)
     }
 
+    get width(): number {
+        return this.actor.graphics.current?.width ?? this.actor.width;
+    }
+
     changeSprite(buildType: BuildSpawns) {
         switch (buildType) {
             case "barricadeSpawn":
                 this.animComponent = new AnimComponent(Resources.Barricade)
                 this.animComponent.play("Idle", this.actor.graphics);
+                
                 break;
             case "farmSpawn":
                 this.animComponent = new AnimComponent(Resources.FarmHouse)

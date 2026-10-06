@@ -7,6 +7,7 @@ import { Unit, UnitActivity } from "./unit";
 import { EntitySpawner } from "../entitySpawner";
 import { GroupsManager } from "../managers/groupsManager";
 import { UnitConfig } from "./unitConfigs";
+import { ResourcesManager } from "../managers/resourcesManager";
 
 export class PlayerUnit extends Unit {
     private isSelected = false;
@@ -22,8 +23,9 @@ export class PlayerUnit extends Unit {
         config: UnitConfig,
         private readonly groupsManager: GroupsManager,
         private readonly entitySpawner: EntitySpawner,
+        private readonly resourcesManager: ResourcesManager
     ) {
-        super(posX, config, allCombatants, allGroupables);
+        super(posX, config, allCombatants);
     }
 
     override onInitialize(engine: Engine): void {
@@ -35,6 +37,7 @@ export class PlayerUnit extends Unit {
         this.moveMarker.onDragStart = () => this.extractFromGroupIfFollower();
 
         this.pointer.useGraphicsBounds = true;
+        this.resourcesManager.usedFood += this.config.cost.food
     }
 
     override onPointerEnter() {
@@ -205,5 +208,6 @@ export class PlayerUnit extends Unit {
         this.moveMarker.kill();
 
         this.entitySpawner.spawnDeadSoldier(this.pos.x);
+        this.resourcesManager.usedFood -= this.config.cost.food
     }
 }

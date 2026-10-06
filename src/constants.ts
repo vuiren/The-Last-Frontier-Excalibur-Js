@@ -40,3 +40,13 @@ export const TURN_LABEL: Record<Turn, string> = {
     [Turn.Enemy]: "Enemy",
     [Turn.Fight]: "Fight",
 };
+
+export const zLabels: Record<string, number> = {
+    "Default": 0,
+    "Buildings": 1,
+    "DeadUnits": 2,
+    "UnitMoveMarkers": 3,
+    "Units": 4,
+    "Bullets": 5,
+    "Barricades": 6,
+};

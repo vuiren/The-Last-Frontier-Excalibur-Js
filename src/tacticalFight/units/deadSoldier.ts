@@ -3,7 +3,7 @@ import { AnimComponent } from "../../animComponent";
 import { ProgressBar } from "../../progressBar";
 import { Resources } from "../../resources";
 import { EntitySpawner } from "../entitySpawner";
-import { FrontGroundYLevel } from "../../constants";
+import { FrontGroundYLevel, zLabels } from "../../constants";
 
 export class DeadSoldier extends Actor {
     private revivalProgress: number = 0;
@@ -14,7 +14,7 @@ export class DeadSoldier extends Actor {
     private spawnedUnit = false;
 
     constructor(startX: number, entitySpawner: EntitySpawner) {
-        super({ name: 'DeadSoldier', pos: vec(startX, FrontGroundYLevel), width: 8, height: 8, z: 2, anchor: vec(0.5, 1) });
+        super({ name: 'DeadSoldier', pos: vec(startX, FrontGroundYLevel), width: 8, height: 8, z: zLabels.DeadUnits, anchor: vec(0.5, 1) });
         this.animComponent = new AnimComponent(Resources.DeadSoldier);
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.entitySpawner = entitySpawner;

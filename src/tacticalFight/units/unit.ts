@@ -5,7 +5,7 @@ import { ICombatant, IGroupable } from "../combatant";
 import { Group } from "../group";
 import { ProgressBar } from "../../progressBar";
 import { queryNearby } from "../proximityQuery";
-import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType } from "../../constants";
+import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType, zLabels } from "../../constants";
 import { UnitConfig } from "./unitConfigs";
 
 export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead";
@@ -22,7 +22,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     health: number;
     groupRef: Group | null = null;
     lookDirection: HorizontalDirection = HorizontalDirection.Right;
-    config: UnitConfig;
     orderedDestination: Vector;
     attackCooldown: number = 0;
     isDead: boolean = false;
@@ -37,15 +36,9 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     private healthBar: ProgressBar;
     private animComponent: AnimComponent;
 
-    protected allCombatants: ICombatant[] = [];
-    protected allGroupables: IGroupable[] = [];
-
-    constructor(startX: number, config: UnitConfig, allCombatants: ICombatant[], allGroupables: IGroupable[]) {
+    constructor(startX: number, protected config: UnitConfig, private allCombatants: ICombatant[]) {
         const startPosition = vec(startX, FrontGroundYLevel);
-        super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1), z: 3 });
-        this.config = config;
-        this.allCombatants = allCombatants;
-        this.allGroupables = allGroupables;
+        super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1), z: zLabels.Units });
         this.health = config.health;
         this.faction = config.faction;
         this.animComponent = new AnimComponent(config.graphicSource);
@@ -61,6 +54,10 @@ export class Unit extends Actor implements ICombatant, IGroupable {
 
     protected get effectiveAttackRange(): number {
         return this.config.attackRange ?? this.config.detectionRange;
+    }
+
+    get unit(): Unit {
+        return this;
     }
 
     // ------------------------------------------------------------------ //

@@ -13,6 +13,7 @@ export interface UnitConfig {
     attackDamage: number;
     hitReactChance?: number; // 0 to 1, chance to react to being hit by moving towards the hit direction
     graphicSource: AsepriteResource;
+    cost: { food: number }
 }
 
 export const UnitConfigs = {
@@ -25,6 +26,9 @@ export const UnitConfigs = {
         faction: Faction.Player,
         attackDamage: 10,
         graphicSource: Resources.SoldierUnit,
+        cost: {
+            food: 2
+        }
     },
 
     enemyZombie: {
@@ -38,6 +42,9 @@ export const UnitConfigs = {
         hitReactChance: 0.5,
         attackDamage: 5,
         graphicSource: Resources.SoldierZombie,
+        cost: {
+            food: 0
+        }
     },
 
 } satisfies Record<string, UnitConfig>;

@@ -15,6 +15,7 @@ import { Farm } from "./buildings/farm";
 import { FarmScraps } from "./buildings/farmScraps";
 import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
+import { ResourcesManager } from "./managers/resourcesManager";
 
 export class EntitySpawner {
     constructor(
@@ -24,6 +25,7 @@ export class EntitySpawner {
         private readonly allGroupables: IGroupable[],
         private readonly allCombatants: ICombatant[],
         private readonly allBuildings: Building[],
+        private readonly resourcesManager: ResourcesManager,
     ) { }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -41,7 +43,7 @@ export class EntitySpawner {
     }
 
     spawnFarmHouse(posX: number) {
-        const farm = new Farm(posX, this);
+        const farm = new Farm(posX, this, this.resourcesManager);
         this.scene.add(farm);
 
         return farm;
@@ -81,7 +83,7 @@ export class EntitySpawner {
 
     spawnPlayerUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.groupsManager, this);
+        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.groupsManager, this, this.resourcesManager);
 
         return this.unitsManager.registerUnit(this.scene, unit);
     }

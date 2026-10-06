@@ -6,7 +6,7 @@ import { Resources } from "../resources";
 import { AnimComponent } from "../animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
-import { FrontGroundYLevel } from "../constants";
+import { FrontGroundYLevel, zLabels } from "../constants";
 
 const HOVER_LIFT_OFFSET = vec(0, -3);
 const DRAG_TINT = Color.Red;
@@ -33,7 +33,7 @@ export class UnitMoveMarker extends Actor {
             pos: startPosition,
             width: 9,
             height: 24,
-            z: 2,
+            z: zLabels.UnitMoveMarkers,
             anchor: vec(0.5, 1),
         });
 

@@ -1,5 +1,5 @@
 import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction } from "../../constants";
+import { HorizontalDirection, Faction, zLabels } from "../../constants";
 import { ICombatant } from "../combatant";
 
 export class Bullet extends Actor {
@@ -20,7 +20,7 @@ export class Bullet extends Actor {
             height: 4,
             color: Color.Yellow,
             collisionType: CollisionType.Passive,
-            z: 2
+            z: zLabels.Bullets
         });
 
         this.allCombatants = allCombatants;

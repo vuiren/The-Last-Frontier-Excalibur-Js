@@ -7,6 +7,7 @@ import { EntitySpawner } from "./entitySpawner";
 import { Building } from "./buildings/building";
 import { BuildManager, BuildSpawns } from "./managers/buildManager";
 import { GroupsManager } from "./managers/groupsManager";
+import { ResourcesManager } from "./managers/resourcesManager";
 
 export class MyLevel extends Scene {
     private readonly allGroupables: IGroupable[] = [];
@@ -15,6 +16,7 @@ export class MyLevel extends Scene {
     private readonly unitsManager: UnitsManager;
     private readonly groupsManager: GroupsManager = new GroupsManager();
     private readonly entitySpawner: EntitySpawner;
+    private readonly resourcesManager: ResourcesManager = new ResourcesManager(5)
 
     private buildManager!: BuildManager;
 
@@ -28,52 +30,16 @@ export class MyLevel extends Scene {
     constructor() {
         super();
         this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
-        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.groupsManager, this.allGroupables, this.allCombatants, this.allBuildings);
+        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.groupsManager, this.allGroupables, this.allCombatants, this.allBuildings, this.resourcesManager);
     }
 
     override onInitialize(engine: Engine): void {
         this.backgroundColor = Color.fromHex("1F4073");
         this.buildManager = new BuildManager(this.engine, this.entitySpawner, this.allBuildings);
+        this.camera.zoom = 3
+        this.camera.pos = vec(400, 175);
 
-        this.camera.zoom = 2
-        this.camera.pos = vec(400, 125);
-
-        const btnRight = document.getElementById('move-camera-right')!;
-        btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
-        btnRight.addEventListener('pointerleave', () => { this.movingCameraRight = false; });
-
-        const btnLeft = document.getElementById('move-camera-left')!;
-        btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
-        btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
-
-        const btnCancel = document.getElementById('cancel-building') as HTMLButtonElement;
-        btnCancel.addEventListener('click', () => {
-            if (btnCancel.disabled) return;
-            this.buildManager.stopPlacingBuilding();
-            btnCancel.disabled = true
-        });
-
-        const tacticalMapUi = document.getElementById("tactical-map-ui") as HTMLElement
-        tacticalMapUi.hidden = false
-
-        const strategicMapUi = document.getElementById("strategic-map-ui") as HTMLElement
-        strategicMapUi.hidden = true
-
-        const zoomInButton = document.getElementById('zoom-in') as HTMLButtonElement
-        zoomInButton.addEventListener('click', () => {
-            this.camera.zoom = 3
-            this.camera.pos = vec(this.camera.pos.x, 175)
-        })
-
-        const zoomOutButton = document.getElementById('zoom-out') as HTMLButtonElement
-        zoomOutButton.addEventListener('click', () => {
-            this.camera.zoom = 2
-            this.camera.pos = vec(this.camera.pos.x, 125)
-        })
-
-        const COOLDOWN_MS = 3000;
-        this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
-        this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);
+        this.wireUi()
 
         importLdtkLevel(this, {
             entitySpawner: this.entitySpawner,
@@ -140,6 +106,45 @@ export class MyLevel extends Scene {
                 drawDottedLine(ctx, this.dashOffset, screenPositions[i], screenPositions[i + 1], undefined, this.dashLen, this.gapLen);
             }
         }
+    }
+
+    private wireUi(){
+        const btnRight = document.getElementById('move-camera-right')!;
+        btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
+        btnRight.addEventListener('pointerleave', () => { this.movingCameraRight = false; });
+
+        const btnLeft = document.getElementById('move-camera-left')!;
+        btnLeft.addEventListener('pointerenter', () => { this.movingCameraLeft = true; });
+        btnLeft.addEventListener('pointerleave', () => { this.movingCameraLeft = false; });
+
+        const btnCancel = document.getElementById('cancel-building') as HTMLButtonElement;
+        btnCancel.addEventListener('click', () => {
+            if (btnCancel.disabled) return;
+            this.buildManager.stopPlacingBuilding();
+            btnCancel.disabled = true
+        });
+
+        const tacticalMapUi = document.getElementById("tactical-map-ui") as HTMLElement
+        tacticalMapUi.hidden = false
+
+        const strategicMapUi = document.getElementById("strategic-map-ui") as HTMLElement
+        strategicMapUi.hidden = true
+
+        const zoomInButton = document.getElementById('zoom-in') as HTMLButtonElement
+        zoomInButton.addEventListener('click', () => {
+            this.camera.zoom = 3
+            this.camera.pos = vec(this.camera.pos.x, 175)
+        })
+
+        const zoomOutButton = document.getElementById('zoom-out') as HTMLButtonElement
+        zoomOutButton.addEventListener('click', () => {
+            this.camera.zoom = 2
+            this.camera.pos = vec(this.camera.pos.x, 200)
+        })
+
+        const COOLDOWN_MS = 500;
+        this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);
     }
 
     private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {
