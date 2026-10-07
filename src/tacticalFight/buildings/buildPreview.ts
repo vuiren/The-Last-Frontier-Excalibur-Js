@@ -1,57 +1,54 @@
 import { Actor, Color, vec, Vector } from "excalibur";
 import { AnimComponent } from "../../animComponent";
 import { FrontGroundYLevel } from "../../constants";
-import { EntitySpawner } from "../entitySpawner";
 import { Resources } from "../../resources";
 import { BuildSpawns } from "../managers/buildManager";
+import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 
-export class BuildPreview {
-    actor: Actor;
+const PREVIEW_RESOURCES: Record<BuildSpawns, AsepriteResource> = {
+    barricadeSpawn: Resources.Barricade,
+    farmSpawn: Resources.FarmHouse,
+    builderOutpostSpawn: Resources.BuilderOutpost,
+};
+
+export class BuildPreview extends Actor {
     checkForCollisions: boolean = true;
-    private animComponent: AnimComponent;
 
-    constructor(entitySpawner: EntitySpawner) {
-        this.actor = entitySpawner.spawnBarricadeBuildPreview();
-        this.actor.graphics.isVisible = false;
-        this.animComponent = new AnimComponent(Resources.Barricade);
-        this.animComponent.play("Idle", this.actor.graphics);
+    constructor() {
+        super({
+            width: 8,
+            height: 4,
+            anchor: vec(0.5, 1),
+            z: 6,
+            opacity: 0.5,
+        })
+
+        this.graphics.isVisible = false;
+        this.addComponent(new AnimComponent(Resources.Barricade));
+        this.get(AnimComponent).play("Idle");
     }
 
     get x(): number {
-        return this.actor.pos.x;
+        return this.pos.x;
     }
 
     show() {
-        this.actor.graphics.isVisible = true;
+        this.graphics.isVisible = true;
     }
 
     hide() {
-        this.actor.graphics.isVisible = false;
+        this.graphics.isVisible = false;
     }
 
     moveTo(worldPos: Vector) {
-        this.actor.pos = vec(worldPos.x, FrontGroundYLevel);
+        this.pos = vec(worldPos.x, FrontGroundYLevel);
     }
+    private get anim() { return this.get(AnimComponent); }
 
-    setTint(color: Color) {
-        this.animComponent.setTint(color)
-    }
-
-    get width(): number {
-        return this.actor.graphics.current?.width ?? this.actor.width;
-    }
+    setTint(color: Color) { this.anim.setTint(color); }
 
     changeSprite(buildType: BuildSpawns) {
-        switch (buildType) {
-            case "barricadeSpawn":
-                this.animComponent = new AnimComponent(Resources.Barricade)
-                this.animComponent.play("Idle", this.actor.graphics);
-                
-                break;
-            case "farmSpawn":
-                this.animComponent = new AnimComponent(Resources.FarmHouse)
-                this.animComponent.play("Idle", this.actor.graphics)
-                break;
-        }
+        this.anim.setResource(PREVIEW_RESOURCES[buildType]);
+        this.anim.play("Idle");
     }
 }

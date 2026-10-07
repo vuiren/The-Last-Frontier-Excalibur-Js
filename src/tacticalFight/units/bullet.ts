@@ -1,6 +1,6 @@
-import { Actor, CollisionType, Color, Engine, vec, Vector } from "excalibur";
+import { Actor, CollisionType, Color, Engine, Query, vec, Vector } from "excalibur";
 import { HorizontalDirection, Faction, zLabels } from "../../constants";
-import { ICombatant } from "../combatant";
+import { CombatantComponent } from "../../components";
 
 export class Bullet extends Actor {
     direction: Vector;
@@ -8,11 +8,10 @@ export class Bullet extends Actor {
     speed = 300;
     gravity = 10;
     liveTime = 3000;
-    allCombatants: ICombatant[] = [];
     hitDistance = 5;
     damage: number;
 
-    constructor(startPosition: Vector, direction: Vector, allCombatants: ICombatant[], faction: Faction, damage: number) {
+    constructor(startPosition: Vector, direction: Vector, private allCombatants: Query<typeof CombatantComponent>, faction: Faction, damage: number) {
         super({
             name: 'Bullet',
             pos: startPosition,
@@ -23,7 +22,6 @@ export class Bullet extends Actor {
             z: zLabels.Bullets
         });
 
-        this.allCombatants = allCombatants;
         this.direction = direction;
         this.faction = faction
         this.damage = damage
@@ -38,13 +36,18 @@ export class Bullet extends Actor {
         this.vel.y += this.gravity;
         this.liveTime -= elapsedMs;
 
-        const hitTarget = this.allCombatants.find(x =>
-            x.faction !== this.faction &&
-            Math.abs(x.globalPos.x - this.globalPos.x) <= this.hitDistance
+        const hitTarget = this.allCombatants.entities.find(x =>
+            {
+                const combatant = x.get(CombatantComponent)
+                if(combatant === undefined) return false;
+                
+                return combatant.combatant.faction !== this.faction &&
+                    Math.abs(combatant.combatant.globalPos.x - this.globalPos.x) <= this.hitDistance;
+            }
         );
 
         if (hitTarget !== undefined) {
-            hitTarget.takeDamage(this.damage, this.direction.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left)
+            hitTarget.get(CombatantComponent)?.combatant.takeDamage(this.damage, this.direction.x > 0 ? HorizontalDirection.Right : HorizontalDirection.Left)
             this.kill()
         }
 

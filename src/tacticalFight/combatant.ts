@@ -1,4 +1,4 @@
-import { Actor, Vector } from "excalibur";
+import { Vector } from "excalibur";
 import { HorizontalDirection, Faction } from "../constants";
 import { Group } from "./group";
 import { Unit, UnitActivity } from "./units/unit";

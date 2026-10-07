@@ -1,5 +1,5 @@
-import { Vector, Engine, Color } from "excalibur";
-import { ICombatant, IGroupable } from "../combatant";
+import { Vector, Engine, Color, Query } from "excalibur";
+import { ICombatant } from "../combatant";
 import { HorizontalDirection } from "../../constants";
 import { Group } from "../group";
 import { UnitMoveMarker } from "../unitMoveMarker";
@@ -8,6 +8,7 @@ import { EntitySpawner } from "../entitySpawner";
 import { GroupsManager } from "../managers/groupsManager";
 import { UnitConfig } from "./unitConfigs";
 import { ResourcesManager } from "../managers/resourcesManager";
+import { CombatantComponent } from "../../components";
 
 export class PlayerUnit extends Unit {
     private isSelected = false;
@@ -18,8 +19,7 @@ export class PlayerUnit extends Unit {
 
     constructor(
         posX: number,
-        allCombatants: ICombatant[],
-        allGroupables: IGroupable[],
+        allCombatants: Query<typeof CombatantComponent>,
         config: UnitConfig,
         private readonly groupsManager: GroupsManager,
         private readonly entitySpawner: EntitySpawner,

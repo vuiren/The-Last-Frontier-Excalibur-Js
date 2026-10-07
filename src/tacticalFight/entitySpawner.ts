@@ -1,32 +1,33 @@
-import { Actor, Scene, vec, Vector } from "excalibur";
+import { Actor, Query, Scene, vec, Vector } from "excalibur";
 import { UnitMoveMarker } from "./unitMoveMarker";
-import { UnitsManager } from "./managers/unitsManager";
 import { PlayerUnit } from "./units/playerUnit";
-import { ICombatant, IGroupable } from "./combatant";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
-import { CaptureZone } from "./buildings/captureZone";
 import { BarricadeScraps } from "./buildings/barricadeScraps";
 import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
 import { DeadSoldier } from "./units/deadSoldier";
-import { Building } from "./buildings/building";
 import { Farm } from "./buildings/farm";
 import { FarmScraps } from "./buildings/farmScraps";
 import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 import { ResourcesManager } from "./managers/resourcesManager";
+import { BuilderOutpost } from "./buildings/builderOutpost";
+import { CombatantComponent, GroupableComponent } from "../components";
+import { BuildPreview } from "./buildings/buildPreview";
 
 export class EntitySpawner {
+    private readonly groupables: Query<typeof GroupableComponent>;
+    private readonly combatants: Query<typeof CombatantComponent>;
+
     constructor(
         private readonly scene: Scene,
-        private readonly unitsManager: UnitsManager,
         private readonly groupsManager: GroupsManager,
-        private readonly allGroupables: IGroupable[],
-        private readonly allCombatants: ICombatant[],
-        private readonly allBuildings: Building[],
         private readonly resourcesManager: ResourcesManager,
-    ) { }
+    ) {
+        this.groupables = scene.world.query([GroupableComponent]);
+        this.combatants = scene.world.query([CombatantComponent]);
+    }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
         const unitMoveMarker = new UnitMoveMarker(pos, assignedUnit);
@@ -56,84 +57,57 @@ export class EntitySpawner {
         return infectedBuilding;
     }
 
-    spawnCaptureZone(posX: number) {
-        const captureZone = new CaptureZone(posX, this.allGroupables);
-        this.scene.add(captureZone);
-
-        return captureZone;
-    }
-
     spawnBarricadeScraps(posX: number) {
-        const barricadeScraps = new BarricadeScraps(posX, this.allGroupables, this);
+        const barricadeScraps = new BarricadeScraps(posX, this.groupables, this);
         this.scene.add(barricadeScraps);
-
-        this.registerBuilding(barricadeScraps)
 
         return barricadeScraps;
     }
 
     spawnFarmScraps(posX: number) {
-        const farmScraps = new FarmScraps(posX, this.allGroupables, this);
+        const farmScraps = new FarmScraps(posX, this.groupables, this);
         this.scene.add(farmScraps);
-
-        this.registerBuilding(farmScraps)
 
         return farmScraps;
     }
 
     spawnPlayerUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new PlayerUnit(posX, this.allCombatants, this.allGroupables, config, this.groupsManager, this, this.resourcesManager);
+        const unit = new PlayerUnit(posX, this.combatants, config, this.groupsManager, this, this.resourcesManager);
+        this.scene.add(unit);
 
-        return this.unitsManager.registerUnit(this.scene, unit);
+        return unit;
     }
 
     spawnEnemyUnit(posX: number, configKey: UnitConfigKey) {
         const config = UnitConfigs[configKey];
-        const unit = new EnemyUnit(posX, this.allCombatants, this.allGroupables, config);
+        const unit = new EnemyUnit(posX, this.combatants, config);
+        this.scene.add(unit);
 
-        return this.unitsManager.registerUnit(this.scene, unit);
+        return unit;
     }
 
     spawnPlayerBase(posX: number): PlayerBase {
-        const playerBase = new PlayerBase(posX, 100, this);
-        this.registerBuilding(playerBase);
+        const playerBase = new PlayerBase(posX, 100, this, this.resourcesManager);
         this.scene.add(playerBase);
         return playerBase;
     }
 
     spawnBarricade(posX: number): Barricade {
         const barricade = new Barricade(posX, 100);
-        this.registerBuilding(barricade);
         this.scene.add(barricade);
         return barricade;
     }
 
-    spawnBarricadeBuildPreview(): Actor {
-        const buildPreview = new Actor({
-            width: 8,
-            height: 4,
-            anchor: vec(0.5, 1),
-            z: 6,
-            opacity: 0.5,
-        });
-
-        this.scene.add(buildPreview);
-
-        return buildPreview
+    spawnBuilderOutpost(posX: number): Actor {
+        const builderOutpost = new BuilderOutpost(posX);
+        this.scene.add(builderOutpost);
+        return builderOutpost;
     }
 
-    private registerBuilding(building: Building) {
-        this.allCombatants.push(building);
-        this.allBuildings.push(building)
-        building.on('kill', () => this.removeBuilding(building));
-    }
-
-    private removeBuilding(building: ICombatant) {
-        const index = this.allCombatants.indexOf(building);
-        if (index !== -1) this.allCombatants.splice(index, 1);
-
-        const indexInBuildings = this.allBuildings.indexOf(building as Building)
-        if (indexInBuildings !== -1) this.allBuildings.splice(indexInBuildings, 1);
+    spawnBuildPreview(): BuildPreview {
+        const preview = new BuildPreview();
+        this.scene.add(preview);
+        return preview;
     }
 }

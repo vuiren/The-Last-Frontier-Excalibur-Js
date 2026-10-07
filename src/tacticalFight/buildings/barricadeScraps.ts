@@ -1,58 +1,13 @@
-import { Color, Engine, vec } from "excalibur";
+import { Query, vec } from "excalibur";
 import { Resources } from "../../resources";
-import { IGroupable } from "../combatant";
 import { Faction, FrontGroundYLevel, zLabels } from "../../constants";
-import { ProgressBar } from "../../progressBar";
-import { queryNearbyWithActivity } from "../proximityQuery";
 import { EntitySpawner } from "../entitySpawner";
-import { Building } from "./building";
+import { BuildTask } from "./buildTask";
+import { GroupableComponent } from "../../components";
 
-export class BarricadeScraps extends Building {
-    private allGroupables: IGroupable[] = [];
-    private buildProgress: number = 0;
-    private entitySpawner: EntitySpawner;
-    private buildProgressIncreaseRate: number = 0.01;
-    private progressBar: ProgressBar;
-
-    constructor(posX: number, allGroupables: IGroupable[], entitySpawner: EntitySpawner) {
-        super({ name: 'BarricadeScraps', pos: vec(posX, FrontGroundYLevel), width: 8, height: 4, z: zLabels.Barricades, anchor: vec(0.5, 1) },
-            Resources.Barricade, Faction.Player, 1, vec(-8, -35));
-        this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
-        this.entitySpawner = entitySpawner;
-        this.allGroupables = allGroupables;
-
-        this.progressBar = new ProgressBar(
-            vec(-8, -30),
-            16, 4, 100, 100, Color.ExcaliburBlue
-        );
-
-        this.addChild(this.progressBar)
-    }
-
-    override onInitialize(engine: Engine): void {
-        engine.currentScene.add(this.progressBar);
-        this.playAnimation("Idle");
-    }
-
-    override onPreUpdate(engine: Engine, delta: number): void {
-        // Check for nearby groupables and apply buffs
-        const nearbyGroupables = queryNearbyWithActivity(this.allGroupables, {
-            origin: this.pos,
-            radius: 10,
-            faction: Faction.Player,
-            activity: "idle",   // if you add activity to the filter
-        });
-
-        nearbyGroupables.forEach(groupable => {
-            this.buildProgress += this.buildProgressIncreaseRate * delta;
-        });
-
-        this.progressBar.setValue(this.buildProgress);
-
-        if (this.buildProgress >= 100) {
-            this.buildProgress = 100;
-            this.entitySpawner.spawnBarricade(this.pos.x);
-            this.kill();
-        }
+export class BarricadeScraps extends BuildTask {
+    constructor(posX: number, groupables: Query<typeof GroupableComponent>, entitySpawner: EntitySpawner) {
+        const conf = { name: 'BarricadeScraps', pos: vec(posX, FrontGroundYLevel), width: 8, height: 4, z: zLabels.Barricades, anchor: vec(0.5, 1) }
+        super(conf, Resources.Barricade, groupables, entitySpawner, Faction.Player, 1, vec(-8, -35));
     }
 }

@@ -2,26 +2,32 @@ import { IGroupable } from "../combatant";
 import { Faction } from "../../constants";
 import { Group } from "../group";
 import { GroupsManager } from "./groupsManager";
+import { Entity, Query, Scene } from "excalibur";
+import { GroupableComponent } from "../../components";
 
 export class UnitsCollisionManager {
-    groupsManager: GroupsManager;
-    allGroupables: IGroupable[] = [];
     groupCreationThreshold = 12;
 
-    // Pre-allocated to worst case: n*(n-1)/2 pairs * 2
-    collidingPairs: IGroupable[];
+    collidingPairs: IGroupable[] = [];
     collidingUnits: Map<IGroupable, IGroupable[]> = new Map();
+
+    private readonly groupables: Query<typeof GroupableComponent>;
     private units: IGroupable[] = [];
     private thresholdSq = this.groupCreationThreshold ** 2;
 
-    constructor(allCombatants: IGroupable[], groupsManager: GroupsManager) {
-        this.allGroupables = allCombatants;
-        this.groupsManager = groupsManager;
-        this.collidingPairs = new Array(200); // way more than enough
+    constructor(scene: Scene, private readonly groupsManager: GroupsManager) {
+        this.groupables = scene.world.query([GroupableComponent]);
 
-        for (const unit of allCombatants) {
-            this.collidingUnits.set(unit, []);
-        }
+        // anything already in the world, then follow changes
+        for (const e of this.groupables.entities) this.track(e);
+        this.groupables.entityAdded$.subscribe(e => this.track(e));
+        this.groupables.entityRemoved$.subscribe(e => {
+            this.collidingUnits.delete(e.get(GroupableComponent).groupable);
+        });
+    }
+
+    private track(e: Entity<any>) {
+        this.collidingUnits.set(e.get(GroupableComponent).groupable, []);
     }
 
     checkCollisions() {
@@ -32,7 +38,8 @@ export class UnitsCollisionManager {
         }
 
         this.units.length = 0;
-        for (const x of this.allGroupables) {
+        for (const e of this.groupables.entities) {
+            const x = e.get(GroupableComponent).groupable;
             if (x.groupRef === null || (!x.groupRef.isFull && x.groupRef.leader.id === x.id)) this.units.push(x);
         }
 
@@ -60,14 +67,14 @@ export class UnitsCollisionManager {
         }
     }
 
-    mergeGroups(groupA: Group, groupB: Group, groupsManager: GroupsManager): void {
+    mergeGroups(groupA: Group, groupB: Group): void {
         const [target, source] = groupA.members.length >= groupB.members.length
             ? [groupA, groupB]
             : [groupB, groupA];
 
         for (const member of [...source.members]) {
-            groupsManager.removeFromAnyGroup(member);
-            groupsManager.addToGroup(member, target);
+            this.groupsManager.removeFromAnyGroup(member);
+            this.groupsManager.addToGroup(member, target);
         }
     }
 }

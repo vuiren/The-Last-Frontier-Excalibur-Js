@@ -1,27 +1,25 @@
-import { Actor, Color, Engine, vec } from "excalibur";
+import { Actor, Color, Engine, Query, vec } from "excalibur";
 import { AnimComponent } from "../../animComponent";
 import { Resources } from "../../resources";
 import { IGroupable } from "../combatant";
 import { Faction, FrontGroundYLevel } from "../../constants";
 import { ProgressBar } from "../../progressBar";
+import { GroupableComponent } from "../../components";
 
 export class CaptureZone extends Actor {
-    allGroupables: IGroupable[] = [];
     captureProgress: number = 0;
 
     captureProgressIncreaseRate: number = 0.01;
     faction: Faction = Faction.Player; // The faction that currently controls the zone, default to Player
-    private animComponent: AnimComponent;
     private progressBar: ProgressBar;
     private nearbyPlayerCount: number = 0;
     private nearbyEnemyCount: number = 0;
 
-    constructor(startPositionX: number, allGroupables: IGroupable[]) {
+    constructor(startPositionX: number, private readonly groupables: Query<typeof GroupableComponent>) {
         super({ name: 'CaptureZone', pos: vec(startPositionX, FrontGroundYLevel), width: 32, height: 32, z: 2, anchor: vec(0.5, 1) });
        
-        this.animComponent = new AnimComponent(Resources.CaptureZoneFlag);
+        this.addComponent(new AnimComponent(Resources.CaptureZoneFlag));
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
-        this.allGroupables = allGroupables;
         this.progressBar = new ProgressBar(vec(-16, -100), 32, 6, 100, 0, Color.Red);
         this.addChild(this.progressBar)
     }
@@ -31,7 +29,7 @@ export class CaptureZone extends Actor {
     }
 
     protected playAnimation(name: string): void {
-        this.animComponent.play(name, this.graphics);
+        this.get(AnimComponent).play(name);
     }
 
     override onPreUpdate(engine: Engine, delta: number): void {
@@ -42,8 +40,8 @@ export class CaptureZone extends Actor {
         this.nearbyEnemyCount = 0;
 
         // Count nearby units by faction using a single pass
-        for (let i = 0; i < this.allGroupables.length; i++) {
-            const groupable = this.allGroupables[i];
+        for (let i = 0; i < this.groupables.entities.length; i++) {
+            const groupable = this.groupables.entities[i].get(GroupableComponent).groupable;
             const distance = this.pos.distance(groupable.globalPos);
             if (distance >= 50) continue;
 

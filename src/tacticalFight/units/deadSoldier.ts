@@ -9,13 +9,12 @@ export class DeadSoldier extends Actor {
     private revivalProgress: number = 0;
     private entitySpawner: EntitySpawner;
     private revivalProgressIncreaseRate: number = 0.1;
-    private animComponent: AnimComponent;
     private progressBar: ProgressBar;
     private spawnedUnit = false;
 
     constructor(startX: number, entitySpawner: EntitySpawner) {
         super({ name: 'DeadSoldier', pos: vec(startX, FrontGroundYLevel), width: 8, height: 8, z: zLabels.DeadUnits, anchor: vec(0.5, 1) });
-        this.animComponent = new AnimComponent(Resources.DeadSoldier);
+        this.addComponent(new AnimComponent(Resources.DeadSoldier));
         this.color = Color.fromRGB(255, 255, 255, 0.5); // Semi-transparent to indicate it's not fully built
         this.entitySpawner = entitySpawner;
         this.progressBar = new ProgressBar(vec(-4, -8), 8, 2, 0, 1000, Color.Red);
@@ -28,7 +27,7 @@ export class DeadSoldier extends Actor {
     }
 
     protected playAnimation(name: string): void {
-        this.animComponent.play(name, this.graphics);
+        this.get(AnimComponent).play(name);
     }
 
     override onPreUpdate(engine: Engine, delta: number): void {

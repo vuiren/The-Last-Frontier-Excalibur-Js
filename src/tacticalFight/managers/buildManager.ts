@@ -1,9 +1,9 @@
-import { Color, Engine, EventEmitter, PointerButton, PointerEvent, Vector } from "excalibur";
+import { Color, Engine, EventEmitter, PointerButton, PointerEvent, Query, Scene, Vector } from "excalibur";
 import { EntitySpawner } from "../entitySpawner";
-import { Building } from "../buildings/building";
 import { BuildPreview } from "../buildings/buildPreview";
+import { BuildingComponent } from "../../components";
 
-export type BuildSpawns = "barricadeSpawn" | "farmSpawn";
+export type BuildSpawns = "barricadeSpawn" | "farmSpawn" | "builderOutpostSpawn";
 
 export type BuildManagerEvents = {
     barricadeSpawn: { x: number };
@@ -16,13 +16,14 @@ export class BuildManager {
     buildType: BuildSpawns = "barricadeSpawn";
     onCooldown = false;
     private buildPreview: BuildPreview;
+    private readonly buildingsQuery: Query<typeof BuildingComponent>
 
-    constructor(engine: Engine, private readonly entitySpawner: EntitySpawner, private readonly allBuildings: Building[]) {
-        this.buildPreview = new BuildPreview(entitySpawner);
-
-        engine.input.pointers.primary.on("move", this.onPointerMove.bind(this));
-        engine.input.pointers.primary.on("down", this.onPointerDown.bind(this));
-
+    constructor(scene: Scene, private readonly entitySpawner: EntitySpawner) {
+        this.buildPreview = entitySpawner.spawnBuildPreview();
+        this.buildingsQuery = scene.world.query([BuildingComponent]);
+        
+        scene.engine.input.pointers.primary.on("move", this.onPointerMove.bind(this));
+        scene.engine.input.pointers.primary.on("down", this.onPointerDown.bind(this));
     }
 
     startPlacingBuilding() {
@@ -57,6 +58,9 @@ export class BuildManager {
                 case "farmSpawn":
                     this.entitySpawner.spawnFarmScraps(this.buildPreview.x)
                     break;
+                case "builderOutpostSpawn":
+                    this.entitySpawner.spawnBuilderOutpost(this.buildPreview.x)
+                    break;
             }
 
             this.events.emit(this.buildType, { x: this.buildPreview.x });
@@ -64,12 +68,13 @@ export class BuildManager {
     }
 
     private collisionCheck() {
-        if(!this.buildPreview.checkForCollisions) return
+        if (!this.buildPreview.checkForCollisions) return
         let colliding = false;
 
-        for (const b of this.allBuildings) {
-            const distance = Math.abs(b.globalPos.x - this.buildPreview.x);
-            const minDistance = (b.width + this.buildPreview.width) / 2;
+        for (const b of this.buildingsQuery.entities) {
+            const building = b.get(BuildingComponent).building
+            const distance = Math.abs(building.globalPos.x - this.buildPreview.x);
+            const minDistance = (building.width + this.buildPreview.width) / 2;
 
             if (distance < minDistance) {
                 colliding = true;

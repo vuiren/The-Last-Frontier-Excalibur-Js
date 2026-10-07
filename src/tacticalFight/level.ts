@@ -1,21 +1,18 @@
 import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, vec } from "excalibur";
-import { UnitsManager } from "./managers/unitsManager";
-import { ICombatant, IGroupable } from "./combatant";
+import { ICombatant } from "./combatant";
 import { drawDottedLine } from "../drawDottedLine";
 import { importLdtkLevel } from "../ldtkImporter";
 import { EntitySpawner } from "./entitySpawner";
-import { Building } from "./buildings/building";
 import { BuildManager, BuildSpawns } from "./managers/buildManager";
 import { GroupsManager } from "./managers/groupsManager";
 import { ResourcesManager } from "./managers/resourcesManager";
+import { UnitsCollisionManager } from "./managers/unitsCollisionManager";
+import { BuildingComponent, CombatantComponent, GroupableComponent } from "../components";
 
 export class MyLevel extends Scene {
-    private readonly allGroupables: IGroupable[] = [];
-    private readonly allCombatants: ICombatant[] = [];
-    private readonly allBuildings: Building[] = [];
-    private readonly unitsManager: UnitsManager;
+    private unitsCollisionManager!: UnitsCollisionManager;
     private readonly groupsManager: GroupsManager = new GroupsManager();
-    private readonly entitySpawner: EntitySpawner;
+    private entitySpawner!: EntitySpawner;
     private readonly resourcesManager: ResourcesManager = new ResourcesManager(5)
 
     private buildManager!: BuildManager;
@@ -27,15 +24,12 @@ export class MyLevel extends Scene {
     private movingCameraRight = false;
     private movingCameraLeft = false;
 
-    constructor() {
-        super();
-        this.unitsManager = new UnitsManager(this.allCombatants, this.allGroupables, this.groupsManager);
-        this.entitySpawner = new EntitySpawner(this, this.unitsManager, this.groupsManager, this.allGroupables, this.allCombatants, this.allBuildings, this.resourcesManager);
-    }
-
     override onInitialize(engine: Engine): void {
+        this.entitySpawner = new EntitySpawner(this, this.groupsManager, this.resourcesManager);
+        this.unitsCollisionManager = new UnitsCollisionManager(this, this.groupsManager);
+
         this.backgroundColor = Color.fromHex("1F4073");
-        this.buildManager = new BuildManager(this.engine, this.entitySpawner, this.allBuildings);
+        this.buildManager = new BuildManager(this, this.entitySpawner);
         this.camera.zoom = 3
         this.camera.pos = vec(400, 175);
 
@@ -47,10 +41,10 @@ export class MyLevel extends Scene {
 
         (window as any).debug = {
             scene: this,
-            units: this.unitsManager,
             groups: this.groupsManager,
-            buildings: this.allBuildings,
-            combatants: this.allCombatants,
+            combatants: this.world.query([CombatantComponent]),
+            groupables: this.world.query([GroupableComponent]),
+            buildings: this.world.query([BuildingComponent]),
         };
     }
 
@@ -66,7 +60,7 @@ export class MyLevel extends Scene {
             engine.currentScene.camera.pos.x -= speed * elapsed;
         }
 
-        const collisionsManager = this.unitsManager.collisionManager;
+        const collisionsManager = this.unitsCollisionManager;
         collisionsManager.checkCollisions();
 
         const processedUnits = new Set<ICombatant>();
@@ -78,7 +72,7 @@ export class MyLevel extends Scene {
                 if (processedUnits.has(other)) return;
 
                 if (unit.groupRef !== null && other.groupRef !== null) {
-                    collisionsManager.mergeGroups(unit.groupRef, other.groupRef, this.groupsManager);
+                    collisionsManager.mergeGroups(unit.groupRef, other.groupRef);
                 } else {
                     const group = unit.groupRef ?? this.groupsManager.createGroup(unit);
                     this.groupsManager.addToGroup(other, group);
@@ -108,7 +102,7 @@ export class MyLevel extends Scene {
         }
     }
 
-    private wireUi(){
+    private wireUi() {
         const btnRight = document.getElementById('move-camera-right')!;
         btnRight.addEventListener('pointerenter', () => { this.movingCameraRight = true; });
         btnRight.addEventListener('pointerleave', () => { this.movingCameraRight = false; });
@@ -145,6 +139,7 @@ export class MyLevel extends Scene {
         const COOLDOWN_MS = 500;
         this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-builder-outpost', 'builderOutpostSpawn', COOLDOWN_MS);
     }
 
     private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {

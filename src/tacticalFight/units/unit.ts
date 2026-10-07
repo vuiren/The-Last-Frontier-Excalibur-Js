@@ -1,5 +1,4 @@
-import { Actor, Vector, vec, Engine, Color } from "excalibur";
-import { AnimComponent } from "../../animComponent";
+import { Vector, vec, Engine, Color, Actor, Query } from "excalibur";
 import { Bullet } from "./bullet";
 import { ICombatant, IGroupable } from "../combatant";
 import { Group } from "../group";
@@ -7,8 +6,10 @@ import { ProgressBar } from "../../progressBar";
 import { queryNearby } from "../proximityQuery";
 import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType, zLabels } from "../../constants";
 import { UnitConfig } from "./unitConfigs";
+import { CombatantComponent, GroupableComponent } from "../../components";
+import { AnimComponent } from "../../animComponent";
 
-export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead";
+export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead" | "busy";
 
 const ACTIVITY_ANIMATION: Partial<Record<UnitActivity, string>> = {
     idle: "Idle",
@@ -34,18 +35,20 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     tookDamageLastFrame = false;
     lastDamageDirection: HorizontalDirection | null = null;
     private healthBar: ProgressBar;
-    private animComponent: AnimComponent;
 
-    constructor(startX: number, protected config: UnitConfig, private allCombatants: ICombatant[]) {
+    constructor(startX: number, protected config: UnitConfig, private allCombatants: Query<typeof CombatantComponent>) {
         const startPosition = vec(startX, FrontGroundYLevel);
         super({ name: 'Unit', pos: startPosition, width: 16, height: 16, anchor: vec(0.5, 1), z: zLabels.Units });
         this.health = config.health;
         this.faction = config.faction;
-        this.animComponent = new AnimComponent(config.graphicSource);
         this.orderedDestination = this.globalPos
 
         this.healthBar = new ProgressBar(vec(-4, -20), 8, 2, config.health, config.health);
         this.addChild(this.healthBar)
+
+        this.addComponent(new CombatantComponent(this));
+        this.addComponent(new GroupableComponent(this));
+        this.addComponent(new AnimComponent(config.graphicSource));
     }
 
     // ------------------------------------------------------------------ //
@@ -83,10 +86,6 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.isUnitHovered = false;
     }
 
-    protected playAnimation(name: string): void {
-        this.animComponent.play(name, this.graphics);
-    }
-
     override onPreUpdate(_engine: Engine, elapsedMs: number): void {
         if (this.isDead) return;
 
@@ -94,7 +93,7 @@ export class Unit extends Actor implements ICombatant, IGroupable {
         this.previousActivity = this.activity;
         this.updateBehavior(elapsedMs);
 
-        this.animComponent.flipHorizontal(this.lookDirection === HorizontalDirection.Left);
+        this.get(AnimComponent).flipHorizontal(this.lookDirection === HorizontalDirection.Left);
     }
 
     protected updateBehavior(_elapsedMs: number): void {
@@ -224,7 +223,10 @@ export class Unit extends Actor implements ICombatant, IGroupable {
     cleanUpOnDeath(): void {
     }
 
-    setTint(color: Color): void { this.animComponent.setTint(color); }
+    protected setTint(color: Color): void { this.get(AnimComponent).setTint(color); }
+
+    protected playAnimation(name: string) { this.get(AnimComponent).play(name); }
+
 
     // ------------------------------------------------------------------ //
     //  Misc                                                                //

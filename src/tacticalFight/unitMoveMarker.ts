@@ -25,7 +25,6 @@ export class UnitMoveMarker extends Actor {
     private isHovered = false;
     private isFollowerMode = false;
     private dragOffset = Vector.Zero;
-    private animComponent = new AnimComponent(Resources.FlagMarker);
 
     constructor(startPosition: Vector, assignedUnit: PlayerUnit) {
         super({
@@ -38,14 +37,14 @@ export class UnitMoveMarker extends Actor {
         });
 
         this.assignedUnit = assignedUnit;
-
+        this.addComponent(new AnimComponent(Resources.FlagMarker))
         assignedUnit.on("beganAttacking", () => {
             this.pos = assignedUnit.pos;
         });
     }
 
     override onInitialize(engine: Engine): void {
-        this.animComponent.play("Idle", this.graphics);
+        this.get(AnimComponent).play("Idle");
         this.registerPointerEvents(engine);
     }
 
@@ -104,13 +103,13 @@ export class UnitMoveMarker extends Actor {
 
     private applyHoverVisuals(): void {
         this.pos = this.groundPos.add(HOVER_LIFT_OFFSET);
-        this.animComponent.setTint(DRAG_TINT);
+        this.get(AnimComponent).setTint(DRAG_TINT);
         this.onHoverStart?.();
     }
 
     private clearHoverVisuals(): void {
         this.snapToGround();
-        this.animComponent.setTint(Color.White);
+        this.get(AnimComponent).setTint(Color.White);
         this.onHoverEnd?.();
     }
 

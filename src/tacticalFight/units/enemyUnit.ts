@@ -1,8 +1,9 @@
-import { Vector } from "excalibur";
+import { Query, Vector } from "excalibur";
 import { HorizontalDirection } from "../../constants";
 import { Unit, UnitActivity } from "./unit";
-import { ICombatant, IGroupable } from "../combatant";
+import { ICombatant } from "../combatant";
 import { UnitConfig } from "./unitConfigs";
+import { CombatantComponent } from "../../components";
 
 export class EnemyUnit extends Unit {
     private wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination
@@ -10,7 +11,7 @@ export class EnemyUnit extends Unit {
     private aggressionThreshold: number = 50; // Amount of aggression needed to start chasing the player
     private detectedEnemy: ICombatant | null = null;
 
-    constructor(posX: number, allUnits: ICombatant[], allGroupables: IGroupable[], config: UnitConfig) {
+    constructor(posX: number, allUnits: Query<typeof CombatantComponent>, config: UnitConfig) {
         super(posX, config, allUnits);
     }
 

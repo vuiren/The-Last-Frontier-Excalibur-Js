@@ -5,6 +5,7 @@ import { ImageSource, Loader } from "excalibur";
 export const Resources = {
   Sword: new ImageSource("./images/sword.png"),
   SoldierUnit: new AsepriteResource('./units/Soldier.json'),
+  UnemployedUnit: new AsepriteResource('./units/UnemployedUnit.json'),
   SoldierZombie: new AsepriteResource('./units/SoldierZombie.json'),
   FlagMarker: new AsepriteResource('./units/FlagMarker.json'),
   PlayerBase: new AsepriteResource('./buildings/Casarm 2.json'),
@@ -20,6 +21,7 @@ export const Resources = {
 
   FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
+  BuilderOutpost: new AsepriteResource('/buildings/BuilderOutpost.json'),
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
   OrderFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),

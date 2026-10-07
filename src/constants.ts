@@ -45,8 +45,9 @@ export const zLabels: Record<string, number> = {
     "Default": 0,
     "Buildings": 1,
     "DeadUnits": 2,
-    "UnitMoveMarkers": 3,
-    "Units": 4,
-    "Bullets": 5,
-    "Barricades": 6,
+    "CityUnits": 3,
+    "UnitMoveMarkers": 4,
+    "Units": 5,
+    "Bullets": 6,
+    "Barricades": 7,
 };

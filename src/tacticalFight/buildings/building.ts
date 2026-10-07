@@ -4,8 +4,9 @@ import { ProgressBar } from "../../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
 import { UnitActivity } from "../units/unit";
-import { AnimComponent } from "../../animComponent";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
+import { CombatantComponent, BuildingComponent } from "../../components";
+import { AnimComponent } from "../../animComponent";
 
 export class Building extends Actor implements ICombatant {
     health: number = 100;
@@ -15,14 +16,12 @@ export class Building extends Actor implements ICombatant {
     groupRef: Group | null = null;
     attackPriority: number = 1;
 
-    private animComponent: AnimComponent;
     private healthBar: ProgressBar;
 
     constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, healthBarOffset: Vector = vec(-8, -45)) {
         super(config);
         this.faction = faction;
         this.health = health;
-        this.animComponent = new AnimComponent(asepriteResouce);
 
         this.healthBar = new ProgressBar(
             healthBarOffset,
@@ -30,14 +29,14 @@ export class Building extends Actor implements ICombatant {
         );
 
         this.addChild(this.healthBar);
+
+        this.addComponent(new CombatantComponent(this));
+        this.addComponent(new BuildingComponent(this));
+        this.addComponent(new AnimComponent(asepriteResouce))
     }
 
     override onInitialize(engine: Engine): void {
-        this.playAnimation("Idle");
-    }
-
-    protected playAnimation(name: string): void {
-        this.animComponent.play(name, this.graphics);
+        this.get(AnimComponent).play("Idle");
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {
