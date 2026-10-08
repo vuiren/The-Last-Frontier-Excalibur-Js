@@ -1,10 +1,10 @@
 import { Actor, Color, Engine, Query, vec } from "excalibur";
-import { AnimComponent } from "../../animComponent";
+import { AnimComponent } from "../components/animComponent";
 import { Resources } from "../../resources";
 import { IGroupable } from "../combatant";
 import { Faction, FrontGroundYLevel } from "../../constants";
 import { ProgressBar } from "../../progressBar";
-import { GroupableComponent } from "../../components";
+import { GroupableComponent } from "../components/components";
 
 export class CaptureZone extends Actor {
     captureProgress: number = 0;

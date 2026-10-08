@@ -1,5 +1,5 @@
 import { Actor, vec } from "excalibur";
-import { AnimComponent } from "../animComponent";
+import { AnimComponent } from "../tacticalFight/components/animComponent";
 import { Resources } from "../resources";
 import { MapNode } from "./mapNode";
 import { Ownership } from "../constants";

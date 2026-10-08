@@ -1,7 +1,7 @@
 import { Query, Vector } from "excalibur";
 import { Faction } from "../constants";
 import { ICombatant, IGroupable } from "./combatant";
-import { CombatantComponent, GroupableComponent } from "../components";
+import { CombatantComponent, GroupableComponent } from "./components/components";
 import { UnitActivity } from "./units/unit";
 
 export interface ProximityFilter {

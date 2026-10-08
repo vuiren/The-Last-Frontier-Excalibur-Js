@@ -1,5 +1,5 @@
 import { Actor, Color, Engine, vec } from "excalibur";
-import { AnimComponent } from "../../animComponent";
+import { AnimComponent } from "../components/animComponent";
 import { ProgressBar } from "../../progressBar";
 import { Resources } from "../../resources";
 import { EntitySpawner } from "../entitySpawner";

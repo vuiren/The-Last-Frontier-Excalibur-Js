@@ -1,5 +1,5 @@
 import { Actor, Color, vec, Vector } from "excalibur";
-import { AnimComponent } from "../../animComponent";
+import { AnimComponent } from "../components/animComponent";
 import { FrontGroundYLevel } from "../../constants";
 import { Resources } from "../../resources";
 import { BuildSpawns } from "../managers/buildManager";

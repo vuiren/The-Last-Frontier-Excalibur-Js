@@ -3,7 +3,7 @@ import {
     vec, PointerButton, Color
 } from "excalibur";
 import { Resources } from "../resources";
-import { AnimComponent } from "../animComponent";
+import { AnimComponent } from "./components/animComponent";
 import { PlayerUnit } from "./units/playerUnit";
 import { Unit } from "./units/unit";
 import { FrontGroundYLevel, zLabels } from "../constants";

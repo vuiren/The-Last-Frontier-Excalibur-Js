@@ -7,14 +7,15 @@ import { BuildManager, BuildSpawns } from "./managers/buildManager";
 import { GroupsManager } from "./managers/groupsManager";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { UnitsCollisionManager } from "./managers/unitsCollisionManager";
-import { BuildingComponent, CombatantComponent, GroupableComponent } from "../components";
+import { BuildingComponent, CombatantComponent, GroupableComponent } from "./components/components";
+import { UnemployedManager } from "./managers/unemployedManager";
 
 export class MyLevel extends Scene {
     private unitsCollisionManager!: UnitsCollisionManager;
     private readonly groupsManager: GroupsManager = new GroupsManager();
     private entitySpawner!: EntitySpawner;
     private readonly resourcesManager: ResourcesManager = new ResourcesManager(5)
-
+    private readonly unemployedManager: UnemployedManager = new UnemployedManager(this)
     private buildManager!: BuildManager;
 
     private dashOffset = 0;
@@ -27,6 +28,11 @@ export class MyLevel extends Scene {
     override onInitialize(engine: Engine): void {
         this.entitySpawner = new EntitySpawner(this, this.groupsManager, this.resourcesManager);
         this.unitsCollisionManager = new UnitsCollisionManager(this, this.groupsManager);
+
+        const vacantJobs = this.world.query({
+            components: { all: [BuildingComponent, CombatantComponent] },
+            tags: { all: ["vacant"] },
+        });
 
         this.backgroundColor = Color.fromHex("1F4073");
         this.buildManager = new BuildManager(this, this.entitySpawner);

@@ -3,7 +3,7 @@ import { Faction } from "../../constants";
 import { Group } from "../group";
 import { GroupsManager } from "./groupsManager";
 import { Entity, Query, Scene } from "excalibur";
-import { GroupableComponent } from "../../components";
+import { GroupableComponent } from "../components/components";
 
 export class UnitsCollisionManager {
     groupCreationThreshold = 12;

@@ -1,9 +1,10 @@
 // components.ts
 import { Component } from "excalibur";
-import { Building } from "./tacticalFight/buildings/building";
-import { BuildTask } from "./tacticalFight/buildings/buildTask";
-import { ICombatant, IGroupable } from "./tacticalFight/combatant";
-import { Builder } from "./tacticalFight/units/cityUnits/builder";
+import { Building } from "../buildings/building";
+import { BuildTask } from "../buildings/buildTask";
+import { ICombatant, IGroupable } from "../combatant";
+import { Builder } from "../units/cityUnits/builder";
+import { UnemployedUnit } from "../units/cityUnits/unemployed";
 
 export class CombatantComponent extends Component {
     constructor(public readonly combatant: ICombatant) { super(); }
@@ -19,4 +20,7 @@ export class BuildTaskComponent extends Component {
 }
 export class BuilderComponent extends Component {
     constructor(public readonly builder: Builder) { super(); }
+}
+export class UnemployedUnitComponent extends Component {
+    constructor(public readonly unemployed: UnemployedUnit) { super(); }
 }

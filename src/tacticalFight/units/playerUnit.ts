@@ -8,7 +8,7 @@ import { EntitySpawner } from "../entitySpawner";
 import { GroupsManager } from "../managers/groupsManager";
 import { UnitConfig } from "./unitConfigs";
 import { ResourcesManager } from "../managers/resourcesManager";
-import { CombatantComponent } from "../../components";
+import { CombatantComponent } from "../components/components";
 
 export class PlayerUnit extends Unit {
     private isSelected = false;

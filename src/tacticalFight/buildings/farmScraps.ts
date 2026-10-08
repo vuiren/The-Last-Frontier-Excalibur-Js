@@ -3,7 +3,7 @@ import { Resources } from "../../resources";
 import { Faction, FrontGroundYLevel } from "../../constants";
 import { EntitySpawner } from "../entitySpawner";
 import { BuildTask } from "./buildTask";
-import { GroupableComponent } from "../../components";
+import { GroupableComponent } from "../components/components";
 
 export class FarmScraps extends BuildTask {
     constructor(posX: number, allGroupables: Query<typeof GroupableComponent>, entitySpawner: EntitySpawner) {

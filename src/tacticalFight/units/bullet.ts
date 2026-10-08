@@ -1,6 +1,6 @@
 import { Actor, CollisionType, Color, Engine, Query, vec, Vector } from "excalibur";
 import { HorizontalDirection, Faction, zLabels } from "../../constants";
-import { CombatantComponent } from "../../components";
+import { CombatantComponent } from "../components/components";
 
 export class Bullet extends Actor {
     direction: Vector;

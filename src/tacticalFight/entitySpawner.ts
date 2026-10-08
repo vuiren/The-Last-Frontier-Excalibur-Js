@@ -13,8 +13,10 @@ import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { BuilderOutpost } from "./buildings/builderOutpost";
-import { CombatantComponent, GroupableComponent } from "../components";
+import { CombatantComponent, GroupableComponent } from "./components/components";
 import { BuildPreview } from "./buildings/buildPreview";
+import { Builder } from "./units/cityUnits/builder";
+import { UnemployedUnit } from "./units/cityUnits/unemployed";
 
 export class EntitySpawner {
     private readonly groupables: Query<typeof GroupableComponent>;
@@ -99,8 +101,20 @@ export class EntitySpawner {
         return barricade;
     }
 
-    spawnBuilderOutpost(posX: number): Actor {
-        const builderOutpost = new BuilderOutpost(posX);
+    spawnUnemployedUnit(posX: number): UnemployedUnit {
+        const unemployed = new UnemployedUnit(posX);
+        this.scene.add(unemployed);
+        return unemployed;
+    }
+
+    spawnBuilder(posX: number): Builder {
+        const builderOutpost = new Builder(posX);
+        this.scene.add(builderOutpost);
+        return builderOutpost;
+    }
+
+    spawnBuilderOutpost(posX: number): BuilderOutpost {
+        const builderOutpost = new BuilderOutpost(posX, this);
         this.scene.add(builderOutpost);
         return builderOutpost;
     }

@@ -4,8 +4,8 @@ import { EntitySpawner } from "../entitySpawner";
 import { Faction } from "../../constants";
 import { queryNearbyWithActivity } from "../proximityQuery";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
-import { AnimComponent } from "../../animComponent";
-import { BuildTaskComponent, GroupableComponent } from "../../components";
+import { AnimComponent } from "../components/animComponent";
+import { BuildTaskComponent, GroupableComponent } from "../components/components";
 
 export class BuildTask extends Actor {
     protected buildProgress: number = 0;

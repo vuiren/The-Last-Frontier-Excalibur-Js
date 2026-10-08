@@ -1,9 +1,9 @@
-import { Actor, ActorArgs, Vector } from "excalibur";
+import { Actor, ActorArgs, Engine, Vector } from "excalibur";
 import { Faction, HorizontalDirection } from "../../../constants";
 import { ICombatant } from "../../combatant";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
-import { AnimComponent } from "../../../animComponent";
-import { CombatantComponent } from "../../../components";
+import { AnimComponent } from "../../components/animComponent";
+import { CombatantComponent } from "../../components/components";
 
 export class CityUnit extends Actor implements ICombatant {
     health: number;
@@ -23,6 +23,10 @@ export class CityUnit extends Actor implements ICombatant {
 
         this.addComponent(new AnimComponent(graphics));
         this.addComponent(new CombatantComponent(this));
+    }
+
+    override onInitialize(engine: Engine): void {
+        this.playAnimation("Idle")
     }
 
     takeDamage(damage: number, hitDirection: HorizontalDirection): void {

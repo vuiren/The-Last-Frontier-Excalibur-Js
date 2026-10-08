@@ -1,7 +1,7 @@
-import { Color, Engine, EventEmitter, PointerButton, PointerEvent, Query, Scene, Vector } from "excalibur";
+import { Color, EventEmitter, PointerButton, PointerEvent, Query, Scene, Vector } from "excalibur";
 import { EntitySpawner } from "../entitySpawner";
 import { BuildPreview } from "../buildings/buildPreview";
-import { BuildingComponent } from "../../components";
+import { BuildingComponent } from "../components/components";
 
 export type BuildSpawns = "barricadeSpawn" | "farmSpawn" | "builderOutpostSpawn";
 

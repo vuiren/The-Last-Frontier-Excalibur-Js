@@ -6,8 +6,8 @@ import { ProgressBar } from "../../progressBar";
 import { queryNearby } from "../proximityQuery";
 import { HorizontalDirection, Faction, FrontGroundYLevel, AttackType, zLabels } from "../../constants";
 import { UnitConfig } from "./unitConfigs";
-import { CombatantComponent, GroupableComponent } from "../../components";
-import { AnimComponent } from "../../animComponent";
+import { CombatantComponent, GroupableComponent } from "../components/components";
+import { AnimComponent } from "../components/animComponent";
 
 export type UnitActivity = "idle" | "greeting" | "moving" | "stunned" | "chasing" | "attacking" | "dead" | "busy";
 

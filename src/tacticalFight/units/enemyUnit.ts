@@ -3,7 +3,7 @@ import { HorizontalDirection } from "../../constants";
 import { Unit, UnitActivity } from "./unit";
 import { ICombatant } from "../combatant";
 import { UnitConfig } from "./unitConfigs";
-import { CombatantComponent } from "../../components";
+import { CombatantComponent } from "../components/components";
 
 export class EnemyUnit extends Unit {
     private wanderTimer: number = 3000; // Time in ms to spend wandering before picking a new random destination

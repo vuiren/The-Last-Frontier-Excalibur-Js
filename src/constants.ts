@@ -51,3 +51,7 @@ export const zLabels: Record<string, number> = {
     "Bullets": 6,
     "Barricades": 7,
 };
+
+export enum Tags {
+    Vacant = "Vacant"
+}

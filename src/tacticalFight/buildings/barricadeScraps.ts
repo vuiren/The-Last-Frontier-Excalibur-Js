@@ -3,7 +3,7 @@ import { Resources } from "../../resources";
 import { Faction, FrontGroundYLevel, zLabels } from "../../constants";
 import { EntitySpawner } from "../entitySpawner";
 import { BuildTask } from "./buildTask";
-import { GroupableComponent } from "../../components";
+import { GroupableComponent } from "../components/components";
 
 export class BarricadeScraps extends BuildTask {
     constructor(posX: number, groupables: Query<typeof GroupableComponent>, entitySpawner: EntitySpawner) {

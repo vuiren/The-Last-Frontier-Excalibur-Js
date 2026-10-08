@@ -1,12 +1,12 @@
 import { Actor, ActorArgs, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction } from "../../constants";
+import { HorizontalDirection, Faction, Tags } from "../../constants";
 import { ProgressBar } from "../../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";
 import { UnitActivity } from "../units/unit";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
-import { CombatantComponent, BuildingComponent } from "../../components";
-import { AnimComponent } from "../../animComponent";
+import { CombatantComponent, BuildingComponent } from "../components/components";
+import { AnimComponent } from "../components/animComponent";
 
 export class Building extends Actor implements ICombatant {
     health: number = 100;
