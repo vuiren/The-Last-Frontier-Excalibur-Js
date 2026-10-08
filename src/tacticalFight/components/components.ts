@@ -24,3 +24,6 @@ export class BuilderComponent extends Component {
 export class UnemployedUnitComponent extends Component {
     constructor(public readonly unemployed: UnemployedUnit) { super(); }
 }
+export class AssignedTaskComponent extends Component {
+    constructor(public readonly task: BuildTask) { super(); }
+}

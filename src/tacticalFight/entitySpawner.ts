@@ -60,14 +60,14 @@ export class EntitySpawner {
     }
 
     spawnBarricadeScraps(posX: number) {
-        const barricadeScraps = new BarricadeScraps(posX, this.groupables, this);
+        const barricadeScraps = new BarricadeScraps(posX, this);
         this.scene.add(barricadeScraps);
 
         return barricadeScraps;
     }
 
     spawnFarmScraps(posX: number) {
-        const farmScraps = new FarmScraps(posX, this.groupables, this);
+        const farmScraps = new FarmScraps(posX, this);
         this.scene.add(farmScraps);
 
         return farmScraps;
@@ -107,8 +107,8 @@ export class EntitySpawner {
         return unemployed;
     }
 
-    spawnBuilder(posX: number): Builder {
-        const builderOutpost = new Builder(posX);
+    spawnBuilder(posX: number, workplacePos: Vector): Builder {
+        const builderOutpost = new Builder(posX, workplacePos);
         this.scene.add(builderOutpost);
         return builderOutpost;
     }

@@ -33,9 +33,9 @@ export class WorkplaceComponent extends Component {
 
         unit.removeTag(Tags.Vacant);
 
-        const builder = this.spawner.spawnBuilder(unit.pos.x);
+        const standingPosition = this.standingPosition(slot)
+        const builder = this.spawner.spawnBuilder(unit.pos.x, standingPosition);
         builder.workplace = this;
-        builder.setDestination(this.standingPosition(slot));
         this.slots[slot] = builder;
 
         unit.kill();

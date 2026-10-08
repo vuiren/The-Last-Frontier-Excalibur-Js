@@ -1,18 +1,16 @@
-import { vec, Color, ActorArgs, Engine, Vector, Actor, Query } from "excalibur";
+import { vec, Color, ActorArgs, Engine, Actor } from "excalibur";
 import { ProgressBar } from "../../progressBar";
 import { EntitySpawner } from "../entitySpawner";
-import { Faction } from "../../constants";
-import { queryNearbyWithActivity } from "../proximityQuery";
+import { Tags } from "../../constants";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 import { AnimComponent } from "../components/animComponent";
-import { BuildTaskComponent, GroupableComponent } from "../components/components";
+import { BuildTaskComponent } from "../components/components";
 
 export class BuildTask extends Actor {
     protected buildProgress: number = 0;
-    protected buildProgressIncreaseRate: number = 0.01;
     protected progressBar: ProgressBar;
 
-    constructor(config: ActorArgs, graphics: AsepriteResource,  private readonly groupables: Query<typeof GroupableComponent>, private entitySpawner: EntitySpawner, private faction: Faction, health: number, healthBarOffset: Vector) {
+    constructor(config: ActorArgs, graphics: AsepriteResource, protected entitySpawner: EntitySpawner) {
         super(config)
 
         this.progressBar = new ProgressBar(
@@ -24,6 +22,8 @@ export class BuildTask extends Actor {
         this.addComponent(new AnimComponent(graphics))
         this.addComponent(new BuildTaskComponent(this))
         this.color = Color.fromRGB(255, 255, 255, 0.5);
+
+        this.addTag(Tags.Vacant)
     }
 
     override onInitialize(engine: Engine): void {
@@ -31,25 +31,18 @@ export class BuildTask extends Actor {
         this.get(AnimComponent).play("Idle");
     }
 
-    override onPreUpdate(engine: Engine, elapsed: number): void {
-        // Check for nearby groupables and apply buffs
-        const nearbyGroupables = queryNearbyWithActivity(this.groupables, {
-            origin: this.pos,
-            radius: 10,
-            faction: this.faction,
-            activity: "idle",   // if you add activity to the filter
-        });
-
-        nearbyGroupables.forEach(groupable => {
-            this.buildProgress += this.buildProgressIncreaseRate * elapsed;
-        });
-
+    build(buildProgressIncreaseRate: number) {
+        this.buildProgress += buildProgressIncreaseRate;
         this.progressBar.setValue(this.buildProgress);
 
         if (this.buildProgress >= 100) {
             this.buildProgress = 100;
-            this.entitySpawner.spawnBarricade(this.pos.x);
+            this.onBuilt()
             this.kill();
         }
+    }
+
+    onBuilt(){
+
     }
 }
