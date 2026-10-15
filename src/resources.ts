@@ -22,11 +22,15 @@ export const Resources = {
   FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),
   BuilderOutpost: new AsepriteResource('/buildings/BuilderOutpost.json'),
+  Storage: new AsepriteResource('/buildings/Storage.json'),
+  WoodcuttersHome: new AsepriteResource('/buildings/WoodcuttersHome.json'),
+  Tree: new AsepriteResource('/Tree.json'),
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
   OrderFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
 
   Builder: new AsepriteResource('./units/Builder.json'),
+  Woodcutter: new AsepriteResource('./units/Woodcutter.json'),
 
   FirstLevel: new LdtkResource('./Ldtk/FirstLevel.ldtk'),
 

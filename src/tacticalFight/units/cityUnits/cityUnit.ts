@@ -4,20 +4,23 @@ import { ICombatant } from "../../combatant";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 import { AnimComponent } from "../../components/animComponent";
 import { CombatantComponent } from "../../components/components";
+import { WorkplaceComponent } from "../../components/workplaceComponent";
 
 export class CityUnit extends Actor implements ICombatant {
     health: number;
     isDead: boolean = false;
     faction: Faction;
     attackPriority: number;
+    workplace?: WorkplaceComponent;
 
     destination: Vector;
 
-    constructor(config: ActorArgs, graphics: AsepriteResource, health: number, faction: Faction, attackPriority: number) {
+    constructor(config: ActorArgs, graphics: AsepriteResource, workplace: WorkplaceComponent, health: number, faction: Faction, attackPriority: number) {
         super(config)
         this.health = health;
         this.faction = faction
         this.attackPriority = attackPriority
+        this.workplace = workplace
 
         this.destination = this.globalPos
 

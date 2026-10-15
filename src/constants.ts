@@ -43,15 +43,13 @@ export const TURN_LABEL: Record<Turn, string> = {
 
 export const zLabels: Record<string, number> = {
     "Default": 0,
-    "Buildings": 1,
-    "DeadUnits": 2,
-    "CityUnits": 3,
-    "UnitMoveMarkers": 4,
-    "Units": 5,
-    "Bullets": 6,
-    "Barricades": 7,
+    "TreesBackground": 1,
+    "Buildings": 2,
+    "DeadUnits": 3,
+    "CityUnits": 4,
+    "UnitMoveMarkers": 5,
+    "Units": 6,
+    "TreesForeground": 7,
+    "Bullets": 8,
+    "Barricades": 9,
 };
-
-export enum Tags {
-    Vacant = "Vacant"
-}

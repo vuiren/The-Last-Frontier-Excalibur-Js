@@ -52,14 +52,19 @@ export class ProgressBar extends Actor {
       })
     );
 
+    this.hide()
   }
 
+  delay: number = 1000
+
   show(): void {
-    this.graphics.isVisible = true;
+    this.actions.clearActions()
+    this.actions.fade(1, this.delay).delay(1000).fade(0, this.delay)
   }
 
   hide(): void {
-    this.graphics.isVisible = false;
+    this.actions.clearActions()
+    this.actions.fade(0, this.delay)
   }
 
   setValue(current: number, max?: number): void {
@@ -73,6 +78,8 @@ export class ProgressBar extends Actor {
     if (this.fill) {
       this.fill.width = Math.max(this.barWidth * this.progress, 0.01);
     }
+
+    this.show()
   }
 
   setColor(color: Color): void {

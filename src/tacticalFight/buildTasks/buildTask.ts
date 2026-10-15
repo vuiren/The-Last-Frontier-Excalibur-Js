@@ -1,29 +1,29 @@
-import { vec, Color, ActorArgs, Engine, Actor } from "excalibur";
+import { Color, ActorArgs, Engine, Actor, Vector } from "excalibur";
 import { ProgressBar } from "../../progressBar";
 import { EntitySpawner } from "../entitySpawner";
-import { Tags } from "../../constants";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
 import { AnimComponent } from "../components/animComponent";
-import { BuildTaskComponent } from "../components/components";
+import { BuildTaskComponent, VacantComponent } from "../components/components";
 
 export class BuildTask extends Actor {
     protected buildProgress: number = 0;
     protected progressBar: ProgressBar;
 
-    constructor(config: ActorArgs, graphics: AsepriteResource, protected entitySpawner: EntitySpawner) {
+    deliveredWoodAmount: number = 0;
+
+    constructor(config: ActorArgs, requiredWoodAmount: number, graphics: AsepriteResource, protected entitySpawner: EntitySpawner, progressBarOffset: Vector) {
+        config.opacity = 0.5
         super(config)
 
         this.progressBar = new ProgressBar(
-            vec(-8, -30),
+            progressBarOffset,
             16, 4, 100, 100, Color.ExcaliburBlue
         );
         this.addChild(this.progressBar)
 
         this.addComponent(new AnimComponent(graphics))
-        this.addComponent(new BuildTaskComponent(this))
-        this.color = Color.fromRGB(255, 255, 255, 0.5);
-
-        this.addTag(Tags.Vacant)
+        this.addComponent(new BuildTaskComponent(requiredWoodAmount))
+        this.addComponent(new VacantComponent())
     }
 
     override onInitialize(engine: Engine): void {

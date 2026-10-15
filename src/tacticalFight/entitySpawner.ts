@@ -1,26 +1,32 @@
-import { Actor, Query, Scene, vec, Vector } from "excalibur";
+import { Query, Scene, Vector } from "excalibur";
 import { UnitMoveMarker } from "./unitMoveMarker";
 import { PlayerUnit } from "./units/playerUnit";
 import { InfectedBuilding } from "./buildings/infectedBuilding";
-import { BarricadeScraps } from "./buildings/barricadeScraps";
 import { EnemyUnit } from "./units/enemyUnit";
 import { PlayerBase } from "./buildings/playerBase";
 import { Barricade } from "./buildings/barricade";
 import { DeadSoldier } from "./units/deadSoldier";
 import { Farm } from "./buildings/farm";
-import { FarmScraps } from "./buildings/farmScraps";
 import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { BuilderOutpost } from "./buildings/builderOutpost";
-import { CombatantComponent, GroupableComponent } from "./components/components";
+import { CombatantComponent, GroupableComponent, WoodStorageComponent } from "./components/components";
 import { BuildPreview } from "./buildings/buildPreview";
 import { Builder } from "./units/cityUnits/builder";
 import { UnemployedUnit } from "./units/cityUnits/unemployed";
+import { Storage } from "./buildings/storage";
+import { BarricadeScraps } from "./buildTasks/barricadeScraps";
+import { FarmScraps } from "./buildTasks/farmScraps";
+import { Tree } from "./tree";
+import { WoodcuttersHome } from "./buildings/woodcuttersHome";
+import { Woodcutter } from "./units/cityUnits/woodcutter";
+import { WorkplaceComponent } from "./components/workplaceComponent";
 
 export class EntitySpawner {
     private readonly groupables: Query<typeof GroupableComponent>;
     private readonly combatants: Query<typeof CombatantComponent>;
+    private readonly woodStorages: Query<typeof WoodStorageComponent>;
 
     constructor(
         private readonly scene: Scene,
@@ -29,6 +35,7 @@ export class EntitySpawner {
     ) {
         this.groupables = scene.world.query([GroupableComponent]);
         this.combatants = scene.world.query([CombatantComponent]);
+        this.woodStorages = scene.world.query([WoodStorageComponent]);
     }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -107,10 +114,17 @@ export class EntitySpawner {
         return unemployed;
     }
 
-    spawnBuilder(posX: number, workplacePos: Vector): Builder {
-        const builderOutpost = new Builder(posX, workplacePos);
-        this.scene.add(builderOutpost);
-        return builderOutpost;
+    spawnBuilder(posX: number, workplacePos: Vector, workplace: WorkplaceComponent): Builder {
+        const builder = new Builder(posX, this.woodStorages, workplace, workplacePos);
+        builder.workplace = workplace
+        this.scene.add(builder);
+        return builder;
+    }
+    
+    spawnWoodcutter(posX: number, workplacePos: Vector, workplace: WorkplaceComponent): Woodcutter {
+        const woodcutter = new Woodcutter(posX, this.woodStorages, workplace, workplacePos);
+        this.scene.add(woodcutter);
+        return woodcutter;
     }
 
     spawnBuilderOutpost(posX: number): BuilderOutpost {
@@ -119,9 +133,27 @@ export class EntitySpawner {
         return builderOutpost;
     }
 
+    spawnWoodcuttersHome(posX: number): WoodcuttersHome {
+        const woodcuttersHome = new WoodcuttersHome(posX, this);
+        this.scene.add(woodcuttersHome);
+        return woodcuttersHome;
+    }
+
+    spawnStorage(posX: number): Storage {
+        const storage = new Storage(posX, this, this.resourcesManager);
+        this.scene.add(storage);
+        return storage;
+    }
+
     spawnBuildPreview(): BuildPreview {
         const preview = new BuildPreview();
         this.scene.add(preview);
         return preview;
+    }
+
+    spawnTree(posX: number): Tree {
+        const tree = new Tree(posX);
+        this.scene.add(tree);
+        return tree;
     }
 }

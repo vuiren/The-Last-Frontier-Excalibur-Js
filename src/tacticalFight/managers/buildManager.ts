@@ -3,7 +3,7 @@ import { EntitySpawner } from "../entitySpawner";
 import { BuildPreview } from "../buildings/buildPreview";
 import { BuildingComponent } from "../components/components";
 
-export type BuildSpawns = "barricadeSpawn" | "farmSpawn" | "builderOutpostSpawn";
+export type BuildSpawns = "barricadeSpawn" | "farmSpawn" | "builderOutpostSpawn" | "storageSpawn" | "woodcuttersHomeSpawn";
 
 export type BuildManagerEvents = {
     barricadeSpawn: { x: number };
@@ -61,6 +61,12 @@ export class BuildManager {
                 case "builderOutpostSpawn":
                     this.entitySpawner.spawnBuilderOutpost(this.buildPreview.x)
                     break;
+                case "storageSpawn":
+                    this.entitySpawner.spawnStorage(this.buildPreview.x)
+                    break
+                case "woodcuttersHomeSpawn":
+                    this.entitySpawner.spawnWoodcuttersHome(this.buildPreview.x)
+                    break
             }
 
             this.events.emit(this.buildType, { x: this.buildPreview.x });

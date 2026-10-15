@@ -9,6 +9,8 @@ const PREVIEW_RESOURCES: Record<BuildSpawns, AsepriteResource> = {
     barricadeSpawn: Resources.Barricade,
     farmSpawn: Resources.FarmHouse,
     builderOutpostSpawn: Resources.BuilderOutpost,
+    storageSpawn: Resources.Storage,
+    woodcuttersHomeSpawn: Resources.WoodcuttersHome,
 };
 
 export class BuildPreview extends Actor {

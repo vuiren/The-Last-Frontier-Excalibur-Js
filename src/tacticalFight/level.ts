@@ -7,7 +7,7 @@ import { BuildManager, BuildSpawns } from "./managers/buildManager";
 import { GroupsManager } from "./managers/groupsManager";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { UnitsCollisionManager } from "./managers/unitsCollisionManager";
-import { BuildingComponent, CombatantComponent, GroupableComponent } from "./components/components";
+import { BuildingComponent, BuildTaskComponent, CombatantComponent, GroupableComponent } from "./components/components";
 import { UnemployedManager } from "./managers/unemployedManager";
 import { BuildersManager } from "./managers/buildersManager";
 
@@ -48,6 +48,7 @@ export class MyLevel extends Scene {
             combatants: this.world.query([CombatantComponent]),
             groupables: this.world.query([GroupableComponent]),
             buildings: this.world.query([BuildingComponent]),
+            buildTasks: this.world.query([BuildTaskComponent]),
         };
     }
 
@@ -143,6 +144,8 @@ export class MyLevel extends Scene {
         this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-builder-outpost', 'builderOutpostSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-storage', 'storageSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-woodcutters-home', 'woodcuttersHomeSpawn', COOLDOWN_MS);
     }
 
     private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {

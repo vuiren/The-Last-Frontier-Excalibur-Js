@@ -1,8 +1,8 @@
 import { vec } from "excalibur"
-import { FrontGroundYLevel, zLabels, Faction, Tags } from "../../../constants"
+import { FrontGroundYLevel, zLabels, Faction } from "../../../constants"
 import { Resources } from "../../../resources"
 import { CityUnit } from "./cityUnit"
-import { UnemployedUnitComponent } from "../../components/components"
+import { UnemployedUnitComponent, VacantComponent } from "../../components/components"
 
 export class UnemployedUnit extends CityUnit {
     constructor(posX: number) {
@@ -10,6 +10,6 @@ export class UnemployedUnit extends CityUnit {
         super(config, Resources.UnemployedUnit, 100, Faction.Player, 1)
 
         this.addComponent(new UnemployedUnitComponent(this));
-        this.addTag(Tags.Vacant);
+        this.addComponent(new VacantComponent());
     }
 }

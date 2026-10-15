@@ -1,15 +1,14 @@
 import { Query, Scene } from "excalibur";
-import { UnemployedUnitComponent } from "../components/components";
-import { Tags } from "../../constants";
+import { UnemployedUnitComponent, VacantComponent } from "../components/components";
 import { WorkplaceComponent } from "../components/workplaceComponent";
 
 export class UnemployedManager {
-    private readonly jobs: Query<typeof WorkplaceComponent>;
-    private readonly unemployed: Query<typeof UnemployedUnitComponent>;
+    private readonly jobs: Query<typeof WorkplaceComponent | typeof VacantComponent>;
+    private readonly unemployed: Query<typeof UnemployedUnitComponent | typeof VacantComponent>;
 
     constructor(scene: Scene) {
-        this.jobs = scene.world.query({ components: { all: [WorkplaceComponent] }, tags: { all: [Tags.Vacant] } });
-        this.unemployed = scene.world.query({ components: { all: [UnemployedUnitComponent] }, tags: { all: [Tags.Vacant] } });
+        this.jobs = scene.world.query({ components: { all: [WorkplaceComponent, VacantComponent] } });
+        this.unemployed = scene.world.query({ components: { all: [UnemployedUnitComponent, VacantComponent] }});
 
         this.jobs.entityAdded$.subscribe(() => this.findJobs());
         this.unemployed.entityAdded$.subscribe(() => this.findJobs());

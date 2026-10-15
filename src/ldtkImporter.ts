@@ -61,6 +61,12 @@ export function registerLevelFactories(
                 worldPos.x,
             );;
         },
+
+        Tree: ({ worldPos }: FactoryProps) => {
+            return entitySpawner.spawnTree(
+                worldPos.x,
+            );;
+        },
     });
 }
 
