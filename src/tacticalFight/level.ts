@@ -146,6 +146,8 @@ export class MyLevel extends Scene {
         this.setupBuildButton('place-builder-outpost', 'builderOutpostSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-storage', 'storageSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-woodcutters-home', 'woodcuttersHomeSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-log', 'logSpawn', COOLDOWN_MS);
+        this.setupBuildButton('place-unemployed-rest-place', 'unemployedRestPlace', COOLDOWN_MS);
     }
 
     private setupBuildButton(elementId: string, buildType: BuildSpawns, cooldownMs: number) {

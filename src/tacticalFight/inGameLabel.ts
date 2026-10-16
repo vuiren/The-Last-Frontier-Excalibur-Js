@@ -4,7 +4,6 @@ export class InGameLabel extends Label {
     constructor(cfg: ActorArgs, size: number = 12) {
         super({
             ...cfg,
-            text: 'Hello world',
             font: new Font({
                 family: 'Arial',
                 size: size,
@@ -19,7 +18,7 @@ export class InGameLabel extends Label {
 
     show(): void {
         this.actions.clearActions()
-        this.actions.fade(1, this.delay).delay(1000).fade(0, this.delay)
+        this.actions.fade(1, this.delay)
     }
 
     hide(): void {

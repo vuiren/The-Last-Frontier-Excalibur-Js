@@ -1,15 +1,11 @@
 import { Engine, Query, TransformComponent, vec, Vector } from "excalibur";
-import { FrontGroundYLevel, zLabels, Faction } from "../../../constants";
+import { FrontGroundYLevel, zLabels, Faction, TransitionEntry, destinationReached } from "../../../constants";
 import { Resources } from "../../../resources";
 import { CityUnit } from "./cityUnit";
-import type { WorkplaceComponent } from "../../components/workplaceComponent";
 import { BuildTask } from "../../buildTasks/buildTask";
-import { AssignedTaskComponent, BuilderComponent, BuildTaskComponent, LabelComponent, VacantComponent, WoodStorageComponent } from "../../components/components";
+import { AssignedTaskComponent, BuilderComponent, BuildTaskComponent, LabelComponent, VacantComponent, WoodStorageComponent, WorkplaceComponent } from "../../components/components";
 
 type BuilderState = 'idle' | 'toWorkplace' | 'toStorage' | 'toTask' | 'building';
-
-type TransitionEntry = { action?: () => void; delay?: number };
-
 type TransitionMap = {
     [From in BuilderState]?: {
         [To in BuilderState]?: TransitionEntry;
@@ -43,6 +39,7 @@ export class Builder extends CityUnit {
     private readonly buildIncreaseRate = 0.01;
     private readonly speed = 40; // px/sec
 
+    previousCarriedWoodAmount: number = 0
     carriedWoodAmount: number = 0
     private state: BuilderState = 'toWorkplace';
     private storage?: WoodStorageComponent;
@@ -50,9 +47,9 @@ export class Builder extends CityUnit {
 
     private transitionCooldown = 0;
 
-    constructor(posX: number, private readonly woodStorages: Query<typeof WoodStorageComponent>, workplace: WorkplaceComponent, private readonly workplacePosition: Vector) {
+    constructor(posX: number, private readonly woodStorages: Query<typeof WoodStorageComponent>, private workplace: WorkplaceComponent, private readonly workplacePosition: Vector) {
         const config = { name: 'Builder', pos: vec(posX, FrontGroundYLevel), width: 16, height: 16, anchor: vec(0.5, 1), z: zLabels.CityUnits };
-        super(config, Resources.Builder, workplace, 100, Faction.Player, 1);
+        super(config, Resources.Builder, 100, Faction.Player, 1);
 
         this.destination = workplacePosition
         this.addComponent(new BuilderComponent(this))
@@ -63,8 +60,6 @@ export class Builder extends CityUnit {
 
     onPreUpdate(_engine: Engine, elapsed: number) {
         this.transitionCooldown = Math.max(0, this.transitionCooldown - elapsed);
-
-        this.get(LabelComponent).refresh()
         this.updateState()
 
         switch (this.state) {
@@ -93,16 +88,12 @@ export class Builder extends CityUnit {
                 break
         }
 
-        if (this.destinationReached(this.destination)) {
+        this.previousCarriedWoodAmount = this.carriedWoodAmount
+
+        if (this.destinationReached(this.destination) || this.transitionCooldown > 0) {
             this.vel.x = 0; // arrived: stand at the workplace
             return;
         }
-
-        if (this.transitionCooldown > 0) {
-            this.vel.x = 0;
-            return;
-        }
-
 
         const dx = this.destination.x - this.pos.x;
         this.vel.x = Math.sign(dx) * this.speed;
@@ -189,7 +180,7 @@ export class Builder extends CityUnit {
     }
 
     private destinationReached(destination: Vector) {
-        return Math.abs(destination.x - this.pos.x) < 1
+        return destinationReached(this.pos, destination)
     }
 
     onPreKill() {
@@ -233,6 +224,13 @@ export class Builder extends CityUnit {
         this.storage.takeWood(amount)
         this.carriedWoodAmount += amount
         this.storage = undefined
+
+        this.get(LabelComponent).refresh()
+        if (this.carriedWoodAmount <= 0) {
+            this.get(LabelComponent).hide()
+        } else {
+            this.get(LabelComponent).show()
+        }
     }
 
     deliverWoodToTask() {
@@ -244,6 +242,14 @@ export class Builder extends CityUnit {
         const woodToDeliver = Math.min(taskComponent.remainingWood, this.carriedWoodAmount)
         taskComponent.deliver(woodToDeliver)
         this.carriedWoodAmount -= woodToDeliver
+
+        this.get(LabelComponent).refresh()
+
+        if (this.carriedWoodAmount <= 0) {
+            this.get(LabelComponent).hide()
+        } else {
+            this.get(LabelComponent).show()
+        }
     }
 
     deliverWoodToStorage() {
@@ -251,6 +257,13 @@ export class Builder extends CityUnit {
 
         this.storage.addWood(this.carriedWoodAmount)
         this.carriedWoodAmount = 0
+        this.get(LabelComponent).refresh()
+
+        if (this.carriedWoodAmount <= 0) {
+            this.get(LabelComponent).hide()
+        } else {
+            this.get(LabelComponent).show()
+        }
     }
 
     get assignedTask() { return this.get(AssignedTaskComponent) }

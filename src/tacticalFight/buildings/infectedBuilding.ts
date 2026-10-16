@@ -14,7 +14,8 @@ export class InfectedBuilding extends Building {
 
     constructor(xPos: number, entitySpawner: EntitySpawner) {
         const startPosition = vec(xPos, FrontGroundYLevel);
-        super({ name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: zLabels.Buildings, anchor: vec(0.5, 1) }, Resources.InfectedFarmHouse, Faction.Enemy, 100);
+        const config = { name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: zLabels.Buildings, anchor: vec(0.5, 1) }
+        super(config, Resources.InfectedFarmHouse, Faction.Enemy, 100);
 
         this.entitySpawner = entitySpawner;
 

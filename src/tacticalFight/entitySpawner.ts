@@ -11,7 +11,7 @@ import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { BuilderOutpost } from "./buildings/builderOutpost";
-import { CombatantComponent, GroupableComponent, WoodStorageComponent } from "./components/components";
+import { CombatantComponent, GroupableComponent, TreeComponent, WoodStorageComponent, WorkplaceComponent } from "./components/components";
 import { BuildPreview } from "./buildings/buildPreview";
 import { Builder } from "./units/cityUnits/builder";
 import { UnemployedUnit } from "./units/cityUnits/unemployed";
@@ -21,12 +21,14 @@ import { FarmScraps } from "./buildTasks/farmScraps";
 import { Tree } from "./tree";
 import { WoodcuttersHome } from "./buildings/woodcuttersHome";
 import { Woodcutter } from "./units/cityUnits/woodcutter";
-import { WorkplaceComponent } from "./components/workplaceComponent";
+import { Log } from "./pickableItems/log";
+import { UnemployedRestPlace } from "./buildings/unemployedRestPlace";
 
 export class EntitySpawner {
     private readonly groupables: Query<typeof GroupableComponent>;
     private readonly combatants: Query<typeof CombatantComponent>;
     private readonly woodStorages: Query<typeof WoodStorageComponent>;
+    private readonly trees: Query<typeof TreeComponent>;
 
     constructor(
         private readonly scene: Scene,
@@ -36,6 +38,7 @@ export class EntitySpawner {
         this.groupables = scene.world.query([GroupableComponent]);
         this.combatants = scene.world.query([CombatantComponent]);
         this.woodStorages = scene.world.query([WoodStorageComponent]);
+        this.trees = scene.world.query([TreeComponent]);
     }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -116,13 +119,12 @@ export class EntitySpawner {
 
     spawnBuilder(posX: number, workplacePos: Vector, workplace: WorkplaceComponent): Builder {
         const builder = new Builder(posX, this.woodStorages, workplace, workplacePos);
-        builder.workplace = workplace
         this.scene.add(builder);
         return builder;
     }
-    
+
     spawnWoodcutter(posX: number, workplacePos: Vector, workplace: WorkplaceComponent): Woodcutter {
-        const woodcutter = new Woodcutter(posX, this.woodStorages, workplace, workplacePos);
+        const woodcutter = new Woodcutter(posX, this.trees, this.woodStorages, workplace, workplacePos);
         this.scene.add(woodcutter);
         return woodcutter;
     }
@@ -145,6 +147,12 @@ export class EntitySpawner {
         return storage;
     }
 
+    spawnUnemployedRestPlace(posX: number): UnemployedRestPlace {
+        const restPlace = new UnemployedRestPlace(posX);
+        this.scene.add(restPlace);
+        return restPlace;
+    }
+
     spawnBuildPreview(): BuildPreview {
         const preview = new BuildPreview();
         this.scene.add(preview);
@@ -155,5 +163,11 @@ export class EntitySpawner {
         const tree = new Tree(posX);
         this.scene.add(tree);
         return tree;
+    }
+
+    spawnLog(posX: number): Log {
+        const log = new Log(posX)
+        this.scene.add(log)
+        return log
     }
 }

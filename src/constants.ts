@@ -1,3 +1,5 @@
+import { Vector } from "excalibur";
+
 export const FrontGroundYLevel = 224
 
 export enum HorizontalDirection {
@@ -53,3 +55,9 @@ export const zLabels: Record<string, number> = {
     "Bullets": 8,
     "Barricades": 9,
 };
+
+export type TransitionEntry = { action?: () => void; delay?: number };
+
+export function destinationReached(pos: Vector, destination: Vector, threashold: number = 1) {
+    return Math.abs(destination.x - pos.x) < threashold
+}

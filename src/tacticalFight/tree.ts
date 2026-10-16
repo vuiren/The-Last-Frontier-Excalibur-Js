@@ -2,6 +2,7 @@ import { Actor, Engine, vec } from "excalibur";
 import { AnimComponent } from "./components/animComponent";
 import { FrontGroundYLevel, zLabels } from "../constants";
 import { Resources } from "../resources";
+import { TreeComponent } from "./components/components";
 
 export class Tree extends Actor {
     constructor(posX: number, background: boolean = true) {
@@ -10,6 +11,7 @@ export class Tree extends Actor {
         const conf = { name: 'Tree', pos: vec(posX, FrontGroundYLevel), width: 32, height: 96, z: z, anchor: vec(0.5, 1) }
         super(conf)
         this.addComponent(new AnimComponent(Resources.Tree))
+        this.addComponent(new TreeComponent(5))
     }
 
     override onInitialize(engine: Engine): void {

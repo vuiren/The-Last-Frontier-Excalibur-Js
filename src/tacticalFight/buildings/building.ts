@@ -1,5 +1,5 @@
 import { Actor, ActorArgs, Color, Engine, vec, Vector } from "excalibur";
-import { HorizontalDirection, Faction, Tags } from "../../constants";
+import { HorizontalDirection, Faction } from "../../constants";
 import { ProgressBar } from "../../progressBar";
 import { Group } from "../group";
 import { ICombatant } from "../combatant";

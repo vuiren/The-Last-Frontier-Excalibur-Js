@@ -24,7 +24,10 @@ export const Resources = {
   BuilderOutpost: new AsepriteResource('/buildings/BuilderOutpost.json'),
   Storage: new AsepriteResource('/buildings/Storage.json'),
   WoodcuttersHome: new AsepriteResource('/buildings/WoodcuttersHome.json'),
+  UnemployedRestPlace: new AsepriteResource('/buildings/UnemployedRestPlace.json'),
   Tree: new AsepriteResource('/Tree.json'),
+
+  Log: new AsepriteResource('/Log.json'),
 
   CaptureZoneFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),
   OrderFlag: new AsepriteResource('./buildings/CaptureZoneFlag.json'),

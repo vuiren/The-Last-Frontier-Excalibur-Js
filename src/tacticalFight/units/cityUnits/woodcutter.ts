@@ -2,17 +2,16 @@ import { Engine, Query, TransformComponent, vec, Vector } from "excalibur";
 import { FrontGroundYLevel, zLabels, Faction } from "../../../constants";
 import { Resources } from "../../../resources";
 import { CityUnit } from "./cityUnit";
-import type { WorkplaceComponent } from "../../components/workplaceComponent";
 import { BuildTask } from "../../buildTasks/buildTask";
-import { AssignedTaskComponent, BuildTaskComponent, LabelComponent, VacantComponent, WoodStorageComponent } from "../../components/components";
+import { AssignedTaskComponent, BuildTaskComponent, LabelComponent, TreeComponent, VacantComponent, WoodStorageComponent } from "../../components/components";
 
-type BuilderState = 'idle' | 'toWorkplace' | 'toStorage' | 'toTask' | 'building';
+type WoodcutterState = 'idle' | 'toWorkplace' | 'toStorage' | 'toTree' | 'cut';
 
 type TransitionEntry = { action?: () => void; delay?: number };
 
 type TransitionMap = {
-    [From in BuilderState]?: {
-        [To in BuilderState]?: TransitionEntry;
+    [From in WoodcutterState]?: {
+        [To in WoodcutterState]?: TransitionEntry;
     };
 };
 
@@ -44,13 +43,13 @@ export class Woodcutter extends CityUnit {
     private readonly speed = 40; // px/sec
 
     carriedWoodAmount: number = 0
-    private state: BuilderState = 'toWorkplace';
+    private state: WoodcutterState = 'toWorkplace';
     private storage?: WoodStorageComponent;
     private readonly carryCapacity = 7;
 
     private transitionCooldown = 0;
 
-    constructor(posX: number, private readonly woodStorages: Query<typeof WoodStorageComponent>, workplace: WorkplaceComponent, private readonly workplacePosition: Vector) {
+    constructor(posX: number, private readonly trees: Query<typeof TreeComponent>, private readonly woodStorages: Query<typeof WoodStorageComponent>, workplace: WorkplaceComponent, private readonly workplacePosition: Vector) {
         const config = { name: 'Woodcutter', pos: vec(posX, FrontGroundYLevel), width: 16, height: 16, anchor: vec(0.5, 1), z: zLabels.CityUnits };
         super(config, Resources.Woodcutter, workplace, 100, Faction.Player, 1);
 
@@ -123,7 +122,7 @@ export class Woodcutter extends CityUnit {
         this.transition(currentState, newState)
     }
 
-    getNewState(): BuilderState {
+    getNewState(): WoodcutterState {
         const currentState = this.state
         switch (currentState) {
             case 'idle':
@@ -169,10 +168,10 @@ export class Woodcutter extends CityUnit {
                 }
                 if (this.destinationReached(this.workplacePosition)) return 'idle'
                 return 'toWorkplace'
-            case 'building':
+            case 'cut':
                 if (this.assignedTask?.task.isKilled()) return 'toWorkplace'
                 if (this.assignedTask?.task.get(BuildTaskComponent).hasAllWood)
-                    return 'building'
+                    return 'cut'
                 else return 'toStorage'
         }
 
@@ -198,7 +197,7 @@ export class Woodcutter extends CityUnit {
         this.workplace?.onWorkerLost(this);
     }
 
-    transition(from: BuilderState, to: BuilderState) {
+    transition(from: WoodcutterState, to: WoodcutterState) {
         if (from === to) return
         const fn = this.transitions[from]?.[to];
         if (fn) {
@@ -221,6 +220,10 @@ export class Woodcutter extends CityUnit {
                 break
             }
         }
+    }
+
+    findTree(){
+
     }
 
     takeWoodFromStorage() {
