@@ -119,7 +119,7 @@ export class Builder extends CityUnit {
         const currentState = this.state
         switch (currentState) {
             case 'idle':
-                if (this.hasTask && this.woodStorages.entities.length > 0) {
+                if (this.hasTask && this.woodStorages.entities.length > 0 && this.woodStorages.entities.some(x=>x.get(WoodStorageComponent).woodAmount > 0)) {
                     return 'toTask'
                 }
                 if (!this.destinationReached(this.workplacePosition)) {

@@ -40,7 +40,7 @@ export class BuilderComponent extends Component {
     constructor(public readonly builder: Builder) { super(); }
 }
 export class UnemployedUnitComponent extends Component {
-    constructor(public readonly unemployed: UnemployedUnit) { super(); }
+    constructor(public readonly unemployed: UnemployedUnit, public foundPlace: boolean) { super(); }
 }
 export class AssignedTaskComponent extends Component {
     constructor(public readonly task: BuildTask) { super(); }
@@ -111,8 +111,36 @@ export class LabelComponent extends Component {
 }
 
 export class TreeComponent extends Component {
-    constructor(private readonly storedWoodAmount: number) {
-        super()
+    private remainingWood: number;
+    private claimedBy?: Entity;
+
+    constructor(public readonly totalWood: number) {
+        super();
+        this.remainingWood = totalWood;
+    }
+
+    get woodLeft() { return this.remainingWood; }
+    get isDepleted() { return this.remainingWood <= 0; }
+
+    /** True if some worker is currently assigned to this tree (and is still alive). */
+    get isClaimed() { return this.claimedBy !== undefined && !this.claimedBy.isKilled(); }
+
+    /** Reserves the tree for a worker. Returns false if somebody else already holds it. */
+    claim(by: Entity): boolean {
+        if (this.isClaimed && this.claimedBy !== by) return false;
+        this.claimedBy = by;
+        return true;
+    }
+
+    release(by: Entity) {
+        if (this.claimedBy === by) this.claimedBy = undefined;
+    }
+
+    /** Removes up to `amount` wood and returns how much was actually taken. */
+    takeWood(amount: number): number {
+        const taken = Math.max(0, Math.min(amount, this.remainingWood));
+        this.remainingWood -= taken;
+        return taken;
     }
 }
 

@@ -29,9 +29,13 @@ export class UnemployedManager {
 
     findPlaces() {
         for (const u of [...this.unemployed.entities]) {
-            const unit = u.get(UnemployedUnitComponent).unemployed;
+            const unit = u.get(UnemployedUnitComponent);
+            if(unit.foundPlace) continue
             for (const b of [...this.unemployedPlaces.entities]) {
-                if (b.get(UnemployedPlaceComponent).hire(unit)) break;
+                if (b.get(UnemployedPlaceComponent).hire(unit.unemployed)) {
+                    unit.foundPlace = true
+                    break
+                }
             }
         }
     }

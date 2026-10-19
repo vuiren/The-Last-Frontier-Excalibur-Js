@@ -11,7 +11,7 @@ export class Storage extends Building {
         const startPosition = vec(startX, FrontGroundYLevel);
         super({ name: 'Storage', pos: startPosition, width: 32, height: 32, z: zLabels.Buildings, anchor: vec(0.5, 1) }, Resources.Storage, Faction.Player, 100);
         this.addComponent(new WoodStorageComponent(this))
-        this.get(WoodStorageComponent).addWood(1000)
+      //  this.get(WoodStorageComponent).addWood(1000)
 
         const wood = this.get(WoodStorageComponent)
         this.addComponent(new LabelComponent(vec(0, -46), () => wood.woodAmount.toString()))
