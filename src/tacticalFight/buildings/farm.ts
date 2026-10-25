@@ -4,14 +4,15 @@ import { Resources } from "../../resources";
 import { Building } from "./building";
 import { EntitySpawner } from "../entitySpawner";
 import { ResourcesManager } from "../managers/resourcesManager";
+import { ActiveOrdersManager } from "../managers/activeOrdersManager";
 
 export class Farm extends Building {
     foodDelta = 5
 
-    constructor(startX: number, private entitySpawner: EntitySpawner, private resourcesManager: ResourcesManager) {
+    constructor(startX: number, private entitySpawner: EntitySpawner, private resourcesManager: ResourcesManager, activeOrders: ActiveOrdersManager) {
         const startPosition = vec(startX, FrontGroundYLevel);
         const config = { name: 'Farm', pos: startPosition, width: 32, height: 32, z: zLabels.Buildings, anchor: vec(0.5, 1) }
-        super(config, Resources.FarmHouse, Faction.Player, 100);
+        super(config, activeOrders, Resources.FarmHouse, Faction.Player, 100);
         resourcesManager.availableFood += this.foodDelta
     }
 

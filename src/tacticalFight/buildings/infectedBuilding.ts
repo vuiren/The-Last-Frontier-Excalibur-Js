@@ -4,6 +4,7 @@ import { Resources } from "../../resources";
 import { Building } from "./building";
 import { ProgressBar } from "../../progressBar";
 import { EntitySpawner } from "../entitySpawner";
+import { ActiveOrdersManager } from "../managers/activeOrdersManager";
 
 export class InfectedBuilding extends Building {
     private progressBar: ProgressBar;
@@ -12,10 +13,10 @@ export class InfectedBuilding extends Building {
     private spawnProgress: number = 0;
     private spawnDelay = 5000;
 
-    constructor(xPos: number, entitySpawner: EntitySpawner) {
+    constructor(xPos: number, entitySpawner: EntitySpawner, activeOrders: ActiveOrdersManager) {
         const startPosition = vec(xPos, FrontGroundYLevel);
         const config = { name: 'InfectedBuilding', pos: startPosition, width: 16, height: 8, z: zLabels.Buildings, anchor: vec(0.5, 1) }
-        super(config, Resources.InfectedFarmHouse, Faction.Enemy, 100);
+        super(config, activeOrders, Resources.InfectedFarmHouse, Faction.Enemy, 100);
 
         this.entitySpawner = entitySpawner;
 

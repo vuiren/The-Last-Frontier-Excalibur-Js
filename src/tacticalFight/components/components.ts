@@ -1,5 +1,5 @@
 // components.ts
-import { Actor, Component, Entity, TransformComponent, vec, Vector } from "excalibur";
+import { Component, Entity, TransformComponent, vec, Vector } from "excalibur";
 import { Building } from "../buildings/building";
 import { BuildTask } from "../buildTasks/buildTask";
 import { ICombatant, IGroupable } from "../combatant";
@@ -109,6 +109,7 @@ export class LabelComponent extends Component {
         this.label.hide()
     }
 }
+
 
 export class TreeComponent extends Component {
     private remainingWood: number;
@@ -279,3 +280,6 @@ export class UnemployedPlaceComponent extends Component {
         return vec(0, 0)
     }
 }
+
+export class CutOrderComponent extends Component {}
+export class DemolishOrderComponent extends Component {}

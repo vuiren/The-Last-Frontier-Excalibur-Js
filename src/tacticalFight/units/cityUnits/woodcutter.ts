@@ -2,7 +2,7 @@ import { Engine, Entity, Query, TransformComponent, vec, Vector } from "excalibu
 import { FrontGroundYLevel, zLabels, Faction } from "../../../constants";
 import { Resources } from "../../../resources";
 import { CityUnit } from "./cityUnit";
-import { LabelComponent, TreeComponent, VacantComponent, WoodStorageComponent, WorkplaceComponent } from "../../components/components";
+import { CutOrderComponent, LabelComponent, TreeComponent, VacantComponent, WoodStorageComponent, WorkplaceComponent } from "../../components/components";
 
 type WoodcutterState = 'idle' | 'toTree' | 'cutting' | 'toStorage' | 'toWorkplace';
 
@@ -23,7 +23,7 @@ export class Woodcutter extends CityUnit {
 
     constructor(
         posX: number,
-        private readonly trees: Query<typeof TreeComponent>,
+        private readonly trees: Query<typeof TreeComponent | typeof CutOrderComponent>,
         private readonly woodStorages: Query<typeof WoodStorageComponent>,
         private readonly workplace: WorkplaceComponent,
         private readonly workplacePosition: Vector

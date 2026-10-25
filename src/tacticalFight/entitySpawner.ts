@@ -11,7 +11,7 @@ import { GroupsManager } from "./managers/groupsManager";
 import { UnitConfigKey, UnitConfigs } from "./units/unitConfigs";
 import { ResourcesManager } from "./managers/resourcesManager";
 import { BuilderOutpost } from "./buildings/builderOutpost";
-import { CombatantComponent, GroupableComponent, TreeComponent, WoodStorageComponent, WorkplaceComponent } from "./components/components";
+import { CombatantComponent, CutOrderComponent, GroupableComponent, TreeComponent, WoodStorageComponent, WorkplaceComponent } from "./components/components";
 import { BuildPreview } from "./buildings/buildPreview";
 import { Builder } from "./units/cityUnits/builder";
 import { UnemployedUnit } from "./units/cityUnits/unemployed";
@@ -23,22 +23,25 @@ import { WoodcuttersHome } from "./buildings/woodcuttersHome";
 import { Woodcutter } from "./units/cityUnits/woodcutter";
 import { Log } from "./pickableItems/log";
 import { UnemployedRestPlace } from "./buildings/unemployedRestPlace";
+import { ActiveOrdersManager } from "./managers/activeOrdersManager";
 
 export class EntitySpawner {
     private readonly groupables: Query<typeof GroupableComponent>;
     private readonly combatants: Query<typeof CombatantComponent>;
     private readonly woodStorages: Query<typeof WoodStorageComponent>;
-    private readonly trees: Query<typeof TreeComponent>;
+    private readonly trees: Query<typeof TreeComponent | typeof CutOrderComponent>;
 
     constructor(
         private readonly scene: Scene,
         private readonly groupsManager: GroupsManager,
         private readonly resourcesManager: ResourcesManager,
+        private readonly activeOrdersManager: ActiveOrdersManager,
+     
     ) {
         this.groupables = scene.world.query([GroupableComponent]);
         this.combatants = scene.world.query([CombatantComponent]);
         this.woodStorages = scene.world.query([WoodStorageComponent]);
-        this.trees = scene.world.query([TreeComponent]);
+        this.trees = scene.world.query([TreeComponent, CutOrderComponent]);
     }
 
     spawnUnitMoveMarker(assignedUnit: PlayerUnit, pos: Vector) {
@@ -56,14 +59,14 @@ export class EntitySpawner {
     }
 
     spawnFarmHouse(posX: number) {
-        const farm = new Farm(posX, this, this.resourcesManager);
+        const farm = new Farm(posX, this, this.resourcesManager, this.activeOrdersManager);
         this.scene.add(farm);
 
         return farm;
     }
 
     spawnInfectedFarmHouse(posX: number) {
-        const infectedBuilding = new InfectedBuilding(posX, this);
+        const infectedBuilding = new InfectedBuilding(posX, this, this.activeOrdersManager);
         this.scene.add(infectedBuilding);
 
         return infectedBuilding;
@@ -100,13 +103,13 @@ export class EntitySpawner {
     }
 
     spawnPlayerBase(posX: number): PlayerBase {
-        const playerBase = new PlayerBase(posX, 100, this, this.resourcesManager);
+        const playerBase = new PlayerBase(posX, 100, this, this.resourcesManager, this.activeOrdersManager);
         this.scene.add(playerBase);
         return playerBase;
     }
 
     spawnBarricade(posX: number): Barricade {
-        const barricade = new Barricade(posX, 100);
+        const barricade = new Barricade(posX, 100, this.activeOrdersManager);
         this.scene.add(barricade);
         return barricade;
     }
@@ -130,25 +133,25 @@ export class EntitySpawner {
     }
 
     spawnBuilderOutpost(posX: number): BuilderOutpost {
-        const builderOutpost = new BuilderOutpost(posX, this);
+        const builderOutpost = new BuilderOutpost(posX, this, this.activeOrdersManager);
         this.scene.add(builderOutpost);
         return builderOutpost;
     }
 
     spawnWoodcuttersHome(posX: number): WoodcuttersHome {
-        const woodcuttersHome = new WoodcuttersHome(posX, this);
+        const woodcuttersHome = new WoodcuttersHome(posX, this, this.activeOrdersManager);
         this.scene.add(woodcuttersHome);
         return woodcuttersHome;
     }
 
     spawnStorage(posX: number): Storage {
-        const storage = new Storage(posX, this, this.resourcesManager);
+        const storage = new Storage(posX, this, this.resourcesManager, this.activeOrdersManager);
         this.scene.add(storage);
         return storage;
     }
 
     spawnUnemployedRestPlace(posX: number): UnemployedRestPlace {
-        const restPlace = new UnemployedRestPlace(posX);
+        const restPlace = new UnemployedRestPlace(posX, this.activeOrdersManager);
         this.scene.add(restPlace);
         return restPlace;
     }
@@ -160,7 +163,7 @@ export class EntitySpawner {
     }
 
     spawnTree(posX: number): Tree {
-        const tree = new Tree(posX);
+        const tree = new Tree(posX, this.activeOrdersManager);
         this.scene.add(tree);
         return tree;
     }

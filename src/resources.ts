@@ -18,6 +18,8 @@ export const Resources = {
   BuyButtonBackground: new ImageSource('./icons/BuyButtonBackground.png'),
   BuyButtonHovered: new ImageSource('./icons/BuyButtonHovered.png'),
   StartFightButton: new AsepriteResource('./icons/FightButton.json'),
+  CutOrderAxe: new AsepriteResource('./icons/CutOrderAxe.json'),
+  BombIcon: new AsepriteResource('./icons/DestroyIcon.json'),
 
   FarmHouse: new AsepriteResource('./buildings/FarmHouse.json'),
   InfectedFarmHouse: new AsepriteResource('./buildings/InfectedFarmHouse.json'),

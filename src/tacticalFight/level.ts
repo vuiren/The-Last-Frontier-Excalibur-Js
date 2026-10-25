@@ -1,4 +1,4 @@
-import { Color, Engine, ExcaliburGraphicsContext, Scene, Timer, vec } from "excalibur";
+import { Actor, Color, Engine, ExcaliburGraphicsContext, PointerComponent, Scene, Timer, vec } from "excalibur";
 import { ICombatant } from "./combatant";
 import { drawDottedLine } from "../drawDottedLine";
 import { importLdtkLevel } from "../ldtkImporter";
@@ -10,6 +10,7 @@ import { UnitsCollisionManager } from "./managers/unitsCollisionManager";
 import { BuildingComponent, BuildTaskComponent, CombatantComponent, GroupableComponent } from "./components/components";
 import { UnemployedManager } from "./managers/unemployedManager";
 import { BuildersManager } from "./managers/buildersManager";
+import { ActiveOrdersManager } from "./managers/activeOrdersManager";
 
 export class MyLevel extends Scene {
     private unitsCollisionManager!: UnitsCollisionManager;
@@ -18,6 +19,7 @@ export class MyLevel extends Scene {
     private readonly resourcesManager: ResourcesManager = new ResourcesManager(5)
     private readonly unemployedManager: UnemployedManager = new UnemployedManager(this)
     private readonly buildersManager: BuildersManager = new BuildersManager(this)
+    private readonly activeOrdersManager: ActiveOrdersManager = new ActiveOrdersManager()
     private buildManager!: BuildManager;
 
     private dashOffset = 0;
@@ -28,7 +30,13 @@ export class MyLevel extends Scene {
     private movingCameraLeft = false;
 
     override onInitialize(engine: Engine): void {
-        this.entitySpawner = new EntitySpawner(this, this.groupsManager, this.resourcesManager);
+        const pointers = this.world.query([PointerComponent]);
+
+        pointers.entityAdded$.subscribe(e => {
+            e.get(PointerComponent).useColliderShape = false;
+        });
+
+        this.entitySpawner = new EntitySpawner(this, this.groupsManager, this.resourcesManager, this.activeOrdersManager);
         this.unitsCollisionManager = new UnitsCollisionManager(this, this.groupsManager);
 
         this.backgroundColor = Color.fromHex("1F4073");
@@ -140,6 +148,15 @@ export class MyLevel extends Scene {
             this.camera.pos = vec(this.camera.pos.x, 200)
         })
 
+        const cutOrderButton = document.getElementById('cut-order-btn') as HTMLButtonElement
+        cutOrderButton.addEventListener('click', () => {
+            this.activeOrdersManager.toggleCutOrder()
+        })
+
+        const demolishOrderButton = document.getElementById('demolish-order-btn') as HTMLButtonElement
+        demolishOrderButton.addEventListener('click', () => {
+            this.activeOrdersManager.toggleDemolishOrder()
+        })
         const COOLDOWN_MS = 500;
         this.setupBuildButton('place-barricade', 'barricadeSpawn', COOLDOWN_MS);
         this.setupBuildButton('place-farm', 'farmSpawn', COOLDOWN_MS);

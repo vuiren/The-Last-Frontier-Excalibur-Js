@@ -5,11 +5,12 @@ import { Building } from "./building";
 import { EntitySpawner } from "../entitySpawner";
 import { ResourcesManager } from "../managers/resourcesManager";
 import { LabelComponent, WoodStorageComponent } from "../components/components";
+import { ActiveOrdersManager } from "../managers/activeOrdersManager";
 
 export class Storage extends Building {
-    constructor(startX: number, private entitySpawner: EntitySpawner, private resourcesManager: ResourcesManager) {
+    constructor(startX: number, private entitySpawner: EntitySpawner, private resourcesManager: ResourcesManager, activeOrders: ActiveOrdersManager) {
         const startPosition = vec(startX, FrontGroundYLevel);
-        super({ name: 'Storage', pos: startPosition, width: 32, height: 32, z: zLabels.Buildings, anchor: vec(0.5, 1) }, Resources.Storage, Faction.Player, 100);
+        super({ name: 'Storage', pos: startPosition, width: 32, height: 32, z: zLabels.Buildings, anchor: vec(0.5, 1) }, activeOrders, Resources.Storage, Faction.Player, 100);
         this.addComponent(new WoodStorageComponent(this))
       //  this.get(WoodStorageComponent).addWood(1000)
 

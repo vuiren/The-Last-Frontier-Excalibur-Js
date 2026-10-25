@@ -1,4 +1,4 @@
-import { Actor, ActorArgs, Color, Engine, Font, FontUnit, Label, TextAlign } from "excalibur";
+import { ActorArgs, Color, Font, FontUnit, Label, TextAlign } from "excalibur";
 
 export class InGameLabel extends Label {
     constructor(cfg: ActorArgs, size: number = 12) {

@@ -5,8 +5,11 @@ import { Group } from "../group";
 import { ICombatant } from "../combatant";
 import { UnitActivity } from "../units/unit";
 import { AsepriteResource } from "@excaliburjs/plugin-aseprite";
-import { CombatantComponent, BuildingComponent } from "../components/components";
+import { CombatantComponent, BuildingComponent, DemolishOrderComponent } from "../components/components";
 import { AnimComponent } from "../components/animComponent";
+import { Resources } from "../../resources";
+import { IconComponent } from "../components/iconComponent";
+import { ActiveOrdersManager } from "../managers/activeOrdersManager";
 
 export class Building extends Actor implements ICombatant {
     health: number = 100;
@@ -18,7 +21,14 @@ export class Building extends Actor implements ICombatant {
 
     private healthBar: ProgressBar;
 
-    constructor(config: ActorArgs, asepriteResouce: AsepriteResource, faction: Faction, health: number, healthBarOffset: Vector = vec(-8, -45)) {
+    constructor(config: ActorArgs, 
+        private readonly activeOrders: ActiveOrdersManager, 
+        asepriteResouce: AsepriteResource, 
+        faction: Faction, 
+        health: number, 
+        healthBarOffset: Vector = vec(-8, -45),
+        demolishIconOffset: Vector = vec(-8, -72),
+    ) {
         super(config);
         this.faction = faction;
         this.health = health;
@@ -33,6 +43,10 @@ export class Building extends Actor implements ICombatant {
         this.addComponent(new CombatantComponent(this));
         this.addComponent(new BuildingComponent(this));
         this.addComponent(new AnimComponent(asepriteResouce))
+
+        this.addComponent(new IconComponent(demolishIconOffset, Resources.BombIcon, () => "Idle", { scale: vec(0.5, 0.5) }))
+
+        this.on("pointerdown", this.onPointerDown.bind(this));
     }
 
     override onInitialize(engine: Engine): void {
@@ -51,5 +65,17 @@ export class Building extends Actor implements ICombatant {
     onDeath(): void {
         this.isDead = true;
         this.kill();
+    }
+
+    onPointerDown() {
+        if (!this.activeOrders.demolishOrderActive) return
+        const icon = this.get(IconComponent)
+        if (this.has(DemolishOrderComponent)) {
+            this.removeComponent(DemolishOrderComponent)
+            icon.hide()
+        } else {
+            this.addComponent(new DemolishOrderComponent())
+            icon.show()
+        }
     }
 }
